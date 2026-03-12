@@ -23,3 +23,6 @@ Alternatives: inline comments only (insufficient)
 
 [2026-03-12] | Python 3.14.2 used instead of 3.11
 Rationale: 3.11 not available on system. 3.14 is fully compatible with all project dependencies. No 3.11-specific features used in this codebase. All physics and simulation logic is version-agnostic NumPy/SciPy.
+
+[2026-03-12] | Alice state dict preserves alice_bit and alice_basis separately
+Rationale: When Eve intercepts and re-emits, the photon's physical state (bit, basis) changes to Eve's re-emitted values. But QBER must compare Bob's measurement against Alice's ORIGINAL secret bit, not Eve's re-emitted bit. Storing alice_bit and alice_basis separately ensures QBER is physically accurate. Without this, Eve's full interception would show 0% QBER on basis matches instead of the correct 25%.
