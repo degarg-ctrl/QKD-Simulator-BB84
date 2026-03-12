@@ -76,6 +76,8 @@ class Eve:
             key = (eve_basis, eve_bit)
             new_state['polarization_angle'] = float(POLARIZATION_ANGLES[key])
             new_state['state_label'] = STATE_LABELS[key]
+            new_state['bit'] = int(eve_bit)
+            new_state['basis'] = str(eve_basis)
             
         new_state.update({
             'intercepted': True,

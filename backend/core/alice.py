@@ -88,6 +88,8 @@ class Alice:
                 'index': i,
                 'bit': bit,
                 'basis': basis,
+                'alice_bit': bit,
+                'alice_basis': basis,
                 'state_label': STATE_LABELS[key],
                 'polarization_angle': float(POLARIZATION_ANGLES[key])
             })
