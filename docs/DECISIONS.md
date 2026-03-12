@@ -20,3 +20,6 @@ Alternatives: Redux Toolkit (overkill), Context API (re-render issues)
 [2026-03-12] | PHYSICS_CONTRACT.md as single source of truth
 Rationale: prevents physics drift across modules built in separate sessions
 Alternatives: inline comments only (insufficient)
+
+[2026-03-12] | Python 3.14.2 used instead of 3.11
+Rationale: 3.11 not available on system. 3.14 is fully compatible with all project dependencies. No 3.11-specific features used in this codebase. All physics and simulation logic is version-agnostic NumPy/SciPy.
