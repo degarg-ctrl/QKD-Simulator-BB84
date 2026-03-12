@@ -16,3 +16,9 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 [2026-03-12 21:00] | feature/backend-core | feat(backend-core) | protocol.py complete — sifting, QBER estimation, key extraction verified. Refactored Alice/Eve for bit preservation.
 [2026-03-12 21:15] | feature/backend-core | feat(backend-core) | metrics.py complete — binary entropy, SKR, efficiency, chart data verified
 [2026-03-12 22:30] | feature/backend-api | feat(backend-api) | simulation router complete — full BB84 pipeline wired to POST /api/simulate, all 3 HTTP tests verified
+[2026-03-12 22:35] | develop              | merge | feature/backend-api merged. Full backend API live and verified.
+[2026-03-12 23:05] | develop              | merge | Backend complete. All 6 core modules and API router verified. QBER=0.25 on full Eve confirmed. Ready for frontend Sprint 3.
+[2026-03-12 23:10] | feature/frontend-scaffold | feat(frontend-scaffold) | simulationStore.js complete — Zustand store with params, results, animation state, 10 actions, 4 derived getters
+[2026-03-12 23:25] | feature/frontend-scaffold | feat(frontend-scaffold) | simulatorAPI.js complete — runSimulation, checkHealth, validateParams verified with live backend call
+[2026-03-12 23:30] | feature/frontend-scaffold | feat(frontend-scaffold) | useSimulation.js hook complete — API orchestration, loading states, error handling verified
+[2026-03-12 23:35] | develop              | merge | frontend-scaffold merged — data layer complete. Store, API client, hook verified end to end.
