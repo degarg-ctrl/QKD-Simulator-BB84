@@ -15,3 +15,4 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 [2026-03-12 20:45] | feature/backend-core | feat(backend-core) | bob.py complete — measurement rules verified, 100% accuracy on basis match confirmed
 [2026-03-12 21:00] | feature/backend-core | feat(backend-core) | protocol.py complete — sifting, QBER estimation, key extraction verified. Refactored Alice/Eve for bit preservation.
 [2026-03-12 21:15] | feature/backend-core | feat(backend-core) | metrics.py complete — binary entropy, SKR, efficiency, chart data verified
+[2026-03-12 22:30] | feature/backend-api | feat(backend-api) | simulation router complete — full BB84 pipeline wired to POST /api/simulate, all 3 HTTP tests verified
