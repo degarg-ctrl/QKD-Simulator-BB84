@@ -22,3 +22,5 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 [2026-03-12 23:25] | feature/frontend-scaffold | feat(frontend-scaffold) | simulatorAPI.js complete — runSimulation, checkHealth, validateParams verified with live backend call
 [2026-03-12 23:30] | feature/frontend-scaffold | feat(frontend-scaffold) | useSimulation.js hook complete — API orchestration, loading states, error handling verified
 [2026-03-12 23:35] | develop              | merge | frontend-scaffold merged — data layer complete. Store, API client, hook verified end to end.
+[2026-03-12 23:45] | feature/frontend-canvas | feat(frontend-canvas) | QuantumCanvas.jsx complete — static scene renders with lanes, Alice/Bob/Eve nodes, responsive scaling
+[2026-03-12 23:55] | feature/frontend-canvas | feat(frontend-canvas) | PhotonParticle.js complete — travel lifecycle, polarization encoding, Eve effect, arrival flash verified
