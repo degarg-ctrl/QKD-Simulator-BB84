@@ -19,6 +19,11 @@ Key mappings:
   mkdir -p  → New-Item -ItemType Directory -Force
   curl      → Invoke-WebRequest or curl.exe
 
+[2026-03-12 22:50] | feature/backend-api | ERROR: QBER inflation to 30.9%
+Cause: channel.py dark count block overwrote physical 'bit' field directly, corrupting photon state before Eve and Bob processing.
+Resolution: Dark count random bit stored in separate 'dark_count_bit' field. Bob reads 'dark_count_bit' when dark_count=True.
+Prevention: Channel must never modify 'bit' or 'alice_bit' fields for dark count events. Channel only adds metadata fields.
+
 Template:
 [DATETIME] | [branch] | ERROR: [message]
 Cause:      [what caused it]

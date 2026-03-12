@@ -102,9 +102,10 @@ class Bob:
                 })
             elif state.get('dark_count', False):
                 # Dark count trigger
+                bob_bit = state.get('dark_count_bit', int(random_bits[i]))
                 new_state.update({
                     'bob_basis': bob_basis,
-                    'bob_bit': int(random_bits[i]),
+                    'bob_bit': bob_bit,
                     'measured': True
                 })
             else:

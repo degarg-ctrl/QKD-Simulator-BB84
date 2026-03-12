@@ -88,7 +88,7 @@ class QuantumChannel:
             new_state['noise_flipped'] = bool(noise_flips[i])
             
             if dark_counts[i]:
-                new_state['bit'] = int(dark_bits[i])
+                new_state['dark_count_bit'] = int(dark_bits[i])
             elif noise_flips[i]:
                 new_state['bit'] = 1 - new_state['bit']
                 
