@@ -1,9 +1,0 @@
-﻿Test 1 ù 0km, no noise, full Eve:
-  QBER: 0.2542 (MUST be 0.24-0.26)
-Test 2 ù 10km, no noise, full Eve:
-  QBER: 0.2456 (MUST be 0.24-0.27)
-Test 3 ù 0km, no noise, no Eve:
-  QBER: 0.0000 (MUST be 0.00-0.02)
-Test 4 ù Dark count handling:
-  dark_count_bit field exists: True (MUST be True)
-  physical bit unchanged by dark count: True (MUST be True)
