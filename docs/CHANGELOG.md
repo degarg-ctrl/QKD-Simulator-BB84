@@ -26,3 +26,4 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 [2026-03-12 23:55] | feature/frontend-canvas | feat(frontend-canvas) | PhotonParticle.js complete — travel lifecycle, polarization encoding, Eve effect, arrival flash verified
 [2026-03-13 00:05] | feature/frontend-canvas | feat(frontend-canvas) | usePhotonAnimation.js hook complete — full animation loop verified, photons travelling Alice→Bob with polarization visualization
 [2026-03-13 00:10] | develop              | merge | frontend-canvas merged — PhotonParticle, usePhotonAnimation, QuantumCanvas all verified. Full photon animation running at 60fps with polarization encoding.
+[2026-03-21 14:50] | feature/frontend-ui | feat(frontend-ui) | ConfigPanel complete — 5 parameter controls with physics tooltips, security threshold warning, Zustand integration
