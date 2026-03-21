@@ -79,3 +79,6 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   - Complete BB84 teaching guide — 5 sections
   - QBER exactly 25% at full Eve interception (verified)
   - Security threshold abort at QBER ≥ 11% (verified)
+[2026-03-21 19:00] | fix/v0.1-final-audit | chore | 
+  Final audit complete. Dead code removed, magic numbers 
+  verified, physics regression passed, frontend build clean.

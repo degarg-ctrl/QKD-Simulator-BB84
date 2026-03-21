@@ -24,14 +24,11 @@ Version: 0.1 | Last Updated: 2026-03-12
     |-- src/hooks/useSimulation     API + state orchestration
     |-- src/hooks/usePhotonAnimation Canvas animation driver
     |-- src/pages/SimulatorPage     main layout
-    |-- src/pages/GuidePage         beginner guide
+    |-- src/pages/GuidePage         beginner guide (handles theory & glossary)
     |-- src/components/layout/      TopBar, Sidebar, BottomPanel
-    |-- src/components/canvas/      QuantumCanvas, PhotonParticle, ChannelRenderer
-    |-- src/components/entities/    AliceNode, BobNode, EveNode, EntityTooltip
-    |-- src/components/controls/    ConfigPanel, PlaybackControls
+    |-- src/components/canvas/      QuantumCanvas, PhotonParticle
+    |-- src/components/controls/    ConfigPanel
     |-- src/components/metrics/     MetricCard, QBERChart, SKRChart
-    |-- src/components/guide/       TheorySection, BB84Steps, GlossaryTooltip
-
 ## API Contract
 POST /api/simulate
 Request:  n_bits, distance_km, noise_level, attack_prob, attack_strategy
