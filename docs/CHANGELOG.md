@@ -65,3 +65,17 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   - Metrics panel with QBER/SKR charts
   - TopBar, Sidebar, BottomPanel layout
   - Complete BB84 guide page with 5 sections
+[2026-03-21 18:45] | main | RELEASE v0.1 | 
+  BB84 QKD Simulator v0.1 released to main.
+
+  Features shipped:
+  - Physics-accurate BB84 simulation engine
+  - POST /api/simulate endpoint
+  - Photon animation with real-time polarization visualization  
+  - Eve interception with red pulse effect
+  - ConfigPanel with physics tooltips
+  - QBER/SKR metric cards and charts with threshold line
+  - TopBar, Sidebar, BottomPanel IDE layout
+  - Complete BB84 teaching guide — 5 sections
+  - QBER exactly 25% at full Eve interception (verified)
+  - Security threshold abort at QBER ≥ 11% (verified)
