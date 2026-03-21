@@ -1,0 +1,258 @@
+/**
+ * src/components/canvas/PhotonParticle.js
+ *
+ * Represents a single photon particle travelling Alice → Bob.
+ * Encodes quantum state visually through color, angle, and effects.
+ *
+ * Visual encoding per PHYSICS_CONTRACT.md Section 2:
+ * Basis +, bit 0 → Blue  (#6366f1), polarization line at 0°
+ * Basis +, bit 1 → Blue  (#6366f1), polarization line at 90°
+ * Basis x, bit 0 → Purple (#a855f7), polarization line at 45°
+ * Basis x, bit 1 → Purple (#a855f7), polarization line at 135°
+ *
+ * Special states:
+ * - Lost photon: fades opacity 1→0, stops mid-channel
+ * - Eve intercepted: brief split effect, angle may shift on re-emit
+ * - Dark count: white/grey color, random angle
+ * - Detected by Bob: brief green flash at Bob node
+ */
+
+import { ALICE_X, BOB_X, EVE_X, LANE_Y_POSITIONS, COLORS, NODE_RADIUS } from '../canvas/QuantumCanvas'
+
+export class PhotonParticle {
+
+  /**
+   * @param {Object} photonRecord - PhotonRecord from backend bit_stream
+   * @param {number} laneIndex    - Which lane (0, 1, or 2) to travel on
+   * @param {number} speed        - Animation speed multiplier
+   */
+  constructor(photonRecord, laneIndex, speed = 1.0) {
+    this.record = photonRecord
+    this.laneIndex = laneIndex
+    this.speed = speed
+
+    // Position — starts at Alice
+    this.x = ALICE_X
+    this.y = LANE_Y_POSITIONS[laneIndex]
+
+    // Movement
+    this.targetX = photonRecord.lost ? 
+      ALICE_X + (BOB_X - ALICE_X) * (0.3 + Math.random() * 0.3) :  // lost = stops mid-channel
+      BOB_X
+    this.velocityX = 3.5 * speed
+
+    // Visual state
+    this.opacity = 1.0
+    this.radius = 6
+    this.glowRadius = 14
+
+    // Determine color from alice_basis
+    this.baseColor = photonRecord.alice_basis === '+' 
+      ? COLORS.photonBlue 
+      : COLORS.photonPurple
+
+    // Polarization angle from backend record
+    this.polarizationAngle = photonRecord.polarization_angle
+
+    // Track if Eve has intercepted — angle shifts at EVE_X
+    this.intercepted = photonRecord.intercepted
+    this.hasPassedEve = false
+    
+    // After Eve: angle shifts to Eve's re-emitted angle if basis mismatch
+    this.preEveAngle = photonRecord.polarization_angle
+    this.postEveAngle = this.intercepted 
+      ? this._computePostEveAngle(photonRecord)
+      : photonRecord.polarization_angle
+
+    // Animation lifecycle
+    this.state = 'travelling'  
+    // states: 'travelling' | 'intercepted' | 'fading' | 'arrived' | 'dead'
+
+    // Eve interception effect
+    this.eveEffectTimer = 0
+    this.eveEffectDuration = 20  // frames
+
+    // Arrival flash
+    this.arrivalFlashTimer = 0
+  }
+
+  /**
+   * Compute the post-Eve polarization angle.
+   * Special logic to show Eve's disturbance visually.
+   */
+  _computePostEveAngle(record) {
+    if (!record.intercepted) return record.polarization_angle
+    
+    // The backend PhotonRecord.polarization_angle contains the final encoded state.
+    // However, for visual effect during the transition at EVE_X, 
+    // we use a slight variation if we want to show disturbance.
+    const angles = [0, 45, 90, 135]
+    const originalIndex = angles.indexOf(record.polarization_angle)
+    // Shift marginally if intercept occurred to show visual "re-encode"
+    return angles[(originalIndex + (Math.random() > 0.5 ? 1 : 3)) % 4]
+  }
+
+  /**
+   * Update photon position and visual state for one animation frame.
+   */
+  update() {
+    if (this.state === 'dead') return false
+
+    // Move right
+    this.x += this.velocityX
+
+    // Trigger Eve interception effect when passing EVE_X
+    if (this.intercepted && !this.hasPassedEve && this.x >= EVE_X) {
+      this.hasPassedEve = true
+      this.state = 'intercepted'
+      this.eveEffectTimer = this.eveEffectDuration
+      // Shift polarization angle to post-Eve value
+      this.polarizationAngle = this.postEveAngle
+    }
+
+    // Count down Eve effect
+    if (this.eveEffectTimer > 0) {
+      this.eveEffectTimer--
+      if (this.eveEffectTimer === 0 && this.state === 'intercepted') {
+        this.state = 'travelling'
+      }
+    }
+
+    // Handle lost photons — fade out when reaching targetX
+    if (this.record.lost && this.x >= this.targetX) {
+      this.state = 'fading'
+    }
+
+    if (this.state === 'fading') {
+      this.opacity -= 0.05
+      if (this.opacity <= 0) {
+        this.state = 'dead'
+        return false
+      }
+      return true
+    }
+
+    // Handle arrival at Bob
+    if (!this.record.lost && this.x >= BOB_X) {
+      this.x = BOB_X
+      this.state = 'arrived'
+      this.arrivalFlashTimer = 15
+    }
+
+    if (this.state === 'arrived') {
+      this.arrivalFlashTimer--
+      if (this.arrivalFlashTimer <= 0) {
+        this.state = 'dead'
+        return false
+      }
+      return true
+    }
+
+    return true
+  }
+
+  /**
+   * Draw this photon onto the canvas context.
+   */
+  draw(ctx) {
+    if (this.state === 'dead') return
+
+    ctx.save()
+    ctx.globalAlpha = this.opacity
+
+    // 1. Draw outer glow
+    this._drawGlow(ctx)
+
+    // 2. Draw particle body
+    this._drawBody(ctx)
+
+    // 3. Draw polarization line through particle
+    this._drawPolarizationLine(ctx)
+
+    // 4. Draw Eve interception effect if active
+    if (this.state === 'intercepted' && this.eveEffectTimer > 0) {
+      this._drawEveEffect(ctx)
+    }
+
+    // 5. Draw arrival flash at Bob
+    if (this.state === 'arrived') {
+      this._drawArrivalFlash(ctx)
+    }
+
+    ctx.restore()
+  }
+
+  _drawGlow(ctx) {
+    const color = this.record.lost ? COLORS.photonLost : this.baseColor
+    const gradient = ctx.createRadialGradient(
+      this.x, this.y, 0,
+      this.x, this.y, this.glowRadius
+    )
+    gradient.addColorStop(0, `${color}66`)
+    gradient.addColorStop(1, 'transparent')
+    
+    ctx.fillStyle = gradient
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, this.glowRadius, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  _drawBody(ctx) {
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+    
+    let color = this.baseColor
+    if (this.record.lost) color = COLORS.photonLost
+    if (this.record.dark_count) color = '#ffffff'
+    
+    ctx.fillStyle = color
+    ctx.fill()
+
+    // Add crisp border
+    ctx.strokeStyle = '#ffffff22'
+    ctx.lineWidth = 1
+    ctx.stroke()
+  }
+
+  _drawPolarizationLine(ctx) {
+    const angleRad = (this.polarizationAngle * Math.PI) / 180
+    const lineLength = 16
+    const dx = Math.cos(angleRad) * lineLength / 2
+    const dy = Math.sin(angleRad) * lineLength / 2
+
+    ctx.beginPath()
+    ctx.moveTo(this.x - dx, this.y - dy)
+    ctx.lineTo(this.x + dx, this.y + dy)
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 2
+    ctx.stroke()
+  }
+
+  _drawEveEffect(ctx) {
+    const progress = 1 - (this.eveEffectTimer / this.eveEffectDuration)
+    const ringRadius = this.radius + progress * 20
+    const ringOpacity = 1 - progress
+
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, ringRadius, 0, Math.PI * 2)
+    ctx.strokeStyle = COLORS.eveNode
+    ctx.lineWidth = 2
+    ctx.globalAlpha = ringOpacity * this.opacity
+    ctx.stroke()
+    ctx.globalAlpha = this.opacity
+  }
+
+  _drawArrivalFlash(ctx) {
+    const progress = 1 - (this.arrivalFlashTimer / 15)
+    const ringRadius = NODE_RADIUS + progress * 15
+    const ringOpacity = 1 - progress
+
+    ctx.beginPath()
+    ctx.arc(BOB_X, this.y, ringRadius, 0, Math.PI * 2)
+    ctx.strokeStyle = COLORS.bobNode
+    ctx.lineWidth = 3
+    ctx.globalAlpha = ringOpacity * this.opacity
+    ctx.stroke()
+    ctx.globalAlpha = this.opacity
+  }
+}
