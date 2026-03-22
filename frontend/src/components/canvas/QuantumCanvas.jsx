@@ -378,31 +378,39 @@ export default function QuantumCanvas({ className = '' }) {
 
   // Configure canvas on mount and resize
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const configureCanvas = () => {
+    const handleResize = () => {
+      const canvas = canvasRef.current
+      if (!canvas) return
       const dpr = window.devicePixelRatio || 1
       const container = canvas.parentElement
       if (!container) return
-
-      // Use full container width — never clip
       const containerWidth = container.clientWidth
       const aspectRatio = CANVAS_HEIGHT / CANVAS_WIDTH
       const logicalHeight = containerWidth * aspectRatio
-
       canvas.width = containerWidth * dpr
       canvas.height = logicalHeight * dpr
       canvas.style.width = `${containerWidth}px`
       canvas.style.height = `${logicalHeight}px`
-
       drawStaticScene()
     }
 
-    configureCanvas()
-    window.addEventListener('resize', configureCanvas)
-    return () => window.removeEventListener('resize', configureCanvas)
-  }, [drawStaticScene, params.attack_prob])
+    // Watch window resize
+    window.addEventListener('resize', handleResize)
+
+    // Watch container size changes (sidebar expand/collapse)
+    const canvas = canvasRef.current
+    const container = canvas?.parentElement
+    let resizeObserver = null
+    if (container && window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(handleResize)
+      resizeObserver.observe(container)
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      if (resizeObserver) resizeObserver.disconnect()
+    }
+  }, [drawStaticScene])
 
   return (
     <div

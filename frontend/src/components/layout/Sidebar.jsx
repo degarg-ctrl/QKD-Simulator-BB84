@@ -13,7 +13,8 @@
  * Expanded = icons + labels + descriptions.
  */
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
+import { TooltipPortal } from '../ui/TooltipPortal'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
 
@@ -184,44 +185,17 @@ const EXPERIMENTS = [
 
 // Single item component with tooltip
 function SidebarItem({ item, collapsed, draggable = false }) {
-  const [showTooltip, setShowTooltip] = useState(false)
-  const [tooltipPos, setTooltipPos] = useState({})
-  const itemRef = useRef(null)
-
-  const handleMouseEnter = () => {
-    if (!itemRef.current) return
-    const rect = itemRef.current.getBoundingClientRect()
-    const vw = window.innerWidth
-    const vh = window.innerHeight
-    const tooltipW = 224  // w-56
-    const tooltipH = 200
-
-    const newPos = {}
-    if (rect.right + tooltipW + 12 <= vw) {
-      newPos.left = '100%'
-      newPos.marginLeft = '12px'
-    } else {
-      newPos.right = '100%'
-      newPos.marginRight = '12px'
-    }
-    if (rect.top + tooltipH <= vh) {
-      newPos.top = '0'
-    } else {
-      newPos.bottom = '0'
-    }
-    setTooltipPos(newPos)
-    setShowTooltip(true)
-  }
-
   return (
-    <div className="relative" ref={itemRef}>
+    <TooltipPortal 
+      content={item.tooltip} 
+      width={224}
+      color={item.color}
+    >
       <motion.div
         draggable={draggable}
         onDragStart={draggable ? (e) => {
           e.dataTransfer.setData('gateType', item.id)
         } : undefined}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={() => setShowTooltip(false)}
         whileHover={{ scale: 1.03 }}
         className={`flex items-center rounded border
                    transition-colors select-none
@@ -235,14 +209,14 @@ function SidebarItem({ item, collapsed, draggable = false }) {
                    border-gray-800 bg-gray-900/40
                    hover:bg-gray-800/60 hover:border-gray-600`}
         style={{
-          borderColor: showTooltip ? item.color + '50' : undefined
+          borderColor: item.color + '30'
         }}
       >
         <div
           className={`rounded flex items-center justify-center
                      font-mono font-bold flex-shrink-0
-                     ${collapsed 
-                       ? 'w-6 h-6 text-xs' 
+                     ${collapsed
+                       ? 'w-6 h-6 text-xs'
                        : 'w-7 h-7 text-xs'}`}
           style={{
             backgroundColor: item.color + '20',
@@ -267,86 +241,23 @@ function SidebarItem({ item, collapsed, draggable = false }) {
           )}
         </AnimatePresence>
       </motion.div>
-
-      <AnimatePresence>
-        {showTooltip && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.12 }}
-            className="absolute p-3 z-[9999]
-                       bg-gray-950 border rounded-lg 
-                       shadow-2xl pointer-events-none w-56"
-            style={{ 
-              borderColor: item.color + '40',
-              ...tooltipPos
-            }}
-          >
-            <div className="text-xs font-mono font-bold mb-2"
-                 style={{ color: item.color }}>
-              {item.label}
-            </div>
-            <div className="text-xs text-gray-400 
-                            leading-relaxed whitespace-pre-line">
-              {item.tooltip}
-            </div>
-            {item.description && (
-              <div className="text-xs text-gray-600 mt-1 font-mono">
-                {item.description}
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    </TooltipPortal>
   )
 }
 
 // Experiment button
 function ExperimentButton({ exp, collapsed, isActive, onClick }) {
-  const [showTooltip, setShowTooltip] = useState(false)
-  const [tooltipPos, setTooltipPos] = useState({})
-  const itemRef = useRef(null)
-
-  const handleMouseEnter = () => {
-    if (!itemRef.current) return
-    const rect = itemRef.current.getBoundingClientRect()
-    const vw = window.innerWidth
-    const vh = window.innerHeight
-    const tooltipW = 240  // w-60
-    const tooltipH = 160
-
-    const newPos = {}
-    if (rect.right + tooltipW + 12 <= vw) {
-      newPos.left = '100%'
-      newPos.marginLeft = '12px'
-    } else {
-      newPos.right = '100%'
-      newPos.marginRight = '12px'
-    }
-    if (rect.top + tooltipH <= vh) {
-      newPos.top = '0'
-    } else {
-      newPos.bottom = '0'
-    }
-    setTooltipPos(newPos)
-    setShowTooltip(true)
-  }
-
   return (
-    <div className="relative" ref={itemRef}>
+    <TooltipPortal
+      content={exp.tooltip}
+      width={224}
+      color={exp.color}
+    >
       <motion.button
         onClick={onClick}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={() => setShowTooltip(false)}
         whileHover={{ scale: 1.02 }}
-        className={`flex items-center rounded border 
-                   transition-colors text-left
-                   ${collapsed
-                     ? 'w-8 h-8 justify-center mx-auto'
-                     : 'w-full gap-2 px-2 py-1.5'
-                   }
+        className={`w-full flex items-center gap-2 px-2 py-1.5
+                   rounded border transition-colors text-left
                    ${isActive
                      ? 'border-opacity-60 bg-opacity-20'
                      : 'border-gray-800 bg-gray-900/20 hover:border-gray-700'
@@ -357,8 +268,9 @@ function ExperimentButton({ exp, collapsed, isActive, onClick }) {
         }}
       >
         <div
-          className="w-7 h-7 rounded flex items-center justify-center
-                     text-xs font-mono font-bold flex-shrink-0"
+          className="w-7 h-7 rounded flex items-center 
+                     justify-center text-xs font-mono 
+                     font-bold flex-shrink-0"
           style={{
             backgroundColor: exp.color + '20',
             color: exp.color,
@@ -376,44 +288,19 @@ function ExperimentButton({ exp, collapsed, isActive, onClick }) {
               transition={{ duration: 0.15 }}
               className="overflow-hidden"
             >
-              <div className="text-xs font-mono text-gray-300 
+              <div className="text-xs font-mono text-gray-300
                               whitespace-nowrap">
                 {exp.label}
               </div>
-              <div className="text-xs text-gray-600 whitespace-nowrap">
+              <div className="text-xs text-gray-600 
+                              whitespace-nowrap">
                 {exp.description}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.button>
-
-      <AnimatePresence>
-        {showTooltip && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.12 }}
-            className="absolute p-3 z-[9999]
-                       bg-gray-950 border rounded-lg 
-                       shadow-2xl pointer-events-none w-60"
-            style={{ 
-              borderColor: exp.color + '40',
-              ...tooltipPos
-            }}
-          >
-            <div className="text-xs font-mono font-bold mb-1"
-                 style={{ color: exp.color }}>
-              {exp.label} — {exp.description}
-            </div>
-            <div className="text-xs text-gray-400 leading-relaxed whitespace-pre-line">
-              {exp.tooltip}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    </TooltipPortal>
   )
 }
 
