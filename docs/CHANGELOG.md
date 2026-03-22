@@ -101,3 +101,8 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   Guide formulas section: QBER, H(Q), SKR, Beer-Lambert.
   Full derivation, worked examples, 4 inline graphs.
   Version bumped to 0.2. Code splitting configured.
+[2026-03-23 03:15] | feature/v0.2-final-polish | fix |
+  Adaptive tooltip positioning — quadrant detection.
+  Rich gate and probe tooltips with physics detail.
+  Toolbox starts collapsed by default.
+  Canvas background patch fixed — full coverage grid.

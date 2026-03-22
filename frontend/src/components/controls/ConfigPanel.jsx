@@ -18,7 +18,7 @@
  * - Tooltip (?) icon that shows physics explanation on hover
  */
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
 
@@ -56,36 +56,79 @@ const TOOLTIPS = {
 
 function TooltipIcon({ content }) {
   const [visible, setVisible] = useState(false)
-  
+  const [position, setPosition] = useState({
+    top: 'auto', bottom: 'auto',
+    left: 'auto', right: 'auto'
+  })
+  const iconRef = useRef(null)
+
+  const handleMouseEnter = () => {
+    if (!iconRef.current) return
+    const rect = iconRef.current.getBoundingClientRect()
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    const tooltipW = 256  // w-64
+    const tooltipH = 160  // estimated height
+
+    // Determine horizontal position
+    const spaceRight = vw - rect.right
+    const spaceLeft = rect.left
+
+    // Determine vertical position  
+    const spaceBelow = vh - rect.bottom
+    const spaceAbove = rect.top
+
+    const newPos = {}
+
+    // Horizontal: prefer left if in right half of screen
+    if (spaceLeft >= tooltipW) {
+      newPos.right = '100%'
+      newPos.left = 'auto'
+      newPos.marginRight = '8px'
+    } else {
+      newPos.left = '100%'
+      newPos.right = 'auto'
+      newPos.marginLeft = '8px'
+    }
+
+    // Vertical: prefer above if in bottom half of screen
+    if (spaceAbove >= tooltipH) {
+      newPos.bottom = '0'
+      newPos.top = 'auto'
+    } else {
+      newPos.top = '0'
+      newPos.bottom = 'auto'
+    }
+
+    setPosition(newPos)
+    setVisible(true)
+  }
+
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-flex" ref={iconRef}>
       <button
-        onMouseEnter={() => setVisible(true)}
+        onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setVisible(false)}
-        className="w-4 h-4 rounded-full border border-gray-600 
-                   text-gray-500 hover:text-gray-300 hover:border-gray-400
-                   text-xs flex items-center justify-center
-                   transition-colors ml-1 flex-shrink-0"
+        className="w-4 h-4 rounded-full border border-gray-600
+                   text-gray-500 hover:text-gray-300 
+                   hover:border-gray-400 text-xs flex items-center
+                   justify-center transition-colors ml-1 flex-shrink-0"
       >
         ?
       </button>
       <AnimatePresence>
         {visible && (
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
-            className="absolute bottom-6 w-64 p-3
-                       bg-gray-950 border border-gray-700 
-                       rounded-lg text-xs text-gray-300 
-                       leading-relaxed z-[9999] shadow-2xl
-                       whitespace-pre-line"
-            style={{ 
-              right: 'auto',
-              left: '50%',
-              transform: 'translateX(-100%)'
-            }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.12 }}
+            className="absolute w-64 p-3 bg-gray-950 
+                       border border-gray-700 rounded-lg
+                       text-xs text-gray-300 leading-relaxed
+                       z-[9999] shadow-2xl whitespace-pre-line
+                       pointer-events-none"
+            style={position}
           >
             {content}
           </motion.div>
