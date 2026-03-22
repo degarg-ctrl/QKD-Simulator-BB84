@@ -101,6 +101,10 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   Guide formulas section: QBER, H(Q), SKR, Beer-Lambert.
   Full derivation, worked examples, 4 inline graphs.
   Version bumped to 0.2. Code splitting configured.
+[2026-03-23 03:55] | main | RELEASE v0.2-FINAL-COMPLETE |
+  All fixes merged. Portal tooltips, rich gate tooltips,
+  Bob ResizeObserver fix, sidebar collapsed default,
+  canvas background patch fixed.
 [2026-03-23 03:50] | feature/v0.2-final-polish | fix |
   Portal-based toolkit system — escapes stacking context.
   Sidebar tooltips rich with physics detail, fully visible.
