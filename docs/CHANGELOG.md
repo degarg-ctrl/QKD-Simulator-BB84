@@ -1,6 +1,24 @@
 # Changelog
 Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 
+[2026-03-23 01:00] | main | RELEASE v0.2 |
+BB84 QKD Simulator v0.2 released to main.
+
+New in v0.2:
+- Collapsible Toolbox sidebar with Gates and Probes
+- Quantum gates H,X,Y,Z,S,T — drag-drop onto lanes
+- 6 experiment modes with modal configuration
+- User-defined photon input (Exp 2 and 4)
+- No-cloning theorem demonstration (Exp 6)
+- Three-view navigation — Simulator, Guide, Results
+- Results page — simulated vs theoretical comparison
+- Guide formulas — QBER, H(Q), SKR, Beer-Lambert
+- Enhanced Bob arrival animation — triple ring
+- Pause/Resume animation control
+- Single photon mode
+- Canvas scaling fix — Bob always visible
+- Photon dissipation past Bob
+
 [2026-03-12 19:15] | main              | chore | Repository initialized
 [2026-03-12 19:16] | main              | chore | Branching strategy created
 [2026-03-12 19:17] | docs              | docs  | Documentation folder created with 7 files
