@@ -8,6 +8,7 @@ import Sidebar from '../components/layout/Sidebar'
 import BottomPanel from '../components/layout/BottomPanel'
 import QuantumCanvas from '../components/canvas/QuantumCanvas'
 import ConfigPanel from '../components/controls/ConfigPanel'
+import ExperimentModal from '../components/experiments/ExperimentModal'
 
 export default function SimulatorPage() {
   const [configCollapsed, setConfigCollapsed] = useState(false)
@@ -17,9 +18,10 @@ export default function SimulatorPage() {
     return (
       <div className="bg-[#0a0a0f] h-screen flex flex-col">
         <TopBar />
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
           <GuidePage />
         </div>
+        <ExperimentModal />
       </div>
     )
   }
@@ -31,6 +33,7 @@ export default function SimulatorPage() {
         <div className="flex-1 overflow-hidden">
           <ResultsPage />
         </div>
+        <ExperimentModal />
       </div>
     )
   }
@@ -73,6 +76,7 @@ export default function SimulatorPage() {
           <BottomPanel />
         </div>
       </div>
+      <ExperimentModal />
     </div>
   )
 }

@@ -79,3 +79,15 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 [2026-03-22 23:10] | develop | merge | ui-polish fully merged.
   All 10 UI changes complete plus chart fix, 
   guide scroll, TopBar Option C layout.
+[2026-03-23 00:18] | feature/sprint-7-experiments | feat(sprint-7) |
+  Backend experiment framework complete.
+  SimulationRequest: experiment_mode, alice_bits, alice_bases.
+  Alice.encode_user_input() method added.
+  Router handles exp2/exp4 user-defined photons.
+  experiments.py presets for all 6 experiments.
+  GET /api/experiments endpoint live.
+[2026-03-23 00:27] | feature/sprint-7-experiments | feat(sprint-7) |
+  Frontend experiment modals complete.
+  PhotonInputTable for Exp 2 and 4.
+  ExperimentModal with per-experiment config.
+  Sidebar wired to open modals on click.

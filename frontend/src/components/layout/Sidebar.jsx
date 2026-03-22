@@ -315,12 +315,11 @@ function SectionHeader({ label, collapsed }) {
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [activeExp, setActiveExp] = useState(null)
-  const { setParams } = useSimulationStore()
+  const { setParams, openExperimentModal } = useSimulationStore()
 
   const handleExpSelect = (expId) => {
     setActiveExp(expId === activeExp ? null : expId)
-    // Experiment preset params will be wired in Sprint 8
-    // For now just track selection
+    openExperimentModal(expId)
   }
 
   return (
