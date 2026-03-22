@@ -64,6 +64,23 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
         )
         eve_states = eve.intercept(channel_states)
 
+        # Step 3.5: Apply quantum gates per lane
+        from core.gates import apply_gates_to_lane
+        if request.gates:
+            # Group gates by lane
+            gates_by_lane: dict[int, list[dict]] = {}
+            for gate in request.gates:
+                lane = gate.get('lane', 0)
+                if lane not in gates_by_lane:
+                    gates_by_lane[lane] = []
+                gates_by_lane[lane].append(gate)
+
+            # Apply gates lane by lane
+            for lane_index, lane_gates in gates_by_lane.items():
+                eve_states = apply_gates_to_lane(
+                    eve_states, lane_index, lane_gates
+                )
+
         # Step 4: Bob
         bob = Bob()
         measured_states = bob.measure(eve_states)

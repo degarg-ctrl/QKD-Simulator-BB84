@@ -70,8 +70,9 @@ def apply_gate(state: dict, gate_type: str) -> dict:
     """
     Apply a quantum gate transformation to a photon state.
 
-    Modifies: bit, basis, state_label, polarization_angle
-    Preserves: alice_bit, alice_basis, index, all channel fields
+    Looks up transformation in GATE_TRANSFORMS table.
+    Updates bit, basis, state_label, polarization_angle.
+    NEVER modifies alice_bit, alice_basis, or any channel fields.
 
     Args:
         state: photon state dict from channel/eve pipeline
@@ -81,8 +82,29 @@ def apply_gate(state: dict, gate_type: str) -> dict:
 
     Physics reference: PHYSICS_CONTRACT.md Section 10
     """
-    # Implementation in Sprint 6
-    pass
+    if gate_type not in GATE_TRANSFORMS:
+        return state  # Unknown gate — pass through unchanged
+
+    current_basis = state.get('basis', '+')
+    current_bit = state.get('bit', 0)
+
+    transform_key = (current_basis, current_bit)
+    if transform_key not in GATE_TRANSFORMS[gate_type]:
+        return state  # No transform defined — pass through
+
+    new_basis, new_bit, new_angle = GATE_TRANSFORMS[gate_type][transform_key]
+
+    new_state = state.copy()
+    new_state['basis'] = new_basis
+    new_state['bit'] = new_bit
+    new_state['polarization_angle'] = float(new_angle)
+    new_state['state_label'] = STATE_LABELS.get(
+        (new_basis, new_bit),
+        state.get('state_label', '|?>')
+    )
+    new_state['gate_applied'] = gate_type
+
+    return new_state
 
 
 def apply_gates_to_lane(
@@ -91,22 +113,49 @@ def apply_gates_to_lane(
     gates: list[dict]
 ) -> list[dict]:
     """
-    Apply ordered list of gates to all photons on a specific lane.
+    Apply ordered list of gates to photons on a specific lane.
 
-    Gates apply left to right (position order).
-    Only photons matching lane_index are affected.
+    Gates sorted by position (left to right) and applied in order.
+    Only photons where (state['index'] % 3 == lane_index) affected.
+    Only detected photons are affected — lost photons pass through.
 
     Args:
-        states: full photon state list from eve.intercept()
+        states: photon state list from eve.intercept()
         lane_index: which lane (0, 1, or 2)
-        gates: list of gate dicts [{'type':'H','lane':0,'position':0.3}]
+        gates: list of gate dicts sorted by position
+               [{'type':'H', 'lane':0, 'position':0.3}]
     Returns:
-        state list with gate transformations applied to matching lane
+        state list with gate transformations applied
 
     Physics reference: PHYSICS_CONTRACT.md Section 10
     """
-    # Implementation in Sprint 6
-    pass
+    if not gates:
+        return states
+
+    # Sort gates by position — apply left to right
+    sorted_gates = sorted(gates, key=lambda g: g.get('position', 0))
+
+    result = []
+    for state in states:
+        # Check if this photon is on the target lane
+        photon_lane = state.get('index', 0) % 3
+        if photon_lane != lane_index:
+            result.append(state)
+            continue
+
+        # Skip lost photons — gates cannot affect them
+        if not state.get('detected', True) and not state.get('dark_count', False):
+            result.append(state)
+            continue
+
+        # Apply each gate in order
+        current_state = state.copy()
+        for gate in sorted_gates:
+            current_state = apply_gate(current_state, gate.get('type', ''))
+
+        result.append(current_state)
+
+    return result
 
 
 # Depends on: core/constants.py

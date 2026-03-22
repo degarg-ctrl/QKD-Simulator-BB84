@@ -31,12 +31,22 @@ export async function runSimulation(params) {
   }
 
   try {
+    // Transform frontend gate format to backend format
+    const backendGates = (params.gates || []).map(g => ({
+      type: g.type,
+      lane: g.lane,
+      position: g.position
+    }))
+
     const response = await fetch(`${BASE_URL}/api/simulate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(params),
+      body: JSON.stringify({
+        ...params,
+        gates: backendGates
+      }),
     })
 
     if (!response.ok) {

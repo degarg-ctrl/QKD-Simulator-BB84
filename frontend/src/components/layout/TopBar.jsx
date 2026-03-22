@@ -13,7 +13,7 @@ import useSimulationStore from '../../store/simulationStore'
 export default function TopBar() {
   const { runSimulation, isLoading } = useSimulation()
   const { results, reset, params, animation, 
-          togglePause } = useSimulationStore()
+          togglePause, placedGates, clearGates } = useSimulationStore()
 
   const isBreached = results?.secure_threshold_breached ?? false
   const hasResults = results !== null
@@ -110,6 +110,17 @@ export default function TopBar() {
         >
           RESET
         </button>
+        {placedGates.length > 0 && (
+          <button
+            onClick={clearGates}
+            className="px-3 py-1 text-xs font-mono
+                       border border-gray-700 rounded
+                       text-gray-400 hover:text-red-400
+                       hover:border-red-800 transition-colors"
+          >
+            ✕ GATES ({placedGates.length})
+          </button>
+        )}
         {results && (
           <button
             onClick={togglePause}
