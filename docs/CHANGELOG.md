@@ -37,3 +37,8 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 [2026-03-21 15:45] | feature/frontend-ui | feat(frontend-ui) | MetricCard, QBERChart, SKRChart complete — metrics panel verified with color coding and threshold visualization
 [2026-03-21 16:30] | feature/frontend-ui | feat(frontend-ui) | TopBar, Sidebar, BottomPanel complete — full simulator layout assembled and verified
 [2026-03-21 16:45] | develop              | merge | frontend-ui merged — complete simulator UI assembled. TopBar, Sidebar, BottomPanel, ConfigPanel, MetricCards, Charts all verified.
+[2026-03-22 18:15] | feature/sprint-5-animation-ui | feat(sprint-5) |
+  A1: Enhanced Bob arrival — 3 rings, match/mismatch colors.
+  A2: Pause/Resume animation control added to TopBar.
+  A3: Single photon mode toggle in ConfigPanel.
+  A4: QBER/SKR chart labels clarified — Theoretical vs Simulated.

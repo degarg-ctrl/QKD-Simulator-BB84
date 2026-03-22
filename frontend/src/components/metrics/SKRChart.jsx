@@ -36,11 +36,11 @@ export default function SKRChart({ data = [], currentSKR = null }) {
       <div className="flex items-center justify-between">
         <span className="text-xs font-mono text-gray-500 
                          uppercase tracking-wider">
-          SKR vs Distance
+          SKR vs Distance (Theoretical)
         </span>
         {currentSKR !== null && (
           <span className="text-xs font-mono text-green-400">
-            Current: {currentSKR.toFixed(4)}
+            Simulated: {currentSKR.toFixed(4)}
           </span>
         )}
       </div>

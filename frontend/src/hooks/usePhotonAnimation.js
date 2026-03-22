@@ -43,9 +43,14 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
    * Assigns lane based on photon index (round-robin across 3 lanes).
    */
   const createParticle = useCallback((record) => {
+    const isSinglePhoton = results?.raw_key_length === 1
+    const particleSpeed = isSinglePhoton 
+      ? animation.speed * 0.3  // 30% speed for single photon
+      : animation.speed
+
     const laneIndex = record.index % LANE_Y_POSITIONS.length
-    return new PhotonParticle(record, laneIndex, animation.speed)
-  }, [animation.speed])
+    return new PhotonParticle(record, laneIndex, particleSpeed)
+  }, [animation.speed, results])
 
   /**
    * Main animation loop — called every frame via requestAnimationFrame.
@@ -65,6 +70,13 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
     const ctx = canvas.getContext('2d')
     
     frameCountRef.current++
+    
+    // Check pause state
+    const { animation } = useSimulationStore.getState()
+    if (animation.isPaused) {
+      frameRef.current = requestAnimationFrame(animate)
+      return
+    }
 
     // Release next batch of photons
     if (

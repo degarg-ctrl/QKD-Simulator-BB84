@@ -136,7 +136,7 @@ export class PhotonParticle {
     if (!this.record.lost && this.x >= BOB_X) {
       this.x = BOB_X
       this.state = 'arrived'
-      this.arrivalFlashTimer = 15
+      this.arrivalFlashTimer = 25
     }
 
     if (this.state === 'arrived') {
@@ -243,16 +243,56 @@ export class PhotonParticle {
   }
 
   _drawArrivalFlash(ctx) {
-    const progress = 1 - (this.arrivalFlashTimer / 15)
-    const ringRadius = NODE_RADIUS + progress * 15
-    const ringOpacity = 1 - progress
+    /**
+     * Enhanced Bob arrival effect.
+     * Three layered rings expand outward from Bob node.
+     * Each ring has different speed and opacity.
+     * Matched photons: green rings.
+     * Mismatched photons: yellow rings (wrong basis).
+     */
+    const progress = 1 - (this.arrivalFlashTimer / 25)
+    const isMatch = this.record.match
 
+    const ringColor = isMatch ? '#22c55e' : '#f59e0b'
+
+    // Ring 1 — fast, tight
+    const r1 = NODE_RADIUS + progress * 12
+    const o1 = (1 - progress) * 0.9
     ctx.beginPath()
-    ctx.arc(BOB_X, this.y, ringRadius, 0, Math.PI * 2)
-    ctx.strokeStyle = COLORS.bobNode
-    ctx.lineWidth = 3
-    ctx.globalAlpha = ringOpacity * this.opacity
+    ctx.arc(BOB_X, this.y, r1, 0, Math.PI * 2)
+    ctx.strokeStyle = ringColor
+    ctx.globalAlpha = o1 * this.opacity
+    ctx.lineWidth = 2.5
     ctx.stroke()
-    ctx.globalAlpha = this.opacity
+
+    // Ring 2 — medium
+    const r2 = NODE_RADIUS + progress * 22
+    const o2 = (1 - progress) * 0.5
+    ctx.beginPath()
+    ctx.arc(BOB_X, this.y, r2, 0, Math.PI * 2)
+    ctx.strokeStyle = ringColor
+    ctx.globalAlpha = o2 * this.opacity
+    ctx.lineWidth = 1.5
+    ctx.stroke()
+
+    // Ring 3 — slow, wide
+    const r3 = NODE_RADIUS + progress * 35
+    const o3 = (1 - progress) * 0.25
+    ctx.beginPath()
+    ctx.arc(BOB_X, this.y, r3, 0, Math.PI * 2)
+    ctx.strokeStyle = ringColor
+    ctx.globalAlpha = o3 * this.opacity
+    ctx.lineWidth = 1
+    ctx.stroke()
+
+    // Center flash — brief white dot at impact
+    if (progress < 0.3) {
+      const flashOpacity = (0.3 - progress) / 0.3
+      ctx.beginPath()
+      ctx.arc(BOB_X, this.y, 4, 0, Math.PI * 2)
+      ctx.fillStyle = 'white'
+      ctx.globalAlpha = flashOpacity * this.opacity
+      ctx.fill()
+    }
   }
 }
