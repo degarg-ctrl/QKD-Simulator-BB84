@@ -72,3 +72,10 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   ResultsPage with simulated vs theoretical comparison,
   charts with reference dots, security verdict,
   filterable bit stream table.
+[2026-03-22 23:05] | feature/ui-polish | fix |
+  Guide page scroll restored — overflow-y-auto.
+  TopBar Option C — SIM/RESULTS grouped pill,
+  GUIDE standalone with divider separator.
+[2026-03-22 23:10] | develop | merge | ui-polish fully merged.
+  All 10 UI changes complete plus chart fix, 
+  guide scroll, TopBar Option C layout.
