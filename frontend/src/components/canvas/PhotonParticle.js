@@ -134,14 +134,16 @@ export class PhotonParticle {
 
     // Handle arrival at Bob
     if (!this.record.lost && this.x >= BOB_X) {
-      this.x = BOB_X
       this.state = 'arrived'
       this.arrivalFlashTimer = 25
     }
 
     if (this.state === 'arrived') {
       this.arrivalFlashTimer--
-      if (this.arrivalFlashTimer <= 0) {
+      // Continue moving past Bob and fade out
+      this.x += this.velocityX * 0.5
+      this.opacity -= 0.04
+      if (this.arrivalFlashTimer <= 0 || this.opacity <= 0) {
         this.state = 'dead'
         return false
       }
@@ -154,10 +156,11 @@ export class PhotonParticle {
   /**
    * Draw this photon onto the canvas context.
    */
-  draw(ctx) {
+  draw(ctx, scaleX = 1, scaleY = 1) {
     if (this.state === 'dead') return
 
     ctx.save()
+    ctx.scale(scaleX, scaleY)
     ctx.globalAlpha = this.opacity
 
     // 1. Draw outer glow

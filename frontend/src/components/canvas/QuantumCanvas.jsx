@@ -228,8 +228,11 @@ export default function QuantumCanvas({ className = '' }) {
     ctx.scale(dpr, dpr)
     const logicalWidth = width / dpr
     const logicalHeight = height / dpr
+    const scaleX = logicalWidth / CANVAS_WIDTH
+    const scaleY = logicalHeight / CANVAS_HEIGHT
+    ctx.scale(scaleX, scaleY)
 
-    drawBackground(ctx, logicalWidth, logicalHeight)
+    drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT)
     drawChannelLanes(ctx)
     drawGates(ctx)
 
@@ -323,13 +326,17 @@ export default function QuantumCanvas({ className = '' }) {
     const configureCanvas = () => {
       const dpr = window.devicePixelRatio || 1
       const container = canvas.parentElement
-      const containerWidth = container?.clientWidth || CANVAS_WIDTH
-      const scale = containerWidth / CANVAS_WIDTH
-      
+      if (!container) return
+
+      // Use full container width — never clip
+      const containerWidth = container.clientWidth
+      const aspectRatio = CANVAS_HEIGHT / CANVAS_WIDTH
+      const logicalHeight = containerWidth * aspectRatio
+
       canvas.width = containerWidth * dpr
-      canvas.height = CANVAS_HEIGHT * scale * dpr
+      canvas.height = logicalHeight * dpr
       canvas.style.width = `${containerWidth}px`
-      canvas.style.height = `${CANVAS_HEIGHT * scale}px`
+      canvas.style.height = `${logicalHeight}px`
 
       drawStaticScene()
     }
@@ -337,7 +344,7 @@ export default function QuantumCanvas({ className = '' }) {
     configureCanvas()
     window.addEventListener('resize', configureCanvas)
     return () => window.removeEventListener('resize', configureCanvas)
-  }, [drawStaticScene])
+  }, [drawStaticScene, params.attack_prob])
 
   return (
     <div

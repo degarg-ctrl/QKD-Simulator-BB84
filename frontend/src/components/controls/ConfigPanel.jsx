@@ -76,10 +76,16 @@ function TooltipIcon({ content }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 bottom-6 w-64 p-3 
-                       bg-gray-900 border border-gray-700 rounded-lg
-                       text-xs text-gray-300 leading-relaxed
-                       z-50 shadow-xl whitespace-pre-line"
+            className="absolute bottom-6 w-64 p-3
+                       bg-gray-950 border border-gray-700 
+                       rounded-lg text-xs text-gray-300 
+                       leading-relaxed z-[9999] shadow-2xl
+                       whitespace-pre-line"
+            style={{ 
+              right: 'auto',
+              left: '50%',
+              transform: 'translateX(-100%)'
+            }}
           >
             {content}
           </motion.div>

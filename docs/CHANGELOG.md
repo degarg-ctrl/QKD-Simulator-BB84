@@ -60,3 +60,10 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   Frontend drag-drop onto canvas lanes working.
   Gates sent to backend, QBER elevation confirmed.
   Right-click gate removal implemented.
+[2026-03-22 21:54] | feature/ui-polish | feat(ui-polish) |
+  U1: Bob visible — canvas scaling fixed.
+  U2: Tooltip smart positioning — no clipping.
+  U3: Entities removed from sidebar — Toolbox only.
+  U4: Photons dissipate past Bob — Option A.
+  U5: Collapsed sidebar — clean 32px badge strip.
+  U6: Chart explanation note added.

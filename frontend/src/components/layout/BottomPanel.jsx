@@ -99,6 +99,17 @@ export default function BottomPanel({ className = '' }) {
                 currentSKR={results.skr}
               />
             </div>
+            {/* Theoretical vs Simulated explanation */}
+            <div className="mt-2 flex items-center gap-2 
+                            text-xs font-mono text-gray-600">
+              <span className="text-gray-700">ℹ</span>
+              <span>
+                Graph shows theoretical model across distances. 
+                Simulated value shows your actual run result. 
+                Differences are normal at low photon counts — 
+                use n_bits ≥ 5000 for convergence.
+              </span>
+            </div>
           </div>
         )}
 
