@@ -30,7 +30,7 @@ export default function BottomPanel({ className = '' }) {
       animate={{ height: 'auto', opacity: 1 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={`border-t border-gray-800 bg-[#11111a] 
-                  flex-shrink-0 ${className}`}
+                  flex-shrink-0 overflow-hidden ${className}`}
     >
       {/* Tab bar */}
       <div className="flex items-center border-b border-gray-800 px-4">
@@ -53,7 +53,7 @@ export default function BottomPanel({ className = '' }) {
       {/* Tab content */}
       <div className="p-4 overflow-hidden">
         {activeTab === 'metrics' && (
-          <div className="flex gap-6">
+          <div className="flex gap-6 min-h-0 items-start">
             {/* Metric cards */}
             <div className="grid grid-cols-2 gap-3 w-72 flex-shrink-0">
               <MetricCard
@@ -88,8 +88,10 @@ export default function BottomPanel({ className = '' }) {
                 status={results.efficiency < 5 ? 'warning' : 'normal'}
               />
             </div>
-            {/* Charts */}
-            <div className="flex-1 grid grid-cols-2 gap-6">
+            {/* Charts and Note Container */}
+            <div className="flex-1 flex flex-col min-w-0">
+              {/* Charts */}
+            <div className="flex-1 grid grid-cols-2 gap-6 min-h-0">
               <QBERChart
                 data={results.qber_vs_distance}
                 currentQBER={results.qber}
@@ -99,7 +101,20 @@ export default function BottomPanel({ className = '' }) {
                 currentSKR={results.skr}
               />
             </div>
+            {/* Theoretical vs Simulated explanation */}
+            <div className="mt-2 flex items-start gap-2 
+                            text-xs font-mono text-gray-600
+                            overflow-hidden">
+              <span className="text-gray-700">ℹ</span>
+              <span>
+                Graph shows theoretical model across distances. 
+                Simulated value shows your actual run result. 
+                Differences are normal at low photon counts — 
+                use n_bits ≥ 5000 for convergence.
+              </span>
+            </div>
           </div>
+        </div>
         )}
 
         {activeTab === 'bitstream' && (

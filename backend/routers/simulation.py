@@ -44,11 +44,26 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
         HTTPException 500: if simulation fails unexpectedly
     """
     try:
-        # Step 1: Alice
+        # Step 1: Alice — random or user-defined
         alice = Alice()
-        bits = alice.generate_bits(request.n_bits)
-        bases = alice.choose_bases(request.n_bits)
-        states = alice.encode_states(bits, bases)
+        if request.experiment_mode in ('exp2', 'exp4') \
+            and request.alice_bits is not None \
+            and request.alice_bases is not None:
+            # User-defined bits and bases
+            states = alice.encode_user_input(
+                request.alice_bits,
+                request.alice_bases
+            )
+            bits = [s['alice_bit'] for s in states]
+            bases = [s['alice_basis'] for s in states]
+            # n_bits follows user input length
+            n_bits_actual = len(states)
+        else:
+            # Random generation for all other modes
+            n_bits_actual = request.n_bits
+            bits = alice.generate_bits(n_bits_actual)
+            bases = alice.choose_bases(n_bits_actual)
+            states = alice.encode_states(bits, bases)
 
         # Step 2: Channel
         channel = QuantumChannel(
@@ -64,22 +79,34 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
         )
         eve_states = eve.intercept(channel_states)
 
-        # Step 3.5: Apply quantum gates per lane
-        from core.gates import apply_gates_to_lane
+        # Step 3.5: Apply quantum gates and probes per lane
+        from core.gates import apply_gates_to_lane, apply_cloning_probe
         if request.gates:
-            # Group gates by lane
-            gates_by_lane: dict[int, list[dict]] = {}
-            for gate in request.gates:
-                lane = gate.get('lane', 0)
-                if lane not in gates_by_lane:
-                    gates_by_lane[lane] = []
-                gates_by_lane[lane].append(gate)
-
-            # Apply gates lane by lane
-            for lane_index, lane_gates in gates_by_lane.items():
-                eve_states = apply_gates_to_lane(
-                    eve_states, lane_index, lane_gates
-                )
+          gates_by_lane = {}
+          clone_probes = []
+          
+          for gate in request.gates:
+            if gate.get('type') in ('clone', 'cnot'):
+              clone_probes.append(gate)
+            else:
+              lane = gate.get('lane', 0)
+              if lane not in gates_by_lane:
+                gates_by_lane[lane] = []
+              gates_by_lane[lane].append(gate)
+          
+          # Apply regular gates lane by lane
+          for lane_index, lane_gates in gates_by_lane.items():
+            eve_states = apply_gates_to_lane(
+              eve_states, lane_index, lane_gates
+            )
+          
+          # Apply cloning probes
+          for probe in clone_probes:
+            eve_states = apply_cloning_probe(
+              eve_states,
+              probe.get('lane', 0),
+              probe.get('position', 0.5)
+            )
 
         # Step 4: Bob
         bob = Bob()
@@ -94,12 +121,12 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
         # Step 6: Metrics
         skr = compute_skr(
             sifted_key_length=sift_result['sifted_count'],
-            raw_key_length=request.n_bits,
+            raw_key_length=n_bits_actual,
             qber=qber_result['qber']
         )
         efficiency = compute_efficiency(
             sifted_key_length=sift_result['sifted_count'],
-            raw_key_length=request.n_bits
+            raw_key_length=n_bits_actual
         )
         chart_data = generate_chart_data(
             noise_level=request.noise_level,
@@ -128,12 +155,16 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             qber=round(qber_result['qber'], 6),
             skr=round(skr, 6),
             sifted_key_length=sift_result['sifted_count'],
-            raw_key_length=request.n_bits,
+            raw_key_length=n_bits_actual,
             efficiency=round(efficiency, 4),
             bit_stream=bit_stream,
             qber_vs_distance=chart_data['qber_vs_distance'],
             skr_vs_distance=chart_data['skr_vs_distance'],
-            secure_threshold_breached=qber_result['threshold_breached']
+            secure_threshold_breached=qber_result['threshold_breached'],
+            cloning_probe_active=any(
+              g.get('type') in ('clone', 'cnot') 
+              for g in request.gates
+            )
         )
 
     except Exception as e:
@@ -141,3 +172,26 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             status_code=500,
             detail=f"Simulation failed: {str(e)}"
         )
+
+from core.experiments import get_all_experiments, get_experiment_preset
+
+@router.get("/experiments")
+def list_experiments():
+    """
+    Return all experiment preset configurations.
+    Used by frontend to populate experiment modals.
+    """
+    return {"experiments": get_all_experiments()}
+
+@router.get("/experiments/{exp_id}")
+def get_experiment(exp_id: str):
+    """
+    Return a single experiment preset by ID.
+    """
+    preset = get_experiment_preset(exp_id)
+    if not preset:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Experiment '{exp_id}' not found"
+        )
+    return preset

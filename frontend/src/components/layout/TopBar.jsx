@@ -5,7 +5,6 @@
  * Contains: logo, protocol badge, status indicator,
  * navigation link to Guide, Reset and Run buttons.
  */
-import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useSimulation } from '../../hooks/useSimulation'
 import useSimulationStore from '../../store/simulationStore'
@@ -13,7 +12,8 @@ import useSimulationStore from '../../store/simulationStore'
 export default function TopBar() {
   const { runSimulation, isLoading } = useSimulation()
   const { results, reset, params, animation, 
-          togglePause, placedGates, clearGates } = useSimulationStore()
+          togglePause, placedGates, clearGates,
+          activeView, setActiveView } = useSimulationStore()
 
   const isBreached = results?.secure_threshold_breached ?? false
   const hasResults = results !== null
@@ -91,15 +91,28 @@ export default function TopBar() {
 
       {/* Right: Nav + controls */}
       <div className="flex items-center gap-2">
-        <Link
-          to="/guide"
-          className="px-3 py-1 text-xs font-mono text-gray-400 
-                     hover:text-white transition-colors
-                     border border-transparent hover:border-gray-700 
-                     rounded"
-        >
-          GUIDE
-        </Link>
+        {/* View navigation */}
+        <div className="flex items-center gap-1 
+                        border border-gray-800 rounded p-0.5">
+          {[
+            { id: 'simulator', label: 'SIM' },
+            { id: 'guide',     label: 'GUIDE' },
+            { id: 'results',   label: 'RESULTS' },
+          ].map(view => (
+            <button
+              key={view.id}
+              onClick={() => setActiveView(view.id)}
+              className={`px-3 py-1 text-xs font-mono rounded
+                         transition-colors
+                         ${activeView === view.id
+                           ? 'bg-quantum-blue text-white'
+                           : 'text-gray-500 hover:text-gray-300'
+                         }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
         <button
           onClick={reset}
           disabled={isLoading || !hasResults}

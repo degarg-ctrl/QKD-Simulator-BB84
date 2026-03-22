@@ -50,7 +50,7 @@ const NODE_RADIUS = 28
 export default function QuantumCanvas({ className = '' }) {
 
   const canvasRef = useRef(null)
-  const { results, params, addGate, placedGates, removeGate } = useSimulationStore()
+  const { results, animation, params, addGate, placedGates, removeGate } = useSimulationStore()
 
   const GATE_COLORS = {
     H: '#6366f1', X: '#f59e0b', Y: '#ec4899',
@@ -110,7 +110,7 @@ export default function QuantumCanvas({ className = '' }) {
   const drawChannelLanes = useCallback((ctx) => {
     ctx.save()
 
-    LANE_Y_POSITIONS.forEach((y, index) => {
+    LANE_Y_POSITIONS.forEach((y, laneIndex) => {
       // Glow effect
       ctx.shadowBlur = 8
       ctx.shadowColor = COLORS.laneGlow
@@ -129,11 +129,37 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.fillStyle = COLORS.laneGlow
       ctx.font = '9px JetBrains Mono, monospace'
       ctx.textAlign = 'left'
-      ctx.fillText(`LANE 0${index + 1}`, 20, y + 4)
+      ctx.fillText(`LANE 0${laneIndex + 1}`, 20, y + 4)
+
+      // Check if any cloning probe is on this lane
+      // If so, draw the lane segment AFTER the probe in red
+      const cloningProbes = placedGates.filter(
+        g => (g.type === 'clone' || g.type === 'cnot') && 
+             g.lane === laneIndex
+      )
+      
+      if (cloningProbes.length > 0) {
+        const probe = cloningProbes[0]
+        const channelWidth = BOB_X - ALICE_X
+        const probeX = ALICE_X + channelWidth * probe.position
+        
+        // Draw corrupted segment in red after probe
+        ctx.beginPath()
+        ctx.setLineDash([4, 4])
+        ctx.strokeStyle = '#ef444460'
+        ctx.shadowColor = '#ef4444'
+        ctx.shadowBlur = 4
+        ctx.lineWidth = 1.5
+        ctx.moveTo(probeX, y)
+        ctx.lineTo(BOB_X - NODE_RADIUS, y)
+        ctx.stroke()
+        ctx.setLineDash([])
+        ctx.shadowBlur = 0
+      }
     })
 
     ctx.restore()
-  }, [])
+  }, [placedGates])
 
   /**
    * Draw placed gates on channel lanes.
@@ -146,6 +172,36 @@ export default function QuantumCanvas({ className = '' }) {
       const channelWidth = BOB_X - ALICE_X
       const gateX = ALICE_X + channelWidth * gate.position
       const laneY = LANE_Y_POSITIONS[gate.lane]
+
+      if (gate.type === 'clone' || gate.type === 'cnot') {
+        // Cloning probe — render as red danger symbol
+        const size = 26
+        
+        // Red pulsing background
+        ctx.fillStyle = '#ef444420'
+        ctx.strokeStyle = '#ef4444'
+        ctx.lineWidth = 1.5
+        ctx.beginPath()
+        ctx.roundRect(gateX - size/2, laneY - size/2, 
+                      size, size, 4)
+        ctx.fill()
+        ctx.stroke()
+        
+        // Symbol
+        ctx.fillStyle = '#ef4444'
+        ctx.font = 'bold 11px monospace'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(gate.type === 'clone' ? '⊗' : '⊕', 
+                     gateX, laneY)
+        
+        // Warning label below
+        ctx.fillStyle = '#ef444480'
+        ctx.font = '8px monospace'
+        ctx.fillText('NO-CLONE', gateX, laneY + size/2 + 8)
+        
+        return  // Skip general rendering for this gate
+      }
 
       const gateColor = gate.color || '#6366f1'
 
@@ -228,8 +284,11 @@ export default function QuantumCanvas({ className = '' }) {
     ctx.scale(dpr, dpr)
     const logicalWidth = width / dpr
     const logicalHeight = height / dpr
+    const scaleX = logicalWidth / CANVAS_WIDTH
+    const scaleY = logicalHeight / CANVAS_HEIGHT
+    ctx.scale(scaleX, scaleY)
 
-    drawBackground(ctx, logicalWidth, logicalHeight)
+    drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT)
     drawChannelLanes(ctx)
     drawGates(ctx)
 
@@ -323,13 +382,17 @@ export default function QuantumCanvas({ className = '' }) {
     const configureCanvas = () => {
       const dpr = window.devicePixelRatio || 1
       const container = canvas.parentElement
-      const containerWidth = container?.clientWidth || CANVAS_WIDTH
-      const scale = containerWidth / CANVAS_WIDTH
-      
+      if (!container) return
+
+      // Use full container width — never clip
+      const containerWidth = container.clientWidth
+      const aspectRatio = CANVAS_HEIGHT / CANVAS_WIDTH
+      const logicalHeight = containerWidth * aspectRatio
+
       canvas.width = containerWidth * dpr
-      canvas.height = CANVAS_HEIGHT * scale * dpr
+      canvas.height = logicalHeight * dpr
       canvas.style.width = `${containerWidth}px`
-      canvas.style.height = `${CANVAS_HEIGHT * scale}px`
+      canvas.style.height = `${logicalHeight}px`
 
       drawStaticScene()
     }
@@ -337,7 +400,7 @@ export default function QuantumCanvas({ className = '' }) {
     configureCanvas()
     window.addEventListener('resize', configureCanvas)
     return () => window.removeEventListener('resize', configureCanvas)
-  }, [drawStaticScene])
+  }, [drawStaticScene, params.attack_prob])
 
   return (
     <div

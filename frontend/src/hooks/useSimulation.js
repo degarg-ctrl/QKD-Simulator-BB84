@@ -55,9 +55,18 @@ export function useSimulation() {
 
     try {
       // 3. Call API — include placed gates in request
+      const experimentState = useSimulationStore.getState()
+      
       const paramsWithGates = {
         ...params,
-        gates: placedGates
+        gates: placedGates.map(g => ({
+          type: g.type,
+          lane: g.lane, 
+          position: g.position
+        })),
+        experiment_mode: params.experiment_mode || 'free',
+        alice_bits: params.alice_bits || undefined,
+        alice_bases: params.alice_bases || undefined,
       }
       const data = await apiRunSimulation(paramsWithGates)
       

@@ -102,9 +102,12 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
     ctx.save()
     ctx.scale(dpr, dpr)
 
+    const scaleX = (canvas.width / dpr) / 1200  // CANVAS_WIDTH
+    const scaleY = (canvas.height / dpr) / 400   // CANVAS_HEIGHT
+
     particlesRef.current = particlesRef.current.filter(particle => {
       const alive = particle.update()
-      if (alive) particle.draw(ctx)
+      if (alive) particle.draw(ctx, scaleX, scaleY)
       return alive
     })
 

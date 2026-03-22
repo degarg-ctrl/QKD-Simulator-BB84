@@ -1,13 +1,42 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import useSimulationStore from '../store/simulationStore'
+import ResultsPage from './ResultsPage'
+import GuidePage from './GuidePage'
 import TopBar from '../components/layout/TopBar'
 import Sidebar from '../components/layout/Sidebar'
 import BottomPanel from '../components/layout/BottomPanel'
 import QuantumCanvas from '../components/canvas/QuantumCanvas'
 import ConfigPanel from '../components/controls/ConfigPanel'
+import ExperimentModal from '../components/experiments/ExperimentModal'
 
 export default function SimulatorPage() {
   const [configCollapsed, setConfigCollapsed] = useState(false)
+  const { activeView } = useSimulationStore()
+
+  if (activeView === 'guide') {
+    return (
+      <div className="bg-[#0a0a0f] h-screen flex flex-col">
+        <TopBar />
+        <div className="flex-1 overflow-y-auto">
+          <GuidePage />
+        </div>
+        <ExperimentModal />
+      </div>
+    )
+  }
+
+  if (activeView === 'results') {
+    return (
+      <div className="bg-[#0a0a0f] h-screen flex flex-col">
+        <TopBar />
+        <div className="flex-1 overflow-hidden">
+          <ResultsPage />
+        </div>
+        <ExperimentModal />
+      </div>
+    )
+  }
 
   return (
     <div className="bg-[#0a0a0f] h-screen flex flex-col overflow-hidden">
@@ -47,6 +76,7 @@ export default function SimulatorPage() {
           <BottomPanel />
         </div>
       </div>
+      <ExperimentModal />
     </div>
   )
 }

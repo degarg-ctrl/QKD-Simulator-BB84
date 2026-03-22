@@ -47,6 +47,9 @@ const useSimulationStore = create((set, get) => ({
   isLoading: false,
   error: null,
 
+  // ─── VIEW STATE ──────────────────────────────────────────
+  activeView: 'simulator',   // 'simulator' | 'guide' | 'results'
+
   // ─── ANIMATION STATE ─────────────────────────────────────
   animation: {
     isPlaying: false,
@@ -60,6 +63,14 @@ const useSimulationStore = create((set, get) => ({
   // ─── GATES ───────────────────────────────────────────────
   // Gates placed on canvas lanes by user drag-drop
   placedGates: [],
+
+  // ─── EXPERIMENT STATE ────────────────────────────────────
+  activeExperiment: null,
+  // null = free mode, 'exp1'-'exp6' = experiment mode
+  
+  experimentModalOpen: false,
+  experimentModalId: null,
+
   /*
   placedGate shape:
   {
@@ -136,6 +147,8 @@ const useSimulationStore = create((set, get) => ({
     }
   })),
 
+  setActiveView: (view) => set({ activeView: view }),
+
   reset: () => set({
     results: null,
     isRunning: false,
@@ -163,6 +176,20 @@ const useSimulationStore = create((set, get) => ({
   })),
 
   clearGates: () => set({ placedGates: [] }),
+
+  setActiveExperiment: (expId) => set({
+    activeExperiment: expId
+  }),
+
+  openExperimentModal: (expId) => set({
+    experimentModalOpen: true,
+    experimentModalId: expId
+  }),
+
+  closeExperimentModal: () => set({
+    experimentModalOpen: false,
+    experimentModalId: null
+  }),
 
   // Derived getters
   getHasResults: () => get().results !== null,

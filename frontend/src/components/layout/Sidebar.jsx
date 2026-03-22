@@ -5,9 +5,8 @@
  * IBM Quantum Composer inspired — adapted for BB84 protocol.
  *
  * Sections:
- *   ENTITIES    — protocol participants (informational)
- *   GATES       — quantum gates (draggable in Sprint 6)
- *   PROBES      — special components (draggable in Sprint 6)
+ *   GATES       — quantum gates (draggable)
+ *   PROBES      — special components (draggable)
  *   EXPERIMENTS — experiment mode selector
  *
  * Panel is collapsible. Collapsed = icons only.
@@ -17,30 +16,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
-
-const ENTITIES = [
-  {
-    id: 'alice',
-    symbol: '👩',
-    label: 'Alice',
-    color: '#6366f1',
-    tooltip: 'Sender. Generates random bits, chooses polarization bases, encodes photons per BB84 rules.'
-  },
-  {
-    id: 'bob',
-    symbol: '👨',
-    label: 'Bob',
-    color: '#22c55e',
-    tooltip: 'Receiver. Measures photons in randomly chosen bases. Correct basis = correct bit.'
-  },
-  {
-    id: 'eve',
-    symbol: '🕵',
-    label: 'Eve',
-    color: '#ef4444',
-    tooltip: 'Eavesdropper. Intercept-resend attack introduces ~25% QBER — detectable by Alice and Bob.'
-  },
-]
 
 const GATES = [
   {
@@ -162,20 +137,26 @@ function SidebarItem({ item, collapsed, draggable = false }) {
         } : undefined}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        whileHover={{ scale: 1.03 }}
-        className={`flex items-center gap-2 px-2 py-1.5 rounded
+        whileHover={{ scale: 1.05 }}
+        className={`flex items-center rounded
                    border transition-colors select-none
-                   ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}
-                   border-gray-800 bg-gray-900/40 
+                   ${draggable 
+                     ? 'cursor-grab active:cursor-grabbing' 
+                     : 'cursor-default'}
+                   ${collapsed
+                     ? 'w-8 h-8 justify-center mx-auto'
+                     : 'gap-2 px-2 py-1.5 w-full'
+                   }
+                   border-gray-800 bg-gray-900/40
                    hover:bg-gray-800/60 hover:border-gray-600`}
         style={{
           borderColor: showTooltip ? item.color + '50' : undefined
         }}
       >
-        {/* Icon */}
         <div
-          className="w-7 h-7 rounded flex items-center justify-center
-                     text-xs font-mono font-bold flex-shrink-0"
+          className={`rounded flex items-center justify-center
+                     font-mono font-bold flex-shrink-0
+                     ${collapsed ? 'w-6 h-6 text-xs' : 'w-7 h-7 text-xs'}`}
           style={{
             backgroundColor: item.color + '20',
             color: item.color,
@@ -184,7 +165,6 @@ function SidebarItem({ item, collapsed, draggable = false }) {
         >
           {item.symbol}
         </div>
-        {/* Label — only in expanded mode */}
         <AnimatePresence>
           {!collapsed && (
             <motion.span
@@ -192,7 +172,7 @@ function SidebarItem({ item, collapsed, draggable = false }) {
               animate={{ opacity: 1, width: 'auto' }}
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: 0.15 }}
-              className="text-xs font-mono text-gray-300 
+              className="text-xs font-mono text-gray-300
                          whitespace-nowrap overflow-hidden"
             >
               {item.label}
@@ -244,8 +224,12 @@ function ExperimentButton({ exp, collapsed, isActive, onClick }) {
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         whileHover={{ scale: 1.02 }}
-        className={`w-full flex items-center gap-2 px-2 py-1.5 
-                   rounded border transition-colors text-left
+        className={`flex items-center rounded border 
+                   transition-colors text-left
+                   ${collapsed
+                     ? 'w-8 h-8 justify-center mx-auto'
+                     : 'w-full gap-2 px-2 py-1.5'
+                   }
                    ${isActive
                      ? 'border-opacity-60 bg-opacity-20'
                      : 'border-gray-800 bg-gray-900/20 hover:border-gray-700'
@@ -331,12 +315,11 @@ function SectionHeader({ label, collapsed }) {
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [activeExp, setActiveExp] = useState(null)
-  const { setParams } = useSimulationStore()
+  const { setParams, openExperimentModal } = useSimulationStore()
 
   const handleExpSelect = (expId) => {
     setActiveExp(expId === activeExp ? null : expId)
-    // Experiment preset params will be wired in Sprint 8
-    // For now just track selection
+    openExperimentModal(expId)
   }
 
   return (
@@ -355,7 +338,7 @@ export default function Sidebar() {
         {!collapsed && (
           <span className="text-xs font-mono text-gray-600 
                            uppercase tracking-widest">
-            Components
+            Toolbox
           </span>
         )}
         <button
@@ -371,19 +354,9 @@ export default function Sidebar() {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-1.5
-                      flex flex-col gap-0.5">
-
-        {/* ENTITIES */}
-        <SectionHeader label="Entities" collapsed={collapsed} />
-        {ENTITIES.map(item => (
-          <SidebarItem 
-            key={item.id} 
-            item={item} 
-            collapsed={collapsed}
-            draggable={false}
-          />
-        ))}
+      <div className={`flex-1 overflow-y-auto overflow-x-hidden
+                       flex flex-col gap-0.5
+                       ${collapsed ? 'p-1 items-center' : 'p-1.5'}`}>
 
         {/* GATES */}
         <SectionHeader label="Gates" collapsed={collapsed} />
