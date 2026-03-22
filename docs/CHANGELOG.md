@@ -47,3 +47,8 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   enhanced Bob arrival animation, pause/resume control,
   single photon mode, QBER/SKR label clarity,
   gates.py stub ready for Sprint 6.
+[2026-03-22 21:10] | feature/sprint-6-gates-backend | feat(sprint-6) |
+  gates.py fully implemented — H,X,Y,Z,S,T transformations.
+  All 11 gate physics tests pass. alice_bit/basis preserved.
+  Gates wired into simulation router after Eve, before Bob.
+  Backward compatible — empty gates array works correctly.
