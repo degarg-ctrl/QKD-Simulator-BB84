@@ -9,7 +9,7 @@
  * GET  /             → health check
  */
 
-const BASE_URL = 'http://localhost:8000'
+const BASE_URL = 'http://127.0.0.1:8000'
 
 /**
  * Run a complete BB84 simulation.
@@ -79,8 +79,8 @@ export async function checkHealth() {
 export function validateParams(params) {
   const { n_bits, distance_km, noise_level, attack_prob, attack_strategy } = params
 
-  if (typeof n_bits !== 'number' || n_bits < 100 || n_bits > 10000) {
-    return 'n_bits must be between 100 and 10000'
+  if (typeof n_bits !== 'number' || n_bits < 1 || n_bits > 10000) {
+    return 'n_bits must be between 1 and 10000'
   }
 
   if (typeof distance_km !== 'number' || distance_km < 0 || distance_km > 150) {

@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Literal
 
 class SimulationRequest(BaseModel):
-    n_bits: int = Field(default=1000, ge=100, le=10000)
+    n_bits: int = Field(default=1000, ge=1, le=10000)
     distance_km: float = Field(ge=0, le=150)
     noise_level: float = Field(ge=0.0, le=1.0)
     attack_prob: float = Field(ge=0.0, le=1.0)

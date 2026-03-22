@@ -361,9 +361,12 @@ export default function GuidePage() {
           {/* Section nav */}
           <div className="hidden md:flex items-center gap-1">
             {SECTIONS.map(s => (
-              <a
+              <button
                 key={s.id}
-                href={`#${s.id}`}
+                onClick={() => {
+                  const el = document.getElementById(s.id);
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className={`px-3 py-1 text-xs font-mono rounded
                            transition-colors
                            ${activeSection === s.id
@@ -372,7 +375,7 @@ export default function GuidePage() {
                            }`}
               >
                 {s.label}
-              </a>
+              </button>
             ))}
           </div>
         </div>
@@ -597,7 +600,7 @@ export default function GuidePage() {
               {
                 step: '04',
                 title: 'Read the Metrics',
-                description: `Check the Performance tab below the canvas. 
+                description: `Check the Metrics tab below the canvas. 
                   QBER tells you the error rate. SKR tells you how 
                   many secure bits per raw bit were extracted.`,
                 tip: 'Green = secure, Yellow = degraded, Red = threshold breached.'
