@@ -55,3 +55,8 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 [2026-03-22 21:20] | feature/sprint-6-gates-backend | feat(sprint-6) |
   Frontend gate system: drag-drop onto lanes, canvas rendering,
   right-click removal, gates sent to backend, QBER elevation confirmed.
+[2026-03-22 21:24] | develop | merge | Sprint 6 complete.
+  H,X,Y,Z,S,T gates physics verified (11/11 tests pass).
+  Frontend drag-drop onto canvas lanes working.
+  Gates sent to backend, QBER elevation confirmed.
+  Right-click gate removal implemented.
