@@ -97,3 +97,7 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   Sidebar wired, Exp 1-6 modals verified.
   Exp 6: No-cloning probe backend physics,
   lane corruption visualization, QBER elevation.
+[2026-03-23 00:52] | feature/sprint-8-polish | feat(sprint-8) |
+  Guide formulas section: QBER, H(Q), SKR, Beer-Lambert.
+  Full derivation, worked examples, 4 inline graphs.
+  Version bumped to 0.2. Code splitting configured.
