@@ -95,5 +95,34 @@ class Alice:
             })
         return states
 
+    def encode_user_input(
+        self,
+        bits: list[int],
+        bases: list[str]
+    ) -> list[dict]:
+        """
+        Encode user-provided bits and bases into quantum states.
+        
+        Used for Exp 2 and Exp 4 where the user manually defines
+        each photon's bit value and polarization basis.
+        
+        Applies the same BB84 encoding rules as encode_states()
+        but uses user-provided values instead of random generation.
+        
+        Args:
+            bits:  list of ints, each 0 or 1 (max 20)
+            bases: list of str, each '+' or 'x' (max 20)
+        Returns:
+            list of state dicts identical in structure to
+            encode_states() output — fully compatible with
+            the rest of the BB84 pipeline
+        
+        Physics reference: PHYSICS_CONTRACT.md Section 2
+        """
+        import numpy as np
+        bits_array = np.array(bits, dtype=int)
+        bases_array = np.array(bases)
+        return self.encode_states(bits_array, bases_array)
+
 # Depends on: core/constants.py
 # Used by: routers/simulation.py via the main BB84 pipeline
