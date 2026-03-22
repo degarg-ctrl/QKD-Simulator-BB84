@@ -37,7 +37,7 @@ export function TooltipPortal({
     }
 
     // Clamp to viewport
-    left = Math.max(8, Math.min(left, vw - tooltipW - 8))
+    left = Math.max(8, Math.min(left, vw - width - 8))
     top = Math.max(8, Math.min(top, vh - tooltipH - 8))
 
     setCoords({ top, left })

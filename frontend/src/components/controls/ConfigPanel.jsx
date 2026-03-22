@@ -19,9 +19,9 @@
  */
 
 import { useState } from 'react'
+import { QuestionTooltip } from '../ui/TooltipPortal'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
-import { QuestionTooltip } from '../ui/TooltipPortal'
 
 // Tooltip content — physics explanations for each parameter
 const TOOLTIPS = {
