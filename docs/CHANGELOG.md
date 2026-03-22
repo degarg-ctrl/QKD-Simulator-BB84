@@ -52,3 +52,6 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   All 11 gate physics tests pass. alice_bit/basis preserved.
   Gates wired into simulation router after Eve, before Bob.
   Backward compatible — empty gates array works correctly.
+[2026-03-22 21:20] | feature/sprint-6-gates-backend | feat(sprint-6) |
+  Frontend gate system: drag-drop onto lanes, canvas rendering,
+  right-click removal, gates sent to backend, QBER elevation confirmed.

@@ -57,6 +57,20 @@ const useSimulationStore = create((set, get) => ({
     isPaused: false
   },
 
+  // ─── GATES ───────────────────────────────────────────────
+  // Gates placed on canvas lanes by user drag-drop
+  placedGates: [],
+  /*
+  placedGate shape:
+  {
+    id: string,          unique id e.g. 'gate-H-1234'
+    type: string,        'H'|'X'|'Y'|'Z'|'S'|'T'
+    lane: number,        0|1|2
+    position: number,    0.0-1.0 (fraction of channel width)
+    color: string        gate color for canvas rendering
+  }
+  */
+
   // ─── ACTIONS ─────────────────────────────────────────────
 
   setParams: (newParams) => set((state) => ({
@@ -127,6 +141,7 @@ const useSimulationStore = create((set, get) => ({
     isRunning: false,
     isLoading: false,
     error: null,
+    placedGates: [],
     animation: {
       isPlaying: false,
       currentPhotonIndex: 0,
@@ -135,6 +150,19 @@ const useSimulationStore = create((set, get) => ({
       activePhotons: []
     }
   }),
+
+  addGate: (gate) => set((state) => ({
+    placedGates: [...state.placedGates, {
+      ...gate,
+      id: `gate-${gate.type}-${Date.now()}`
+    }]
+  })),
+
+  removeGate: (gateId) => set((state) => ({
+    placedGates: state.placedGates.filter(g => g.id !== gateId)
+  })),
+
+  clearGates: () => set({ placedGates: [] }),
 
   // Derived getters
   getHasResults: () => get().results !== null,

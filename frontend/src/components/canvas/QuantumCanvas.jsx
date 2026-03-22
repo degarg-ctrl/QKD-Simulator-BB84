@@ -50,7 +50,12 @@ const NODE_RADIUS = 28
 export default function QuantumCanvas({ className = '' }) {
 
   const canvasRef = useRef(null)
-  const { results, params } = useSimulationStore()
+  const { results, params, addGate, placedGates, removeGate } = useSimulationStore()
+
+  const GATE_COLORS = {
+    H: '#6366f1', X: '#f59e0b', Y: '#ec4899',
+    Z: '#14b8a6', S: '#8b5cf6', T: '#06b6d4'
+  }
 
   /**
    * Draw a single entity node (Alice, Bob, or Eve).
@@ -131,6 +136,49 @@ export default function QuantumCanvas({ className = '' }) {
   }, [])
 
   /**
+   * Draw placed gates on channel lanes.
+   */
+  const drawGates = useCallback((ctx) => {
+    if (!placedGates || placedGates.length === 0) return
+
+    placedGates.forEach(gate => {
+      // Calculate pixel position
+      const channelWidth = BOB_X - ALICE_X
+      const gateX = ALICE_X + channelWidth * gate.position
+      const laneY = LANE_Y_POSITIONS[gate.lane]
+
+      const gateColor = gate.color || '#6366f1'
+
+      // Gate background square
+      const size = 22
+      ctx.fillStyle = gateColor + '30'
+      ctx.strokeStyle = gateColor
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.roundRect(gateX - size/2, laneY - size/2, size, size, 4)
+      ctx.fill()
+      ctx.stroke()
+
+      // Gate label
+      ctx.fillStyle = gateColor
+      ctx.font = 'bold 11px monospace'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(gate.type, gateX, laneY)
+
+      // Vertical line through lane showing gate position
+      ctx.strokeStyle = gateColor + '40'
+      ctx.lineWidth = 1
+      ctx.setLineDash([3, 3])
+      ctx.beginPath()
+      ctx.moveTo(gateX, laneY - 30)
+      ctx.lineTo(gateX, laneY + 30)
+      ctx.stroke()
+      ctx.setLineDash([])
+    })
+  }, [placedGates])
+
+  /**
    * Draw the static background.
    */
   const drawBackground = useCallback((ctx, width, height) => {
@@ -183,6 +231,7 @@ export default function QuantumCanvas({ className = '' }) {
 
     drawBackground(ctx, logicalWidth, logicalHeight)
     drawChannelLanes(ctx)
+    drawGates(ctx)
 
     drawEntityNode(ctx, ALICE_X, ENTITY_Y, 'ALICE', COLORS.aliceNode, 'Sender')
     drawEntityNode(ctx, BOB_X, ENTITY_Y, 'BOB', COLORS.bobNode, 'Receiver')
@@ -196,7 +245,72 @@ export default function QuantumCanvas({ className = '' }) {
     drawEntityNode(ctx, EVE_X, ENTITY_Y, 'EVE', eveColor, eveSublabel)
 
     ctx.restore()
-  }, [drawBackground, drawChannelLanes, drawEntityNode, params.attack_prob])
+  }, [drawBackground, drawChannelLanes, drawEntityNode, drawGates, params.attack_prob])
+
+  /**
+   * Handle gate drop from sidebar drag.
+   */
+  const handleDrop = useCallback((e) => {
+    e.preventDefault()
+    const gateType = e.dataTransfer.getData('gateType')
+    if (!gateType) return
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect = canvas.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+
+    // Determine lane from y position
+    const canvasHeight = rect.height
+    const laneHeight = canvasHeight / 3
+    const lane = Math.min(2, Math.floor(y / laneHeight))
+
+    // Determine position as fraction of channel width
+    const scaleX = CANVAS_WIDTH / rect.width
+    const canvasX = x * scaleX
+    const channelStart = ALICE_X
+    const channelEnd = BOB_X
+    const channelWidth = channelEnd - channelStart
+    const position = Math.max(0.05, Math.min(0.95,
+      (canvasX - channelStart) / channelWidth
+    ))
+
+    addGate({
+      type: gateType,
+      lane,
+      position,
+      color: GATE_COLORS[gateType] || '#6366f1'
+    })
+  }, [addGate, GATE_COLORS])
+
+  /**
+   * Handle right-click to remove a gate.
+   */
+  const handleContextMenu = useCallback((e) => {
+    e.preventDefault()
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const rect = canvas.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const scaleX = CANVAS_WIDTH / rect.width
+    const scaleY = CANVAS_HEIGHT / rect.height
+    const canvasX = x * scaleX
+    const canvasY = y * scaleY
+
+    // Find gate near click position
+    const clickedGate = placedGates.find(gate => {
+      const channelWidth = BOB_X - ALICE_X
+      const gateX = ALICE_X + channelWidth * gate.position
+      const laneY = LANE_Y_POSITIONS[gate.lane]
+      const dist = Math.sqrt((canvasX-gateX)**2 + (canvasY-laneY)**2)
+      return dist < 20
+    })
+
+    if (clickedGate) removeGate(clickedGate.id)
+  }, [placedGates, removeGate])
 
   // Attach animation loop
   usePhotonAnimation(canvasRef, drawStaticScene)
@@ -226,7 +340,12 @@ export default function QuantumCanvas({ className = '' }) {
   }, [drawStaticScene])
 
   return (
-    <div className={`relative w-full bg-[#0a0a0f] rounded-lg overflow-hidden border border-[#1e1e3f] shadow-2xl ${className}`}>
+    <div
+      className={`relative w-full bg-[#0a0a0f] rounded-lg overflow-hidden border border-[#1e1e3f] shadow-2xl ${className}`}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={handleDrop}
+      onContextMenu={handleContextMenu}
+    >
       <canvas
         ref={canvasRef}
         className="w-full"

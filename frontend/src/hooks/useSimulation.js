@@ -17,6 +17,7 @@ export function useSimulation() {
 
   const {
     params,
+    placedGates,
     setResults,
     setLoading,
     setError,
@@ -53,8 +54,12 @@ export function useSimulation() {
     setError(null) // Clear any previous errors
 
     try {
-      // 3. Call API
-      const data = await apiRunSimulation(params)
+      // 3. Call API — include placed gates in request
+      const paramsWithGates = {
+        ...params,
+        gates: placedGates
+      }
+      const data = await apiRunSimulation(paramsWithGates)
       
       // 4. On success: update results
       setResults(data)
@@ -66,7 +71,7 @@ export function useSimulation() {
       setLoading(false)
       setRunning(false)
     }
-  }, [params, setResults, setLoading, setError, setRunning])
+  }, [params, placedGates, setResults, setLoading, setError, setRunning])
 
   /**
    * Reset simulation state to initial values.
