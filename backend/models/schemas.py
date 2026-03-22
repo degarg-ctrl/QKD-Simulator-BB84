@@ -73,3 +73,4 @@ class SimulationResponse(BaseModel):
     qber_vs_distance: list[dict]
     skr_vs_distance: list[dict]
     secure_threshold_breached: bool
+    cloning_probe_active: bool = False

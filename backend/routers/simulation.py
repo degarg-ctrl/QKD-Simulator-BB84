@@ -79,22 +79,34 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
         )
         eve_states = eve.intercept(channel_states)
 
-        # Step 3.5: Apply quantum gates per lane
-        from core.gates import apply_gates_to_lane
+        # Step 3.5: Apply quantum gates and probes per lane
+        from core.gates import apply_gates_to_lane, apply_cloning_probe
         if request.gates:
-            # Group gates by lane
-            gates_by_lane: dict[int, list[dict]] = {}
-            for gate in request.gates:
-                lane = gate.get('lane', 0)
-                if lane not in gates_by_lane:
-                    gates_by_lane[lane] = []
-                gates_by_lane[lane].append(gate)
-
-            # Apply gates lane by lane
-            for lane_index, lane_gates in gates_by_lane.items():
-                eve_states = apply_gates_to_lane(
-                    eve_states, lane_index, lane_gates
-                )
+          gates_by_lane = {}
+          clone_probes = []
+          
+          for gate in request.gates:
+            if gate.get('type') in ('clone', 'cnot'):
+              clone_probes.append(gate)
+            else:
+              lane = gate.get('lane', 0)
+              if lane not in gates_by_lane:
+                gates_by_lane[lane] = []
+              gates_by_lane[lane].append(gate)
+          
+          # Apply regular gates lane by lane
+          for lane_index, lane_gates in gates_by_lane.items():
+            eve_states = apply_gates_to_lane(
+              eve_states, lane_index, lane_gates
+            )
+          
+          # Apply cloning probes
+          for probe in clone_probes:
+            eve_states = apply_cloning_probe(
+              eve_states,
+              probe.get('lane', 0),
+              probe.get('position', 0.5)
+            )
 
         # Step 4: Bob
         bob = Bob()
@@ -148,7 +160,11 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             bit_stream=bit_stream,
             qber_vs_distance=chart_data['qber_vs_distance'],
             skr_vs_distance=chart_data['skr_vs_distance'],
-            secure_threshold_breached=qber_result['threshold_breached']
+            secure_threshold_breached=qber_result['threshold_breached'],
+            cloning_probe_active=any(
+              g.get('type') in ('clone', 'cnot') 
+              for g in request.gates
+            )
         )
 
     except Exception as e:

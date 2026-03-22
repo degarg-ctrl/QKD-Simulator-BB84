@@ -157,6 +157,85 @@ def apply_gates_to_lane(
 
     return result
 
+def apply_cloning_probe(
+  states: list[dict],
+  lane_index: int,
+  probe_position: float
+) -> list[dict]:
+  """
+  Apply No-Cloning Theorem probe to photons on a lane.
+  
+  Simulates Eve's CNOT-based cloning attempt.
+  Per PHYSICS_CONTRACT.md Section 11:
+  - Input: |psi>|0> — original photon + blank probe
+  - Output: entangled state — neither copy equals |psi>
+  - Effect: original photon polarization_angle randomized
+  - QBER impact: adds ~25% error above baseline
+  - Visual signal: sets 'cloning_probe_applied': True
+                   sets 'lane_corrupted': True
+  
+  Only affects photons on lane_index that have been
+  detected (not lost).
+  
+  Args:
+      states: photon state list from eve.intercept()
+      lane_index: which lane has the cloning probe
+      probe_position: position of probe (0.0-1.0)
+  Returns:
+      state list with cloning probe effects applied
+  
+  Physics reference: PHYSICS_CONTRACT.md Section 11
+  """
+  import numpy as np
+  
+  result = []
+  for state in states:
+    photon_lane = state.get('index', 0) % 3
+    if photon_lane != lane_index:
+      result.append(state)
+      continue
+    
+    # Skip lost photons
+    if not state.get('detected', True) and \
+       not state.get('dark_count', False):
+      result.append(state)
+      continue
+    
+    new_state = state.copy()
+    
+    # CNOT entanglement collapses the original state
+    # Neither original nor clone retains |psi>
+    # Effect: randomize the physical bit and angle
+    # alice_bit and alice_basis are NEVER modified
+    new_state['bit'] = int(np.random.randint(0, 2))
+    
+    # Randomize polarization angle to any of the 4 values
+    new_state['polarization_angle'] = float(
+      np.random.choice([0.0, 45.0, 90.0, 135.0])
+    )
+    
+    # Update basis and state label to match new angle
+    angle_to_state = {
+        0.0:   ('+', 0, '|0>'),
+        90.0:  ('+', 1, '|1>'),
+        45.0:  ('x', 0, '|+>'),
+        135.0: ('x', 1, '|->'),
+    }
+    new_basis, new_bit, new_label = angle_to_state[
+      new_state['polarization_angle']
+    ]
+    new_state['basis'] = new_basis
+    new_state['bit'] = new_bit
+    new_state['state_label'] = new_label
+    
+    # Mark for frontend visualization
+    new_state['cloning_probe_applied'] = True
+    new_state['lane_corrupted'] = True
+    
+    result.append(new_state)
+  
+  return result
+
 
 # Depends on: core/constants.py
 # Used by: routers/simulation.py in Sprint 6
