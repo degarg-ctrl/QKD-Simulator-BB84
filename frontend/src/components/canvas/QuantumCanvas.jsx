@@ -238,35 +238,37 @@ export default function QuantumCanvas({ className = '' }) {
    * Draw the static background.
    */
   const drawBackground = useCallback((ctx, width, height) => {
-    ctx.save()
+    // Full solid dark base — no gaps
+    ctx.fillStyle = '#0a0a0f'
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
-    const bgGradient = ctx.createRadialGradient(
-      width / 2, height / 2, 0,
-      width / 2, height / 2, width / 1.5
+    // Subtle radial gradient centered across full width
+    const gradient = ctx.createRadialGradient(
+      CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0,
+      CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2,
+      CANVAS_WIDTH * 0.7
     )
-    bgGradient.addColorStop(0, '#10101a')
-    bgGradient.addColorStop(1, COLORS.background)
-    
-    ctx.fillStyle = bgGradient
-    ctx.fillRect(0, 0, width, height)
+    gradient.addColorStop(0, '#10101a')
+    gradient.addColorStop(1, '#0a0a0f')
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
-    ctx.strokeStyle = '#ffffff05'
-    ctx.lineWidth = 1
+    // Technical grid — full canvas coverage
+    ctx.strokeStyle = '#ffffff06'
+    ctx.lineWidth = 0.5
     const gridSize = 40
-    for (let x = 0; x <= width; x += gridSize) {
+    for (let x = 0; x <= CANVAS_WIDTH; x += gridSize) {
       ctx.beginPath()
       ctx.moveTo(x, 0)
-      ctx.lineTo(x, height)
+      ctx.lineTo(x, CANVAS_HEIGHT)
       ctx.stroke()
     }
-    for (let y = 0; y <= height; y += gridSize) {
+    for (let y = 0; y <= CANVAS_HEIGHT; y += gridSize) {
       ctx.beginPath()
       ctx.moveTo(0, y)
-      ctx.lineTo(width, y)
+      ctx.lineTo(CANVAS_WIDTH, y)
       ctx.stroke()
     }
-
-    ctx.restore()
   }, [])
 
   /**
@@ -376,31 +378,39 @@ export default function QuantumCanvas({ className = '' }) {
 
   // Configure canvas on mount and resize
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const configureCanvas = () => {
+    const handleResize = () => {
+      const canvas = canvasRef.current
+      if (!canvas) return
       const dpr = window.devicePixelRatio || 1
       const container = canvas.parentElement
       if (!container) return
-
-      // Use full container width — never clip
       const containerWidth = container.clientWidth
       const aspectRatio = CANVAS_HEIGHT / CANVAS_WIDTH
       const logicalHeight = containerWidth * aspectRatio
-
       canvas.width = containerWidth * dpr
       canvas.height = logicalHeight * dpr
       canvas.style.width = `${containerWidth}px`
       canvas.style.height = `${logicalHeight}px`
-
       drawStaticScene()
     }
 
-    configureCanvas()
-    window.addEventListener('resize', configureCanvas)
-    return () => window.removeEventListener('resize', configureCanvas)
-  }, [drawStaticScene, params.attack_prob])
+    // Watch window resize
+    window.addEventListener('resize', handleResize)
+
+    // Watch container size changes (sidebar expand/collapse)
+    const canvas = canvasRef.current
+    const container = canvas?.parentElement
+    let resizeObserver = null
+    if (container && window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(handleResize)
+      resizeObserver.observe(container)
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      if (resizeObserver) resizeObserver.disconnect()
+    }
+  }, [drawStaticScene])
 
   return (
     <div

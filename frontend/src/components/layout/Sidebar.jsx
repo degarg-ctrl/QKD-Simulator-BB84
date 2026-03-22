@@ -14,6 +14,7 @@
  */
 
 import { useState } from 'react'
+import { TooltipPortal } from '../ui/TooltipPortal'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
 
@@ -23,42 +24,85 @@ const GATES = [
     symbol: 'H',
     label: 'Hadamard',
     color: '#6366f1',
-    tooltip: 'H gate: |0>→|+>, |1>→|->, |+>→|0>, |->→|1>. Switches between rectilinear and diagonal bases. Angle: 0°↔45°, 90°↔135°'
+    tooltip: `Hadamard Gate — Creates quantum superposition.
+Transforms between rectilinear and diagonal bases:
+  |0⟩ → |+⟩  (0° → 45°)
+  |1⟩ → |-⟩  (90° → 135°)
+  |+⟩ → |0⟩  (45° → 0°)
+  |-⟩ → |1⟩  (135° → 90°)
+Effect: Switches basis. Applied before Bob measures,
+this scrambles basis alignment and raises QBER.`
   },
   {
     id: 'X',
     symbol: 'X',
     label: 'Pauli-X',
     color: '#f59e0b',
-    tooltip: 'Bit-flip gate: |0>→|1>, |1>→|0>. Flips the bit value. |+> and |-> are invariant. Angle: 0°↔90°'
+    tooltip: `Pauli-X Gate — Quantum bit flip (NOT gate).
+Flips the bit value in rectilinear basis:
+  |0⟩ → |1⟩  (0° → 90°)
+  |1⟩ → |0⟩  (90° → 0°)
+  |+⟩ → |+⟩  (invariant)
+  |-⟩ → |-⟩  (invariant)
+Effect: Flips 0s to 1s and vice versa. Diagonal
+basis states are unaffected.`
   },
   {
     id: 'Y',
     symbol: 'Y',
     label: 'Pauli-Y',
     color: '#ec4899',
-    tooltip: 'Bit+Phase flip: |0>→|1>, |1>→|0>, |+>→|->, |->→|+>. Combines X and Z operations.'
+    tooltip: `Pauli-Y Gate — Bit flip AND phase flip.
+Combines Pauli-X and Pauli-Z operations:
+  |0⟩ → |1⟩  (0° → 90°)
+  |1⟩ → |0⟩  (90° → 0°)
+  |+⟩ → |-⟩  (45° → 135°)
+  |-⟩ → |+⟩  (135° → 45°)
+Effect: Flips both the bit value and the phase.
+Affects all four polarization states.`
   },
   {
     id: 'Z',
     symbol: 'Z',
     label: 'Pauli-Z',
     color: '#14b8a6',
-    tooltip: 'Phase-flip gate: |+>→|->, |->→|+>. Rectilinear states unchanged. Angle: 45°↔135°'
+    tooltip: `Pauli-Z Gate — Quantum phase flip.
+Flips diagonal basis states, leaves rectilinear unchanged:
+  |0⟩ → |0⟩  (unchanged)
+  |1⟩ → |1⟩  (unchanged, global phase)
+  |+⟩ → |-⟩  (45° → 135°)
+  |-⟩ → |+⟩  (135° → 45°)
+Effect: Swaps |+⟩ and |-⟩. Rectilinear photons
+pass through unaffected.`
   },
   {
     id: 'S',
     symbol: 'S',
     label: 'S Gate',
     color: '#8b5cf6',
-    tooltip: 'Phase gate π/2: Rotates diagonal states by 22.5°. Rectilinear states unchanged in bit value.'
+    tooltip: `S Gate — Phase rotation by π/2 (90°).
+Rotates diagonal basis states by 22.5°:
+  |0⟩ → |0⟩  (unchanged)
+  |1⟩ → |1⟩  (phase only)
+  |+⟩ → angle +22.5° (67.5°)
+  |-⟩ → angle -22.5° (112.5°)
+Effect: Subtle rotation. Finer control than H or Z.
+Two S gates equal one Z gate.`
   },
   {
     id: 'T',
     symbol: 'T',
     label: 'T Gate',
     color: '#06b6d4',
-    tooltip: 'Phase gate π/4: Rotates diagonal states by 11.25°. Finer phase rotation than S gate.'
+    tooltip: `T Gate — Phase rotation by π/4 (45°).
+Rotates diagonal basis states by 11.25°:
+  |0⟩ → |0⟩  (unchanged)
+  |1⟩ → |1⟩  (phase only)
+  |+⟩ → angle +11.25° (56.25°)
+  |-⟩ → angle -11.25° (123.75°)
+Effect: Finest phase rotation available. Used in
+quantum error correction circuits. Four T gates
+equal one Z gate.`
   },
 ]
 
@@ -68,14 +112,29 @@ const PROBES = [
     symbol: '⊗',
     label: 'Cloning Probe',
     color: '#ef4444',
-    tooltip: 'No-Cloning Theorem probe. Attempts to copy photon state via CNOT entanglement. Collapses original — QBER spikes. Neither copy is perfect.'
+    tooltip: `Cloning Probe — Demonstrates No-Cloning Theorem.
+Attempts to copy photon states via CNOT entanglement:
+  Input:  |ψ⟩|0⟩ — original + blank probe qubit
+  Output: entangled state — neither copy equals |ψ⟩
+Effect: Original photon state collapses. Bob receives
+a damaged version. QBER spikes immediately — proving
+quantum states cannot be perfectly cloned.
+Use in: Experiment 6`
   },
   {
     id: 'cnot',
     symbol: '⊕',
     label: 'CNOT Tap',
     color: '#f97316',
-    tooltip: 'Controlled-NOT tap. Entangles photon with probe qubit. Used in Exp 6 to demonstrate quantum no-cloning theorem.'
+    tooltip: `CNOT Tap — Controlled-NOT entanglement probe.
+Entangles the photon with a probe qubit:
+  Control: original photon state
+  Target:  probe qubit (starts as |0⟩)
+Effect: Creates quantum entanglement between photon
+and probe. The act of measurement disturbs both.
+Eve gains partial information but introduces
+detectable errors in the process.
+Use in: Experiment 6`
   },
 ]
 
@@ -126,22 +185,22 @@ const EXPERIMENTS = [
 
 // Single item component with tooltip
 function SidebarItem({ item, collapsed, draggable = false }) {
-  const [showTooltip, setShowTooltip] = useState(false)
-
   return (
-    <div className="relative">
+    <TooltipPortal 
+      content={item.tooltip} 
+      width={224}
+      color={item.color}
+    >
       <motion.div
         draggable={draggable}
         onDragStart={draggable ? (e) => {
           e.dataTransfer.setData('gateType', item.id)
         } : undefined}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-        whileHover={{ scale: 1.05 }}
-        className={`flex items-center rounded
-                   border transition-colors select-none
-                   ${draggable 
-                     ? 'cursor-grab active:cursor-grabbing' 
+        whileHover={{ scale: 1.03 }}
+        className={`flex items-center rounded border
+                   transition-colors select-none
+                   ${draggable
+                     ? 'cursor-grab active:cursor-grabbing'
                      : 'cursor-default'}
                    ${collapsed
                      ? 'w-8 h-8 justify-center mx-auto'
@@ -150,13 +209,15 @@ function SidebarItem({ item, collapsed, draggable = false }) {
                    border-gray-800 bg-gray-900/40
                    hover:bg-gray-800/60 hover:border-gray-600`}
         style={{
-          borderColor: showTooltip ? item.color + '50' : undefined
+          borderColor: item.color + '30'
         }}
       >
         <div
           className={`rounded flex items-center justify-center
                      font-mono font-bold flex-shrink-0
-                     ${collapsed ? 'w-6 h-6 text-xs' : 'w-7 h-7 text-xs'}`}
+                     ${collapsed
+                       ? 'w-6 h-6 text-xs'
+                       : 'w-7 h-7 text-xs'}`}
           style={{
             backgroundColor: item.color + '20',
             color: item.color,
@@ -180,56 +241,23 @@ function SidebarItem({ item, collapsed, draggable = false }) {
           )}
         </AnimatePresence>
       </motion.div>
-
-      {/* Tooltip — always shows on hover, positioned to the RIGHT */}
-      <AnimatePresence>
-        {showTooltip && (
-          <motion.div
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -8 }}
-            transition={{ duration: 0.15 }}
-            className="absolute left-full top-0 ml-3 w-60 p-3
-                       bg-gray-950 border rounded-lg shadow-2xl
-                       z-[9999] pointer-events-none"
-            style={{ borderColor: item.color + '40' }}
-          >
-            <div className="text-xs font-mono font-bold mb-1"
-                 style={{ color: item.color }}>
-              {item.label}
-            </div>
-            <div className="text-xs text-gray-400 leading-relaxed">
-              {item.tooltip}
-            </div>
-            {item.description && (
-              <div className="text-xs text-gray-600 mt-1 font-mono">
-                {item.description}
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    </TooltipPortal>
   )
 }
 
 // Experiment button
 function ExperimentButton({ exp, collapsed, isActive, onClick }) {
-  const [showTooltip, setShowTooltip] = useState(false)
-
   return (
-    <div className="relative">
+    <TooltipPortal
+      content={exp.tooltip}
+      width={224}
+      color={exp.color}
+    >
       <motion.button
         onClick={onClick}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
         whileHover={{ scale: 1.02 }}
-        className={`flex items-center rounded border 
-                   transition-colors text-left
-                   ${collapsed
-                     ? 'w-8 h-8 justify-center mx-auto'
-                     : 'w-full gap-2 px-2 py-1.5'
-                   }
+        className={`w-full flex items-center gap-2 px-2 py-1.5
+                   rounded border transition-colors text-left
                    ${isActive
                      ? 'border-opacity-60 bg-opacity-20'
                      : 'border-gray-800 bg-gray-900/20 hover:border-gray-700'
@@ -240,8 +268,9 @@ function ExperimentButton({ exp, collapsed, isActive, onClick }) {
         }}
       >
         <div
-          className="w-7 h-7 rounded flex items-center justify-center
-                     text-xs font-mono font-bold flex-shrink-0"
+          className="w-7 h-7 rounded flex items-center 
+                     justify-center text-xs font-mono 
+                     font-bold flex-shrink-0"
           style={{
             backgroundColor: exp.color + '20',
             color: exp.color,
@@ -259,41 +288,19 @@ function ExperimentButton({ exp, collapsed, isActive, onClick }) {
               transition={{ duration: 0.15 }}
               className="overflow-hidden"
             >
-              <div className="text-xs font-mono text-gray-300 
+              <div className="text-xs font-mono text-gray-300
                               whitespace-nowrap">
                 {exp.label}
               </div>
-              <div className="text-xs text-gray-600 whitespace-nowrap">
+              <div className="text-xs text-gray-600 
+                              whitespace-nowrap">
                 {exp.description}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.button>
-
-      <AnimatePresence>
-        {showTooltip && (
-          <motion.div
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -8 }}
-            transition={{ duration: 0.15 }}
-            className="absolute left-full top-0 ml-3 w-60 p-3
-                       bg-gray-950 border rounded-lg shadow-2xl
-                       z-[9999] pointer-events-none"
-            style={{ borderColor: exp.color + '40' }}
-          >
-            <div className="text-xs font-mono font-bold mb-1"
-                 style={{ color: exp.color }}>
-              {exp.label} — {exp.description}
-            </div>
-            <div className="text-xs text-gray-400 leading-relaxed">
-              {exp.tooltip}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    </TooltipPortal>
   )
 }
 
@@ -313,7 +320,7 @@ function SectionHeader({ label, collapsed }) {
 }
 
 export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(true)
   const [activeExp, setActiveExp] = useState(null)
   const { setParams, openExperimentModal } = useSimulationStore()
 
