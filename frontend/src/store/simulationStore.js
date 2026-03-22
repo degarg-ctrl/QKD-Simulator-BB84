@@ -47,6 +47,9 @@ const useSimulationStore = create((set, get) => ({
   isLoading: false,
   error: null,
 
+  // ─── VIEW STATE ──────────────────────────────────────────
+  activeView: 'simulator',   // 'simulator' | 'guide' | 'results'
+
   // ─── ANIMATION STATE ─────────────────────────────────────
   animation: {
     isPlaying: false,
@@ -135,6 +138,8 @@ const useSimulationStore = create((set, get) => ({
       ].filter(Boolean)
     }
   })),
+
+  setActiveView: (view) => set({ activeView: view }),
 
   reset: () => set({
     results: null,

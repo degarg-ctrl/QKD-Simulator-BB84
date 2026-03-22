@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import useSimulationStore from '../store/simulationStore'
+import ResultsPage from './ResultsPage'
+import GuidePage from './GuidePage'
 import TopBar from '../components/layout/TopBar'
 import Sidebar from '../components/layout/Sidebar'
 import BottomPanel from '../components/layout/BottomPanel'
@@ -8,6 +11,29 @@ import ConfigPanel from '../components/controls/ConfigPanel'
 
 export default function SimulatorPage() {
   const [configCollapsed, setConfigCollapsed] = useState(false)
+  const { activeView } = useSimulationStore()
+
+  if (activeView === 'guide') {
+    return (
+      <div className="bg-[#0a0a0f] h-screen flex flex-col">
+        <TopBar />
+        <div className="flex-1 overflow-hidden">
+          <GuidePage />
+        </div>
+      </div>
+    )
+  }
+
+  if (activeView === 'results') {
+    return (
+      <div className="bg-[#0a0a0f] h-screen flex flex-col">
+        <TopBar />
+        <div className="flex-1 overflow-hidden">
+          <ResultsPage />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-[#0a0a0f] h-screen flex flex-col overflow-hidden">

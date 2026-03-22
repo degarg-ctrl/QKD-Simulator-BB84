@@ -13,6 +13,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import useSimulationStore from '../store/simulationStore'
 
 // ─── SECTION 1 DATA ──────────────────────────────────────────
 const QKD_INTRO = {
@@ -321,6 +322,7 @@ const SECTIONS = [
 export default function GuidePage() {
   const [activeStep, setActiveStep] = useState(0)
   const [activeSection, setActiveSection] = useState('intro')
+  const { setActiveView } = useSimulationStore()
 
   // Update active section based on scroll position
   useEffect(() => {
@@ -349,10 +351,13 @@ export default function GuidePage() {
         <div className="max-w-5xl mx-auto px-6 py-3 
                         flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/" className="text-gray-500 hover:text-white 
-                                     font-mono text-xs transition-colors">
+            <button 
+              onClick={() => setActiveView('simulator')}
+              className="text-gray-500 hover:text-white 
+                         font-mono text-xs transition-colors"
+            >
               ← Simulator
-            </Link>
+            </button>
             <span className="text-gray-700">|</span>
             <span className="font-mono text-sm text-white">
               BB84 Guide
@@ -673,15 +678,15 @@ export default function GuidePage() {
         {/* Footer */}
         <div className="border-t border-gray-800 pt-8 
                         text-center mb-20">
-          <Link
-            to="/"
+          <button
+            onClick={() => setActiveView('simulator')}
             className="inline-flex items-center gap-2 px-6 py-3
                        bg-indigo-600 hover:bg-indigo-500
                        text-white rounded font-mono text-sm
                        transition-colors"
           >
             ▶ Open Simulator
-          </Link>
+          </button>
           <p className="text-gray-600 text-xs font-mono mt-4">
             BB84 QKD Simulator — Research & Teaching Tool
           </p>

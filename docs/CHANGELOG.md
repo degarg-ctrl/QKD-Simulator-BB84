@@ -67,3 +67,8 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   U4: Photons dissipate past Bob — Option A.
   U5: Collapsed sidebar — clean 32px badge strip.
   U6: Chart explanation note added.
+[2026-03-22 22:09] | feature/ui-polish | feat(ui-polish) |
+  U7-U10: Three-view navigation system complete.
+  ResultsPage with simulated vs theoretical comparison,
+  charts with reference dots, security verdict,
+  filterable bit stream table.
