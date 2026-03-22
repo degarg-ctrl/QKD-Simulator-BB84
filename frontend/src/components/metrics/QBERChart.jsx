@@ -38,11 +38,11 @@ export default function QBERChart({ data = [], currentQBER = null }) {
       <div className="flex items-center justify-between">
         <span className="text-xs font-mono text-gray-500 
                          uppercase tracking-wider">
-          QBER vs Distance
+          QBER vs Distance (Theoretical)
         </span>
         {currentQBER !== null && (
           <span className="text-xs font-mono text-indigo-400">
-            Current: {(currentQBER * 100).toFixed(2)}%
+            Simulated: {(currentQBER * 100).toFixed(2)}%
           </span>
         )}
       </div>

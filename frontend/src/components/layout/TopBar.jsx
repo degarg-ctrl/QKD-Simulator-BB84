@@ -12,7 +12,8 @@ import useSimulationStore from '../../store/simulationStore'
 
 export default function TopBar() {
   const { runSimulation, isLoading } = useSimulation()
-  const { results, reset } = useSimulationStore()
+  const { results, reset, params, animation, 
+          togglePause } = useSimulationStore()
 
   const isBreached = results?.secure_threshold_breached ?? false
   const hasResults = results !== null
@@ -109,6 +110,17 @@ export default function TopBar() {
         >
           RESET
         </button>
+        {results && (
+          <button
+            onClick={togglePause}
+            className="px-3 py-1 text-xs font-mono
+                       border rounded transition-colors
+                       border-gray-700 hover:border-gray-500
+                       text-gray-300 hover:text-white"
+          >
+            {animation.isPaused ? '▶ RESUME' : '⏸ PAUSE'}
+          </button>
+        )}
         <button
           onClick={runSimulation}
           disabled={isLoading}

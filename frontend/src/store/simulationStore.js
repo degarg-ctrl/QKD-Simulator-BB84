@@ -53,7 +53,8 @@ const useSimulationStore = create((set, get) => ({
     currentPhotonIndex: 0,
     speed: 1.0,          // multiplier: 0.5 = slow, 1.0 = normal, 2.0 = fast
     completedPhotons: [], // photons that have finished traveling
-    activePhotons: []     // photons currently in flight on canvas
+    activePhotons: [],     // photons currently in flight on canvas
+    isPaused: false
   },
 
   // ─── ACTIONS ─────────────────────────────────────────────
@@ -84,6 +85,21 @@ const useSimulationStore = create((set, get) => ({
 
   setAnimationSpeed: (speed) => set((state) => ({
     animation: { ...state.animation, speed }
+  })),
+
+  pauseAnimation: () => set((state) => ({
+    animation: { ...state.animation, isPaused: true }
+  })),
+
+  resumeAnimation: () => set((state) => ({
+    animation: { ...state.animation, isPaused: false }
+  })),
+
+  togglePause: () => set((state) => ({
+    animation: {
+      ...state.animation,
+      isPaused: !state.animation.isPaused
+    }
   })),
 
   addActivePhoton: (photon) => set((state) => ({

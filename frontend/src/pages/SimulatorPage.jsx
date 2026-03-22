@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 import TopBar from '../components/layout/TopBar'
 import Sidebar from '../components/layout/Sidebar'
 import BottomPanel from '../components/layout/BottomPanel'
@@ -5,6 +7,8 @@ import QuantumCanvas from '../components/canvas/QuantumCanvas'
 import ConfigPanel from '../components/controls/ConfigPanel'
 
 export default function SimulatorPage() {
+  const [configCollapsed, setConfigCollapsed] = useState(false)
+
   return (
     <div className="bg-[#0a0a0f] h-screen flex flex-col overflow-hidden">
       <TopBar />
@@ -15,10 +19,30 @@ export default function SimulatorPage() {
             <div className="flex-1 p-3 overflow-hidden">
               <QuantumCanvas className="h-full" />
             </div>
-            <div className="w-64 p-3 border-l border-gray-800 
-                            overflow-y-auto flex-shrink-0 bg-[#0a0a0f]">
-              <ConfigPanel />
-            </div>
+            
+            <motion.div
+              animate={{ width: configCollapsed ? 0 : 256 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              className="border-l border-gray-800 overflow-hidden 
+                         flex-shrink-0 relative bg-[#0a0a0f]"
+            >
+              {/* Collapse toggle tab */}
+              <button
+                onClick={() => setConfigCollapsed(!configCollapsed)}
+                className="absolute -left-3 top-1/2 -translate-y-1/2
+                           w-3 h-12 bg-[#11111a] border border-gray-800
+                           rounded-l flex items-center justify-center
+                           text-gray-500 hover:text-white z-10
+                           transition-colors"
+              >
+                <span className="text-xs">
+                  {configCollapsed ? '‹' : '›'}
+                </span>
+              </button>
+              <div className="w-64 h-full overflow-y-auto p-3">
+                <ConfigPanel />
+              </div>
+            </motion.div>
           </div>
           <BottomPanel />
         </div>

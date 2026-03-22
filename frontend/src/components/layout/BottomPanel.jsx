@@ -15,12 +15,12 @@ import SKRChart from '../metrics/SKRChart'
 
 export default function BottomPanel({ className = '' }) {
   const { results } = useSimulationStore()
-  const [activeTab, setActiveTab] = useState('performance')
+  const [activeTab, setActiveTab] = useState('metrics')
 
   if (!results) return null
 
   const tabs = [
-    { id: 'performance', label: 'Performance & Security' },
+    { id: 'metrics', label: 'Performance & Security' },
     { id: 'bitstream',   label: 'Bit Stream' },
   ]
 
@@ -52,7 +52,7 @@ export default function BottomPanel({ className = '' }) {
 
       {/* Tab content */}
       <div className="p-4 overflow-hidden">
-        {activeTab === 'performance' && (
+        {activeTab === 'metrics' && (
           <div className="flex gap-6">
             {/* Metric cards */}
             <div className="grid grid-cols-2 gap-3 w-72 flex-shrink-0">

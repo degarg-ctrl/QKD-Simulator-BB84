@@ -162,6 +162,33 @@ export default function ConfigPanel({ className = '' }) {
         tooltip={TOOLTIPS.n_bits}
       />
 
+      {/* Single photon mode */}
+      <div className="flex items-center justify-between 
+                      py-2 border-t border-gray-800">
+        <div className="flex items-center gap-1">
+          <span className="text-xs font-mono text-gray-400 
+                           uppercase tracking-wider">
+            Single Photon
+          </span>
+          <TooltipIcon content="Send exactly 1 photon to observe 
+            the complete BB84 journey step by step. QBER estimation 
+            is skipped in single photon mode." />
+        </div>
+        <button
+          onClick={() => setParams({ 
+            n_bits: params.n_bits === 1 ? 1000 : 1 
+          })}
+          className={`px-2 py-1 rounded text-xs font-mono
+                     border transition-colors
+                     ${params.n_bits === 1
+                       ? 'bg-indigo-900/50 border-indigo-500 text-indigo-400'
+                       : 'border-gray-800 text-gray-500 hover:text-gray-300'
+                     }`}
+        >
+          {params.n_bits === 1 ? 'ON' : 'OFF'}
+        </button>
+      </div>
+
       {/* Distance */}
       <SliderControl
         label="Distance"

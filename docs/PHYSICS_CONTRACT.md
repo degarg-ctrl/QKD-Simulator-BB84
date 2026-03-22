@@ -56,3 +56,71 @@ DETECTOR_EFFICIENCY         = 0.85
 DARK_COUNT_PROB             = 1e-5
 QBER_SECURITY_THRESHOLD     = 0.11
 SAMPLE_FRACTION_FOR_QBER    = 0.10
+
+## 10. Quantum Gate Transformations
+Applied to photon polarization states per lane in order.
+Gates are applied AFTER channel transmission, BEFORE Bob measures.
+
+H (Hadamard):
+  |0> ? |+>  (0° ? 45°)
+  |1> ? |->  (90° ? 135°)
+  |+> ? |0>  (45° ? 0°)
+  |-> ? |1>  (135° ? 90°)
+
+X (Pauli-X / Bit-flip):
+  |0> ? |1>  (0° ? 90°)
+  |1> ? |0>  (90° ? 0°)
+  |+> ? |+>  (45° ? 45°, invariant)
+  |-> ? |->  (135° ? 135°, invariant)
+
+Z (Pauli-Z / Phase-flip):
+  |0> ? |0>  (0° unchanged)
+  |1> ? |1>  (90° unchanged, global phase only)
+  |+> ? |->  (45° ? 135°)
+  |-> ? |+>  (135° ? 45°)
+
+Y (Pauli-Y / Bit+Phase flip):
+  |0> ? |1>  (0° ? 90°)
+  |1> ? |0>  (90° ? 0°)
+  |+> ? |->  (45° ? 135°)
+  |-> ? |+>  (135° ? 45°)
+
+S (Phase gate p/2):
+  |0> ? |0>  (unchanged)
+  |1> ? |1>  (phase only — visual: photon color tint +15°)
+  |+> ? polarization_angle += 22.5°
+  |-> ? polarization_angle -= 22.5°
+
+T (Phase gate p/4):
+  |0> ? |0>  (unchanged)
+  |1> ? |1>  (phase only — visual: photon color tint +8°)
+  |+> ? polarization_angle += 11.25°
+  |-> ? polarization_angle -= 11.25°
+
+Gate application rule:
+  - Gates apply only to photons on the matching lane
+  - Multiple gates on same lane apply left to right
+  - Gate transformations update both 'bit', 'basis', 
+    'state_label' and 'polarization_angle' fields
+  - 'alice_bit' and 'alice_basis' are NEVER modified by gates
+
+## 11. No-Cloning Theorem (Exp 6)
+A quantum state cannot be perfectly duplicated.
+Eve cloning attempt via CNOT entanglement:
+  Input:  |psi>|0> — original photon + blank probe qubit
+  Output: entangled state — neither copy equals |psi>
+  QBER impact: adds ~25% error above channel baseline
+  Visual: lane color shifts red after Cloning Probe position
+          affected photon polarization_angle randomized
+          Bob receives degraded state
+
+## 12. Single Photon Mode
+  n_bits = 1 triggers single photon transmission mode
+  Full pipeline applies to exactly 1 photon
+  QBER estimation skipped — insufficient sample size
+  Result includes step-by-step photon journey log:
+    - Alice encoding
+    - Channel survival/loss
+    - Eve interception (if active)
+    - Bob measurement
+    - Basis match result
