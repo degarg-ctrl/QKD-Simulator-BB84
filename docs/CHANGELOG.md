@@ -87,7 +87,13 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   experiments.py presets for all 6 experiments.
   GET /api/experiments endpoint live.
 [2026-03-23 00:27] | feature/sprint-7-experiments | feat(sprint-7) |
-  Frontend experiment modals complete.
   PhotonInputTable for Exp 2 and 4.
   ExperimentModal with per-experiment config.
   Sidebar wired to open modals on click.
+[2026-03-23 00:36] | develop | merge | Sprint 7 complete.
+  Backend: experiment modes, user input Alice,
+  6 experiment presets, /api/experiments endpoint.
+  Frontend: ExperimentModal, PhotonInputTable,
+  Sidebar wired, Exp 1-6 modals verified.
+  Exp 6: No-cloning probe backend physics,
+  lane corruption visualization, QBER elevation.
