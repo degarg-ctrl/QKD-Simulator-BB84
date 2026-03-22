@@ -7,6 +7,11 @@ class SimulationRequest(BaseModel):
     noise_level: float = Field(ge=0.0, le=1.0)
     attack_prob: float = Field(ge=0.0, le=1.0)
     attack_strategy: Literal['intercept_resend', 'partial', 'burst']
+    gates: list[dict] = Field(
+        default=[],
+        description="List of quantum gates placed on lanes. "
+                    "Each gate: {'type': str, 'lane': int, 'position': float}"
+    )
 
 class PhotonRecord(BaseModel):
     index: int
