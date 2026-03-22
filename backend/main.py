@@ -33,7 +33,7 @@ def health_check():
     return {
         "status": "ok",
         "protocol": "BB84",
-        "version": "0.1"
+        "version": "0.2"
     }
 
 if __name__ == "__main__":
