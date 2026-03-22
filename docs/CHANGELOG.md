@@ -42,3 +42,8 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   A2: Pause/Resume animation control added to TopBar.
   A3: Single photon mode toggle in ConfigPanel.
   A4: QBER/SKR chart labels clarified — Theoretical vs Simulated.
+[2026-03-22 20:45] | develop | merge | Sprint 5 complete and merged.
+  Features: collapsible sidebar with gates/probes/experiments,
+  enhanced Bob arrival animation, pause/resume control,
+  single photon mode, QBER/SKR label clarity,
+  gates.py stub ready for Sprint 6.
