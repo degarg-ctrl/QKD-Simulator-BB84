@@ -18,9 +18,10 @@
  * - Tooltip (?) icon that shows physics explanation on hover
  */
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
+import { QuestionTooltip } from '../ui/TooltipPortal'
 
 // Tooltip content — physics explanations for each parameter
 const TOOLTIPS = {
@@ -54,89 +55,7 @@ const TOOLTIPS = {
       (simulates a targeted attack window).`
 }
 
-function TooltipIcon({ content }) {
-  const [visible, setVisible] = useState(false)
-  const [position, setPosition] = useState({
-    top: 'auto', bottom: 'auto',
-    left: 'auto', right: 'auto'
-  })
-  const iconRef = useRef(null)
 
-  const handleMouseEnter = () => {
-    if (!iconRef.current) return
-    const rect = iconRef.current.getBoundingClientRect()
-    const vw = window.innerWidth
-    const vh = window.innerHeight
-    const tooltipW = 256  // w-64
-    const tooltipH = 160  // estimated height
-
-    // Determine horizontal position
-    const spaceRight = vw - rect.right
-    const spaceLeft = rect.left
-
-    // Determine vertical position  
-    const spaceBelow = vh - rect.bottom
-    const spaceAbove = rect.top
-
-    const newPos = {}
-
-    // Horizontal: prefer left if in right half of screen
-    if (spaceLeft >= tooltipW) {
-      newPos.right = '100%'
-      newPos.left = 'auto'
-      newPos.marginRight = '8px'
-    } else {
-      newPos.left = '100%'
-      newPos.right = 'auto'
-      newPos.marginLeft = '8px'
-    }
-
-    // Vertical: prefer above if in bottom half of screen
-    if (spaceAbove >= tooltipH) {
-      newPos.bottom = '0'
-      newPos.top = 'auto'
-    } else {
-      newPos.top = '0'
-      newPos.bottom = 'auto'
-    }
-
-    setPosition(newPos)
-    setVisible(true)
-  }
-
-  return (
-    <div className="relative inline-flex" ref={iconRef}>
-      <button
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={() => setVisible(false)}
-        className="w-4 h-4 rounded-full border border-gray-600
-                   text-gray-500 hover:text-gray-300 
-                   hover:border-gray-400 text-xs flex items-center
-                   justify-center transition-colors ml-1 flex-shrink-0"
-      >
-        ?
-      </button>
-      <AnimatePresence>
-        {visible && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.12 }}
-            className="absolute w-64 p-3 bg-gray-950 
-                       border border-gray-700 rounded-lg
-                       text-xs text-gray-300 leading-relaxed
-                       z-[9999] shadow-2xl whitespace-pre-line
-                       pointer-events-none"
-            style={position}
-          >
-            {content}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
 
 function SliderControl({ label, value, min, max, step, onChange, 
                          displayValue, tooltip }) {
@@ -148,7 +67,7 @@ function SliderControl({ label, value, min, max, step, onChange,
                            uppercase tracking-wider">
             {label}
           </span>
-          <TooltipIcon content={tooltip} />
+          <QuestionTooltip content={tooltip} />
         </div>
         <span className="text-xs font-mono text-indigo-400 
                          font-semibold">
@@ -219,7 +138,7 @@ export default function ConfigPanel({ className = '' }) {
                            uppercase tracking-wider">
             Single Photon
           </span>
-          <TooltipIcon content="Send exactly 1 photon to observe 
+          <QuestionTooltip content="Send exactly 1 photon to observe 
             the complete BB84 journey step by step. QBER estimation 
             is skipped in single photon mode." />
         </div>
@@ -281,7 +200,7 @@ export default function ConfigPanel({ className = '' }) {
                            uppercase tracking-wider">
             Strategy
           </span>
-          <TooltipIcon content={TOOLTIPS.attack_strategy} />
+          <QuestionTooltip content={TOOLTIPS.attack_strategy} />
         </div>
         <div className="flex flex-col gap-1">
           {strategies.map(s => (
