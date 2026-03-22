@@ -44,7 +44,7 @@ export default function SKRChart({ data = [], currentSKR = null }) {
           </span>
         )}
       </div>
-      <ResponsiveContainer width="100%" height={140}>
+      <ResponsiveContainer width="100%" height={160}>
         <LineChart data={chartData}
                    margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" />
