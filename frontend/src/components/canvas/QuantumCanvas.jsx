@@ -30,19 +30,19 @@ const ENTITY_Y = 200
 const LANE_Y_POSITIONS = [150, 200, 250]  // 3 channel lanes
 
 const COLORS = {
-  background:      '#0a0a0f',
-  laneLine:        '#1e1e3f',
-  laneGlow:        '#2a2a5f',
-  aliceNode:       '#6366f1',   // quantum-blue
-  bobNode:         '#22c55e',   // quantum-green
-  eveNode:         '#ef4444',   // quantum-red
-  eveNodeInactive: '#374151',   // grey when attack_prob=0
+  background:      '#2a2a2a',
+  laneLine:        '#ffffff',
+  laneGlow:        'rgba(255,255,255,0.3)',
+  aliceNode:       '#00d4ff',
+  bobNode:         '#00ff88',
+  eveNode:         '#ff4444',
+  eveNodeInactive: '#555555',
   nodeText:        '#ffffff',
-  nodeBorder:      '#ffffff22',
-  photonBlue:      '#6366f1',   // rectilinear basis
-  photonPurple:    '#a855f7',   // diagonal basis
-  photonLost:      '#374151',
-  labelText:       '#6b7280',
+  nodeBorder:      'rgba(255,255,255,0.4)',
+  photonBlue:      '#00d4ff',
+  photonPurple:    '#ffd700',
+  photonLost:      '#555555',
+  labelText:       '#aaaaaa',
 }
 
 const NODE_RADIUS = 28
@@ -63,42 +63,44 @@ export default function QuantumCanvas({ className = '' }) {
   const drawEntityNode = useCallback((ctx, x, y, label, color, sublabel = '') => {
     ctx.save()
 
-    // Outer glow ring
-    const gradient = ctx.createRadialGradient(x, y, NODE_RADIUS * 0.8, x, y, NODE_RADIUS * 1.5)
-    gradient.addColorStop(0, `${color}44`)
-    gradient.addColorStop(1, 'transparent')
-    ctx.fillStyle = gradient
+    // White outer ring
     ctx.beginPath()
-    ctx.arc(x, y, NODE_RADIUS * 1.5, 0, Math.PI * 2)
-    ctx.fill()
+    ctx.arc(x, y, NODE_RADIUS + 4, 0, Math.PI * 2)
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)'
+    ctx.lineWidth = 1.5
+    ctx.stroke()
 
-    // Inner glow
-    ctx.shadowBlur = 15
+    // Colored glow ring
+    ctx.beginPath()
+    ctx.arc(x, y, NODE_RADIUS + 2, 0, Math.PI * 2)
+    ctx.strokeStyle = color + '60'
+    ctx.lineWidth = 3
     ctx.shadowColor = color
+    ctx.shadowBlur = 12
+    ctx.stroke()
+    ctx.shadowBlur = 0
 
     // Filled circle
-    ctx.fillStyle = color
     ctx.beginPath()
     ctx.arc(x, y, NODE_RADIUS, 0, Math.PI * 2)
+    ctx.fillStyle = color + '30'
     ctx.fill()
-
-    // Border
-    ctx.strokeStyle = COLORS.nodeBorder
+    ctx.strokeStyle = color
     ctx.lineWidth = 2
     ctx.stroke()
 
-    // Text Label below node
-    ctx.shadowBlur = 0
-    ctx.fillStyle = COLORS.nodeText
-    ctx.font = 'bold 14px Inter, system-ui, sans-serif'
+    // Label
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 11px monospace'
     ctx.textAlign = 'center'
-    ctx.fillText(label, x, y + NODE_RADIUS + 25)
+    ctx.textBaseline = 'top'
+    ctx.fillText(label, x, y + NODE_RADIUS + 8)
 
     // Sublabel
     if (sublabel) {
-      ctx.fillStyle = COLORS.labelText
-      ctx.font = '11px JetBrains Mono, monospace'
-      ctx.fillText(sublabel, x, y + NODE_RADIUS + 42)
+      ctx.fillStyle = '#aaaaaa'
+      ctx.font = '9px monospace'
+      ctx.fillText(sublabel, x, y + NODE_RADIUS + 20)
     }
 
     ctx.restore()
@@ -112,9 +114,9 @@ export default function QuantumCanvas({ className = '' }) {
 
     LANE_Y_POSITIONS.forEach((y, laneIndex) => {
       // Glow effect
-      ctx.shadowBlur = 8
-      ctx.shadowColor = COLORS.laneGlow
-      ctx.strokeStyle = COLORS.laneLine
+      ctx.shadowBlur = 3
+      ctx.shadowColor = 'rgba(255,255,255,0.2)'
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)'
       ctx.lineWidth = 2
       ctx.setLineDash([10, 15]) // Dashed line
 
@@ -126,7 +128,7 @@ export default function QuantumCanvas({ className = '' }) {
       // Lane label on far left
       ctx.setLineDash([])
       ctx.shadowBlur = 0
-      ctx.fillStyle = COLORS.laneGlow
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'
       ctx.font = '9px JetBrains Mono, monospace'
       ctx.textAlign = 'left'
       ctx.fillText(`LANE 0${laneIndex + 1}`, 20, y + 4)
@@ -238,23 +240,12 @@ export default function QuantumCanvas({ className = '' }) {
    * Draw the static background.
    */
   const drawBackground = useCallback((ctx, width, height) => {
-    // Full solid dark base — no gaps
-    ctx.fillStyle = '#0a0a0f'
+    // Solid charcoal base
+    ctx.fillStyle = '#2a2a2a'
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
-    // Subtle radial gradient centered across full width
-    const gradient = ctx.createRadialGradient(
-      CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0,
-      CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2,
-      CANVAS_WIDTH * 0.7
-    )
-    gradient.addColorStop(0, '#10101a')
-    gradient.addColorStop(1, '#0a0a0f')
-    ctx.fillStyle = gradient
-    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-
-    // Technical grid — full canvas coverage
-    ctx.strokeStyle = '#ffffff06'
+    // Subtle grid with white lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)'
     ctx.lineWidth = 0.5
     const gridSize = 40
     for (let x = 0; x <= CANVAS_WIDTH; x += gridSize) {
@@ -414,7 +405,7 @@ export default function QuantumCanvas({ className = '' }) {
 
   return (
     <div
-      className={`relative w-full bg-[#0a0a0f] rounded-lg overflow-hidden border border-[#1e1e3f] shadow-2xl ${className}`}
+      className={`relative w-full bg-[#2a2a2a] rounded-lg overflow-hidden border border-[rgba(255,255,255,0.2)] shadow-2xl ${className}`}
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
       onContextMenu={handleContextMenu}

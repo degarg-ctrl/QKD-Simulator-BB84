@@ -43,13 +43,13 @@ export class PhotonParticle {
 
     // Visual state
     this.opacity = 1.0
-    this.radius = 6
+    this.radius = 7
     this.glowRadius = 14
 
     // Determine color from alice_basis
     this.baseColor = photonRecord.alice_basis === '+' 
-      ? COLORS.photonBlue 
-      : COLORS.photonPurple
+      ? '#00aacc' 
+      : '#ccaa00'
 
     // Polarization angle from backend record
     this.polarizationAngle = photonRecord.polarization_angle
@@ -186,35 +186,40 @@ export class PhotonParticle {
   }
 
   _drawGlow(ctx) {
-    const color = this.record.lost ? COLORS.photonLost : this.baseColor
+    const color = this.record.lost
+      ? '#666666'
+      : this.baseColor
     const gradient = ctx.createRadialGradient(
       this.x, this.y, 0,
       this.x, this.y, this.glowRadius
     )
-    gradient.addColorStop(0, `${color}66`)
-    gradient.addColorStop(1, 'transparent')
-    
-    ctx.fillStyle = gradient
+    gradient.addColorStop(0, color + '80')
+    gradient.addColorStop(0.5, color + '30')
+    gradient.addColorStop(1, color + '00')
     ctx.beginPath()
-    ctx.arc(this.x, this.y, this.glowRadius, 0, Math.PI * 2)
+    ctx.arc(this.x, this.y, this.glowRadius,
+            0, Math.PI * 2)
+    ctx.fillStyle = gradient
     ctx.fill()
   }
 
   _drawBody(ctx) {
-    ctx.beginPath()
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
-    
-    let color = this.baseColor
-    if (this.record.lost) color = COLORS.photonLost
-    if (this.record.dark_count) color = '#ffffff'
-    
-    ctx.fillStyle = color
-    ctx.fill()
+    const color = this.record.lost 
+      ? '#666666' 
+      : this.baseColor
 
-    // Add crisp border
-    ctx.strokeStyle = '#ffffff22'
+    // White outline ring
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, this.radius + 2, 0, Math.PI * 2)
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)'
     ctx.lineWidth = 1
     ctx.stroke()
+
+    // Filled body
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+    ctx.fillStyle = color
+    ctx.fill()
   }
 
   _drawPolarizationLine(ctx) {
@@ -232,17 +237,31 @@ export class PhotonParticle {
   }
 
   _drawEveEffect(ctx) {
-    const progress = 1 - (this.eveEffectTimer / this.eveEffectDuration)
-    const ringRadius = this.radius + progress * 20
-    const ringOpacity = 1 - progress
+    const progress = 1 - (this.eveEffectTimer / 
+                          this.eveEffectDuration)
+    const ringRadius = this.radius + progress * 25
+    const ringOpacity = (1 - progress) * 0.9
 
+    // Bright red expanding ring — high contrast
     ctx.beginPath()
     ctx.arc(this.x, this.y, ringRadius, 0, Math.PI * 2)
-    ctx.strokeStyle = COLORS.eveNode
-    ctx.lineWidth = 2
+    ctx.strokeStyle = '#ff4444'
     ctx.globalAlpha = ringOpacity * this.opacity
+    ctx.lineWidth = 3
+    ctx.shadowColor = '#ff4444'
+    ctx.shadowBlur = 15
     ctx.stroke()
-    ctx.globalAlpha = this.opacity
+    ctx.shadowBlur = 0
+
+    // Second inner ring for depth
+    const r2 = this.radius + progress * 12
+    const o2 = (1 - progress) * 0.6
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, r2, 0, Math.PI * 2)
+    ctx.strokeStyle = '#ff8888'
+    ctx.globalAlpha = o2 * this.opacity
+    ctx.lineWidth = 1.5
+    ctx.stroke()
   }
 
   _drawArrivalFlash(ctx) {

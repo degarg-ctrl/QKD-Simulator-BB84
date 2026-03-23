@@ -29,11 +29,14 @@ export default function BottomPanel({ className = '' }) {
       initial={{ height: 0, opacity: 0 }}
       animate={{ height: 'auto', opacity: 1 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className={`border-t border-gray-800 bg-[#11111a] 
-                  flex-shrink-0 overflow-hidden ${className}`}
+      className={`flex-shrink-0 overflow-hidden ${className}`}
+      style={{ 
+        borderTop: '1px solid rgba(255,255,255,0.2)',
+        backgroundColor: '#242424'
+      }}
     >
       {/* Tab bar */}
-      <div className="flex items-center border-b border-gray-800 px-4">
+      <div className="flex items-center px-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
         {tabs.map(tab => (
           <button
             key={tab.id}
