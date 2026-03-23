@@ -13,6 +13,7 @@ export default function TopBar() {
   const { runSimulation, isLoading } = useSimulation()
   const { results, reset, params, animation, 
           togglePause, placedGates, clearGates,
+          openInspector, inspector,
           activeView, setActiveView } = useSimulationStore()
 
   const isBreached = results?.secure_threshold_breached ?? false
@@ -135,6 +136,22 @@ export default function TopBar() {
                        hover:border-red-800 transition-colors"
           >
             ✕ GATES ({placedGates.length})
+          </button>
+        )}
+        {results && results.bit_stream?.length > 0 && (
+          <button
+            onClick={openInspector}
+            className="px-3 py-1 text-xs font-mono
+                       border rounded transition-colors"
+            style={{
+              borderColor: inspector.isOpen
+                ? '#00aacc' : 'rgba(255,255,255,0.2)',
+              color: inspector.isOpen ? '#00aacc' : '#9ca3af',
+              backgroundColor: inspector.isOpen
+                ? '#00aacc15' : 'transparent'
+            }}
+          >
+            🔍 INSPECT
           </button>
         )}
         {results && (

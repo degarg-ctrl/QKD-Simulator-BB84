@@ -124,3 +124,15 @@ Eve cloning attempt via CNOT entanglement:
     - Eve interception (if active)
     - Bob measurement
     - Basis match result
+
+## 13. One-Time Pad (OTP) Encryption
+The BB84 sifted key is used as a one-time pad key.
+XOR encryption: C = M XOR K (ciphertext = message XOR key)
+XOR decryption: M = C XOR K (identical operation)
+Perfect secrecy conditions (Shannon, 1949):
+  1. Key must be truly random - BB84 guarantees this
+  2. Key must be used only once - enforced by resetting
+  3. Key must be at least as long as the message
+  4. Key must be secret - BB84 key exchange guarantees this
+ASCII encoding: each character = 8 bits
+Maximum message length = floor(sifted_key_bits / 8)

@@ -1,6 +1,11 @@
 # Changelog
 Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 
+[2026-03-23 10:35] | feature/sprint-9-inspector-otp | feat(sprint-9) |
+Photon Inspector: floating draggable panel, step/play controls.
+One-Time Pad: XOR encryption demo in Results page.
+INSPECT button in TopBar.
+
 [2026-03-23 01:00] | main | RELEASE v0.2 |
 BB84 QKD Simulator v0.2 released to main.
 
