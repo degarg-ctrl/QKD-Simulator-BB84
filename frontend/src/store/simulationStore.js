@@ -21,7 +21,10 @@ const useSimulationStore = create((set, get) => ({
     distance_km: 50,
     noise_level: 0.02,
     attack_prob: 0.0,
-    attack_strategy: 'intercept_resend'
+    attack_strategy: 'intercept_resend',
+    wcp_enabled: false,
+    mean_photon_number: 0.2,
+    decoy_enabled: false,
   },
 
   // ─── RESULTS ─────────────────────────────────────────────
@@ -82,6 +85,10 @@ const useSimulationStore = create((set, get) => ({
   bottomPanelCollapsed: false,
 
   syncMode: false,
+
+  sourceModel: 'ideal',
+  // 'ideal' = perfect single photons, standard BB84
+  // 'realistic' = WCP source, PNS vulnerable
 
   /*
   placedGate shape:
@@ -182,6 +189,7 @@ const useSimulationStore = create((set, get) => ({
     },
     bottomPanelCollapsed: false,
     syncMode: false,
+    sourceModel: 'ideal',
   }),
 
   addGate: (gate) => set((state) => ({
@@ -240,6 +248,30 @@ const useSimulationStore = create((set, get) => ({
   })),
 
   setSyncMode: (enabled) => set({ syncMode: enabled }),
+
+  setSourceModel: (model) => set((state) => {
+    // When switching to ideal: force WCP/decoy off
+    if (model === 'ideal') {
+      return {
+        sourceModel: 'ideal',
+        params: {
+          ...state.params,
+          wcp_enabled: false,
+          decoy_enabled: false,
+          mean_photon_number: 0.2,
+        }
+      }
+    }
+    // When switching to realistic: enable WCP
+    return {
+      sourceModel: 'realistic',
+      params: {
+        ...state.params,
+        wcp_enabled: true,
+        mean_photon_number: 0.2,
+      }
+    }
+  }),
 
   // Derived getters
   getHasResults: () => get().results !== null,

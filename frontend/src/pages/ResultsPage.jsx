@@ -103,7 +103,7 @@ function EmptyResults() {
 
 // ─── MAIN PAGE ────────────────────────────────────────────
 export default function ResultsPage() {
-  const { results, params } = useSimulationStore()
+  const { results, params, sourceModel } = useSimulationStore()
   const [bitStreamFilter, setBitStreamFilter] = useState('all')
   const [runTimestamp] = useState(() => new Date().toLocaleString())
 
@@ -242,6 +242,9 @@ export default function ResultsPage() {
               { label: 'Eve Attack', value: `${(params.attack_prob * 100).toFixed(0)}%` },
               { label: 'Strategy', value: params.attack_strategy.replace('_', '-') },
               { label: 'Gates', value: `${useSimulationStore.getState().placedGates?.length || 0} placed` },
+              { label: 'Source Model', 
+                value: sourceModel === 'ideal' 
+                  ? '⚛ Ideal' : '🔬 Realistic' },
             ].map(p => (
               <div key={p.label} className="flex flex-col gap-1">
                 <div className="text-xs text-gray-600 font-mono 
@@ -542,6 +545,166 @@ export default function ResultsPage() {
             </div>
           </div>
         </div>
+
+        {/* WCP Statistics — Realistic mode only */}
+        {sourceModel === 'realistic' && 
+         results.wcp_enabled && 
+         results.wcp_stats && 
+         Object.keys(results.wcp_stats).length > 0 && (
+          <div className="flex flex-col gap-3">
+            <div className="text-xs font-mono text-gray-500
+                            uppercase tracking-wider">
+              Weak Coherent Pulse Statistics
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 
+                            gap-3">
+              {[
+                { 
+                  label: 'Vacuum Pulses',
+                  value: `${((results.wcp_stats.vacuum_fraction || 0) * 100).toFixed(1)}%`,
+                  color: '#6b7280',
+                  note: 'No photon sent'
+                },
+                {
+                  label: 'Single Photon',
+                  value: `${((results.wcp_stats.single_fraction || 0) * 100).toFixed(1)}%`,
+                  color: '#00aacc',
+                  note: 'Secure'
+                },
+                {
+                  label: 'Multi-Photon',
+                  value: `${((results.wcp_stats.multi_fraction || 0) * 100).toFixed(1)}%`,
+                  color: '#ccaa00',
+                  note: 'PNS vulnerable'
+                },
+                {
+                  label: 'Mean Photon μ',
+                  value: params.mean_photon_number?.toFixed(2) || '0.20',
+                  color: '#a855f7',
+                  note: 'Per pulse'
+                },
+              ].map(stat => (
+                <div key={stat.label}
+                     className="p-3 rounded-lg flex flex-col gap-1"
+                     style={{
+                       backgroundColor: stat.color + '15',
+                       border: `1px solid ${stat.color}30`
+                     }}>
+                  <div className="text-xs font-mono text-gray-500
+                                  uppercase tracking-wider">
+                    {stat.label}
+                  </div>
+                  <div className="text-lg font-mono font-bold"
+                       style={{ color: stat.color }}>
+                    {stat.value}
+                  </div>
+                  <div className="text-xs text-gray-600 font-mono">
+                    {stat.note}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* PNS warning if pns_stats present */}
+            {results.pns_stats && 
+             results.pns_stats.split_multi > 0 && (
+              <div className="p-3 rounded-lg"
+                   style={{
+                     backgroundColor: '#ccaa0015',
+                     border: '1px solid #ccaa0040'
+                   }}>
+                <div className="text-xs font-mono text-yellow-400
+                                uppercase tracking-wider mb-2">
+                  ⚠ PNS Attack Active
+                </div>
+                <div className="grid grid-cols-3 gap-4 
+                                text-xs font-mono">
+                  <div>
+                    <div className="text-gray-500">Split photons</div>
+                    <div className="text-yellow-400 font-bold">
+                      {results.pns_stats.split_multi || 0}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">
+                      Leaked fraction
+                    </div>
+                    <div className="text-yellow-400 font-bold">
+                      {((results.pns_stats.leak_fraction || 0) 
+                        * 100).toFixed(2)}%
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">QBER shows</div>
+                    <div className="text-green-400 font-bold">
+                      {(results.qber * 100).toFixed(2)}%
+                      <span className="text-red-400 ml-1">
+                        (misleading!)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2 text-xs text-gray-500">
+                  ℹ QBER appears secure but Eve has stolen key
+                  information. Enable Decoy States to detect.
+                </div>
+              </div>
+            )}
+
+            {/* Decoy results if present */}
+            {results.decoy_results && 
+             Object.keys(results.decoy_results).length > 0 && (
+              <div className="p-3 rounded-lg"
+                   style={{
+                     backgroundColor: results.decoy_results.pns_detected
+                       ? '#ff444415' : '#00ff8815',
+                     border: `1px solid ${
+                       results.decoy_results.pns_detected
+                         ? '#ff444440' : '#00ff8840'
+                     }`
+                   }}>
+                <div className="text-xs font-mono uppercase
+                                tracking-wider mb-2"
+                     style={{
+                       color: results.decoy_results.pns_detected
+                         ? '#ff4444' : '#00ff88'
+                     }}>
+                  {results.decoy_results.pns_detected
+                    ? '🚨 Decoy Protocol: PNS Attack Detected'
+                    : '✓ Decoy Protocol: No PNS Attack'}
+                </div>
+                <div className="grid grid-cols-3 gap-4
+                                text-xs font-mono">
+                  <div>
+                    <div className="text-gray-500">Signal gain</div>
+                    <div className="text-white font-bold">
+                      {((results.decoy_results.signal_gain || 0)
+                        * 100).toFixed(2)}%
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">Decoy gain</div>
+                    <div className="text-white font-bold">
+                      {((results.decoy_results.decoy_gain || 0)
+                        * 100).toFixed(2)}%
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500">Confidence</div>
+                    <div className="font-bold"
+                         style={{
+                           color: results.decoy_results.pns_detected
+                             ? '#ff4444' : '#00ff88'
+                         }}>
+                      {((results.decoy_results.confidence || 0)
+                        * 100).toFixed(0)}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* One-Time Pad encryption demo */}
         <div className="flex flex-col gap-3">

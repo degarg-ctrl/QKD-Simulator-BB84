@@ -104,7 +104,7 @@ function SliderControl({ label, value, min, max, step,
 }
 
 export default function ConfigPanel({ className = '' }) {
-  const { params, setParams, syncMode, setSyncMode } = useSimulationStore()
+  const { params, setParams, syncMode, setSyncMode, sourceModel, setSourceModel } = useSimulationStore()
 
   const strategies = [
     { value: 'intercept_resend', label: 'Intercept-Resend' },
@@ -127,6 +127,58 @@ export default function ConfigPanel({ className = '' }) {
                          uppercase tracking-widest">
           Parameters
         </span>
+      </div>
+
+      {/* Source Model Toggle */}
+      <div className="flex flex-col gap-2 pb-3
+                      border-b border-white/10">
+        <div className="flex items-center gap-1">
+          <span className="text-xs font-mono text-gray-400
+                           uppercase tracking-wider">
+            Source Model
+          </span>
+          <QuestionTooltip content="Ideal: perfect single
+photons, standard BB84 analysis. No WCP effects.
+Realistic: laser source with Poisson photon distribution.
+Enables PNS attack vulnerability and decoy protocol." />
+        </div>
+        <div className="flex gap-1 p-0.5 rounded"
+             style={{ backgroundColor: '#1e1e1e',
+                      border: '1px solid rgba(255,255,255,0.1)' }}>
+          {['ideal', 'realistic'].map(model => (
+            <button
+              key={model}
+              onClick={() => setSourceModel(model)}
+              className="flex-1 py-1.5 text-xs font-mono
+                         rounded capitalize transition-colors"
+              style={{
+                backgroundColor: sourceModel === model
+                  ? model === 'ideal' ? '#00aacc30' : '#ccaa0030'
+                  : 'transparent',
+                color: sourceModel === model
+                  ? model === 'ideal' ? '#00aacc' : '#ccaa00'
+                  : '#6b7280',
+                border: sourceModel === model
+                  ? `1px solid ${model === 'ideal' 
+                      ? '#00aacc60' : '#ccaa0060'}`
+                  : '1px solid transparent'
+              }}
+            >
+              {model === 'ideal' ? '⚛ Ideal' : '🔬 Realistic'}
+            </button>
+          ))}
+        </div>
+        {sourceModel === 'ideal' && (
+          <div className="text-xs font-mono text-gray-600">
+            Perfect single photons · Standard BB84
+          </div>
+        )}
+        {sourceModel === 'realistic' && (
+          <div className="text-xs font-mono text-gray-600">
+            WCP laser source · μ = {params.mean_photon_number}
+            · PNS vulnerable
+          </div>
+        )}
       </div>
 
       {/* N Bits */}
@@ -257,6 +309,60 @@ export default function ConfigPanel({ className = '' }) {
           ))}
         </div>
       </div>
+
+      {/* WCP Controls — Realistic mode only */}
+      {sourceModel === 'realistic' && (
+        <div className="flex flex-col gap-4 pt-2
+                        border-t border-white/10">
+          <div className="text-xs font-mono text-gray-500
+                          uppercase tracking-wider">
+            Realistic Source Settings
+          </div>
+
+          {/* Mean photon number */}
+          <SliderControl
+            label="Mean Photons (μ)"
+            value={params.mean_photon_number}
+            min={0.05}
+            max={0.5}
+            step={0.05}
+            onChange={val => setParams({ mean_photon_number: val })}
+            displayValue={params.mean_photon_number.toFixed(2)}
+            tooltip="Mean photon number per pulse (μ).
+Lower = more secure but fewer detections.
+μ=0.1: very secure, μ=0.5: more detections but
+higher PNS vulnerability."
+            suffix=""
+          />
+
+          {/* Decoy state toggle */}
+          <div className="flex items-center justify-between py-1">
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-mono text-gray-400
+                               uppercase tracking-wider">
+                Decoy States
+              </span>
+              <QuestionTooltip content="Enables decoy state
+protocol to detect PNS attack. Alice sends pulses at
+3 different intensities. Gain statistics reveal PNS
+even when QBER appears normal." />
+            </div>
+            <button
+              onClick={() => setParams({
+                decoy_enabled: !params.decoy_enabled
+              })}
+              className={`px-2 py-1 rounded text-xs font-mono
+                         border transition-colors
+                         ${params.decoy_enabled
+                           ? 'bg-indigo-900/50 border-quantum-blue text-quantum-blue'
+                           : 'border-gray-700 text-gray-500 hover:text-gray-300'
+                         }`}
+            >
+              {params.decoy_enabled ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Security threshold warning */}
       <AnimatePresence>
