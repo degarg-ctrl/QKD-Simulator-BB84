@@ -16,7 +16,7 @@ export default function SimulatorPage() {
 
   if (activeView === 'guide') {
     return (
-      <div className="bg-[#0a0a0f] h-screen flex flex-col">
+      <div className="bg-[#2a2a2a] h-screen flex flex-col">
         <TopBar />
         <div className="flex-1 overflow-y-auto">
           <GuidePage />
@@ -28,7 +28,7 @@ export default function SimulatorPage() {
 
   if (activeView === 'results') {
     return (
-      <div className="bg-[#0a0a0f] h-screen flex flex-col">
+      <div className="bg-[#2a2a2a] h-screen flex flex-col">
         <TopBar />
         <div className="flex-1 overflow-hidden">
           <ResultsPage />
@@ -39,7 +39,7 @@ export default function SimulatorPage() {
   }
 
   return (
-    <div className="bg-[#0a0a0f] h-screen flex flex-col overflow-hidden">
+    <div className="bg-[#2a2a2a] h-screen flex flex-col overflow-hidden">
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
@@ -52,14 +52,18 @@ export default function SimulatorPage() {
             <motion.div
               animate={{ width: configCollapsed ? 0 : 256 }}
               transition={{ duration: 0.2, ease: 'easeInOut' }}
-              className="border-l border-gray-800 overflow-hidden 
-                         flex-shrink-0 relative bg-[#0a0a0f]"
+              className="border-l overflow-hidden 
+                         flex-shrink-0 relative"
+              style={{ 
+                borderColor: 'rgba(255,255,255,0.2)',
+                backgroundColor: '#2a2a2a'
+              }}
             >
               {/* Collapse toggle tab */}
               <button
                 onClick={() => setConfigCollapsed(!configCollapsed)}
                 className="absolute -left-3 top-1/2 -translate-y-1/2
-                           w-3 h-12 bg-[#11111a] border border-gray-800
+                           w-3 h-12 bg-[#242424] border border-gray-600
                            rounded-l flex items-center justify-center
                            text-gray-500 hover:text-white z-10
                            transition-colors"

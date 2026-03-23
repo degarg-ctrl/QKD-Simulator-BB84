@@ -110,3 +110,9 @@ Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
   Sidebar tooltips rich with physics detail, fully visible.
   QuantumCanvas ResizeObserver — Bob visibility on sidebar toggle.
   ConfigPanel simplified using QuestionTooltip component.
+[2026-03-23 09:49] | feature/v0.2-theme | feat(theme) |
+  Charcoal theme: #2a2a2a background.
+  Cyan/gold photons with white outline rings.
+  White panel borders throughout.
+  Strong color fills on component buttons.
+  White channel lanes and entity node rings.

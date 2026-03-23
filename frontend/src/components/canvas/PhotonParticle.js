@@ -43,13 +43,13 @@ export class PhotonParticle {
 
     // Visual state
     this.opacity = 1.0
-    this.radius = 6
-    this.glowRadius = 14
+    this.radius = 9
+    this.glowRadius = 20
 
     // Determine color from alice_basis
     this.baseColor = photonRecord.alice_basis === '+' 
-      ? COLORS.photonBlue 
-      : COLORS.photonPurple
+      ? '#00d4ff' 
+      : '#ffd700'
 
     // Polarization angle from backend record
     this.polarizationAngle = photonRecord.polarization_angle
@@ -186,35 +186,40 @@ export class PhotonParticle {
   }
 
   _drawGlow(ctx) {
-    const color = this.record.lost ? COLORS.photonLost : this.baseColor
+    const color = this.record.lost 
+      ? '#666666' 
+      : this.baseColor
     const gradient = ctx.createRadialGradient(
       this.x, this.y, 0,
       this.x, this.y, this.glowRadius
     )
-    gradient.addColorStop(0, `${color}66`)
-    gradient.addColorStop(1, 'transparent')
-    
-    ctx.fillStyle = gradient
+    gradient.addColorStop(0, color + 'cc')
+    gradient.addColorStop(0.4, color + '66')
+    gradient.addColorStop(1, color + '00')
     ctx.beginPath()
-    ctx.arc(this.x, this.y, this.glowRadius, 0, Math.PI * 2)
+    ctx.arc(this.x, this.y, this.glowRadius, 
+            0, Math.PI * 2)
+    ctx.fillStyle = gradient
     ctx.fill()
   }
 
   _drawBody(ctx) {
-    ctx.beginPath()
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
-    
-    let color = this.baseColor
-    if (this.record.lost) color = COLORS.photonLost
-    if (this.record.dark_count) color = '#ffffff'
-    
-    ctx.fillStyle = color
-    ctx.fill()
+    const color = this.record.lost 
+      ? '#666666' 
+      : this.baseColor
 
-    // Add crisp border
-    ctx.strokeStyle = '#ffffff22'
+    // White outline ring
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, this.radius + 2, 0, Math.PI * 2)
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)'
     ctx.lineWidth = 1
     ctx.stroke()
+
+    // Filled body
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+    ctx.fillStyle = color
+    ctx.fill()
   }
 
   _drawPolarizationLine(ctx) {
