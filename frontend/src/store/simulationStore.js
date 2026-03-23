@@ -79,6 +79,8 @@ const useSimulationStore = create((set, get) => ({
     playSpeed: 800,     // ms between auto-advance steps
   },
 
+  bottomPanelCollapsed: false,
+
   /*
   placedGate shape:
   {
@@ -176,6 +178,7 @@ const useSimulationStore = create((set, get) => ({
       isPlaying: false,
       playSpeed: 800,
     },
+    bottomPanelCollapsed: false,
   }),
 
   addGate: (gate) => set((state) => ({
@@ -207,12 +210,14 @@ const useSimulationStore = create((set, get) => ({
 
   openInspector: () => set((state) => ({
     inspector: { ...state.inspector, isOpen: true, 
-                 currentIndex: 0, isPlaying: false }
+                 currentIndex: 0, isPlaying: false },
+    bottomPanelCollapsed: true
   })),
 
   closeInspector: () => set((state) => ({
     inspector: { ...state.inspector, isOpen: false, 
-                 isPlaying: false }
+                 isPlaying: false },
+    bottomPanelCollapsed: false
   })),
 
   setInspectorIndex: (index) => set((state) => ({
@@ -221,6 +226,14 @@ const useSimulationStore = create((set, get) => ({
 
   setInspectorPlaying: (isPlaying) => set((state) => ({
     inspector: { ...state.inspector, isPlaying }
+  })),
+
+  setBottomPanelCollapsed: (collapsed) => set({ 
+    bottomPanelCollapsed: collapsed 
+  }),
+
+  toggleBottomPanel: () => set((state) => ({
+    bottomPanelCollapsed: !state.bottomPanelCollapsed
   })),
 
   // Derived getters
