@@ -22,6 +22,13 @@ from core.eve import Eve
 from core.bob import Bob
 from core.protocol import BB84Protocol
 from core.metrics import compute_skr, compute_efficiency, generate_chart_data
+from core.wcp import (poisson_photon_counts, 
+                      classify_pulses, 
+                      apply_wcp_to_states)
+from core.pns import PNSAttack, compute_pns_security
+from core.decoy import (assign_decoy_intensities,
+                        compute_gains, detect_pns_attack)
+import numpy as np
 
 router = APIRouter()
 
@@ -70,14 +77,56 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             distance_km=request.distance_km,
             noise_level=request.noise_level
         )
+
+        # Step 1.5: WCP model — apply Poisson photon distribution
+        wcp_stats = {}
+        decoy_intensities = None
+        if request.wcp_enabled:
+          rng = np.random.default_rng()
+          
+          if request.decoy_enabled:
+            # Assign varying intensities for decoy protocol
+            decoy_intensities = assign_decoy_intensities(
+              n_bits_actual, rng
+            )
+            # Generate photon counts per intensity
+            photon_counts = np.array([
+              rng.poisson(mu) 
+              for mu in decoy_intensities
+            ])
+          else:
+            # Uniform mean photon number
+            photon_counts = poisson_photon_counts(
+              n_bits_actual, 
+              request.mean_photon_number, 
+              rng
+            )
+          
+          states = apply_wcp_to_states(states, photon_counts)
+          wcp_stats = classify_pulses(photon_counts)
+
         channel_states = channel.transmit(states)
 
         # Step 3: Eve
         eve = Eve(
-            attack_strategy=request.attack_strategy,
-            attack_prob=request.attack_prob
+            attack_strategy=request.attack_strategy if request.attack_strategy != 'pns' else 'intercept_resend',
+            attack_prob=request.attack_prob if request.attack_strategy != 'pns' else 0.0
         )
         eve_states = eve.intercept(channel_states)
+
+        # Step 3.2: PNS attack
+        pns_stats = {}
+        pns_security = {}
+        if (request.wcp_enabled and 
+            request.attack_strategy == 'pns'):
+          pns_rng = np.random.default_rng()
+          pns = PNSAttack(
+            p_block=request.attack_prob * 0.5,
+            p_split=request.attack_prob
+          )
+          eve_states, pns_stats = pns.attack(
+            eve_states, pns_rng
+          )
 
         # Step 3.5: Apply quantum gates and probes per lane
         from core.gates import apply_gates_to_lane, apply_cloning_probe
@@ -134,6 +183,23 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             attack_strategy=request.attack_strategy
         )
 
+        # PNS security assessment
+        if pns_stats:
+          pns_security = compute_pns_security(
+            pns_stats, 
+            qber_result['qber'], 
+            skr
+          )
+
+        # Decoy state analysis
+        decoy_results = {}
+        if request.decoy_enabled and \
+           decoy_intensities is not None:
+          gains = compute_gains(
+            measured_states, decoy_intensities
+          )
+          decoy_results = detect_pns_attack(gains)
+
         # Step 7: Assemble bit_stream for frontend
         # Include only detected photons, capped at 500 for response size
         bit_stream = []
@@ -164,7 +230,11 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             cloning_probe_active=any(
               g.get('type') in ('clone', 'cnot') 
               for g in request.gates
-            )
+            ),
+            wcp_enabled=request.wcp_enabled,
+            wcp_stats=wcp_stats,
+            pns_stats=pns_stats,
+            decoy_results=decoy_results,
         )
 
     except Exception as e:

@@ -1,6 +1,13 @@
 # Changelog
 Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 
+[2026-03-23 10:41] | feature/sprint-10-pns-wcp | feat(sprint-10) |
+WCP model: Poisson photon distribution, pulse classification.
+PNS attack: zero-QBER undetectable eavesdropping.
+Decoy state protocol: gain statistics PNS detection.
+New experiments: Exp 7 (PNS) and Exp 8 (Decoy states).
+Backward compatible — all new fields have defaults.
+
 [2026-03-23 10:35] | feature/sprint-9-inspector-otp | feat(sprint-9) |
 Photon Inspector: floating draggable panel, step/play controls.
 One-Time Pad: XOR encryption demo in Results page.
