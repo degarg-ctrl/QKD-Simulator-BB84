@@ -37,8 +37,8 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
 
   // Release N photons per frame batch
   // Stagger release so photons don't all spawn simultaneously
-  const PHOTONS_PER_BATCH = 3
-  const FRAMES_BETWEEN_BATCHES = 8
+  const PHOTONS_PER_BATCH = 2
+  const FRAMES_BETWEEN_BATCHES = 20
 
   /**
    * Create a PhotonParticle from a bit_stream record.
@@ -51,7 +51,10 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
       : animation.speed
 
     const laneIndex = record.index % LANE_Y_POSITIONS.length
-    return new PhotonParticle(record, laneIndex, particleSpeed)
+    return new PhotonParticle(
+      record, laneIndex, particleSpeed,
+      Math.random() * 10  // small x offset for spacing
+    )
   }, [animation.speed, results])
 
   /**
