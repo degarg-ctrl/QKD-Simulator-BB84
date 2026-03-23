@@ -136,3 +136,74 @@ Perfect secrecy conditions (Shannon, 1949):
   4. Key must be secret - BB84 key exchange guarantees this
 ASCII encoding: each character = 8 bits
 Maximum message length = floor(sifted_key_bits / 8)
+## 14. Weak Coherent Pulse (WCP) Model
+Real photon sources emit Poisson-distributed photon numbers.
+Ideal single-photon sources do not exist in practice.
+Laser pulses attenuated to mean photon number mu (mu).
+
+Poisson distribution:
+  P(n|mu) = e^(-mu) * mu^n / n!
+  where n = number of photons in pulse, mu = mean photon number
+
+Typical values:
+  mu = 0.1 -> P(0)=90.5%, P(1)=9.0%, P(2+)=0.5%
+  mu = 0.2 -> P(0)=81.9%, P(1)=16.4%, P(2+)=1.8%
+  mu = 0.5 -> P(0)=60.7%, P(1)=30.3%, P(2+)=9.0%
+
+Default simulator value: mu = 0.2
+Configurable range: 0.05 to 0.5
+
+Multi-photon probability (PNS vulnerability):
+  P(n>=2|mu) = 1 - e^(-mu) - mu*e^(-mu)
+  At mu=0.2: P(multi) ~ 1.75%
+
+WCP effect on SKR:
+  Effective single-photon rate: S_wcp = S * mu * e^(-mu)
+  Multi-photon fraction increases PNS vulnerability
+
+## 15. PNS Attack (Photon Number Splitting)
+Exploits multi-photon pulses in WCP sources.
+Eve performs Quantum Non-Demolition (QND) measurement
+to count photons without measuring polarization.
+
+Attack procedure:
+  Single-photon pulses (n=1):
+    Eve blocks with probability p_block
+    Bob sees increased channel loss
+  Multi-photon pulses (n>=2):
+    Eve splits one photon, stores in quantum memory
+    Forwards remaining photons to Bob via lossless channel
+    After basis reconciliation: Eve measures in correct basis
+
+Critical property: QBER ~ 0% -- UNDETECTABLE by threshold
+Eve gains complete information on split photons.
+
+Detection: ONLY via decoy state protocol (Section 16)
+Standard 11% QBER threshold CANNOT detect PNS attack.
+
+Simulation parameters:
+  p_block: probability Eve blocks single-photon pulses (0-1)
+  p_split: probability Eve splits multi-photon pulses (0-1)
+  Eve's information gain: p_split * P(n>=2|mu) / total_bits
+
+SKR under PNS attack:
+  R_pns = S * (1 - 2*H(Q)) - leaked_information
+  leaked_information = p_split * P(n>=2|mu)
+  If leaked_information >= R_pns: session compromised
+
+## 16. Decoy State Protocol
+Countermeasure against PNS attack.
+Alice randomly sends pulses with different mean photon numbers.
+
+Three intensity levels:
+  Signal states:  mu_s = 0.5  (most pulses)
+  Decoy states:   mu_d = 0.1  (random subset ~20%)
+  Vacuum states:  mu_v = 0.0  (random subset ~10%)
+
+Detection principle:
+  Gain Q_mu: fraction of pulses Bob detects at intensity mu
+  Under PNS: Q_signal >> Q_decoy (Eve blocks more singles)
+  Under normal: Q_signal ~ Q_decoy * (mu_s/mu_d)
+
+PNS detected when:
+  |Q_signal/mu_s - Q_decoy/mu_d| > epsilon (threshold 0.05)
