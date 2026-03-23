@@ -105,8 +105,11 @@ export default function ConfigPanel({ className = '' }) {
   ]
 
   return (
-    <div className={`flex flex-col gap-5 p-4 bg-[#11111a] 
-                     border border-gray-800 rounded-lg ${className}`}>
+    <div className={`flex flex-col gap-5 p-4 rounded-lg ${className}`}
+         style={{
+           backgroundColor: '#242424',
+           border: '1px solid rgba(255,255,255,0.2)'
+         }}>
       
       {/* Panel header */}
       <div className="flex items-center gap-2 pb-2 

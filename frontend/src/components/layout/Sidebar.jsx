@@ -206,10 +206,11 @@ function SidebarItem({ item, collapsed, draggable = false }) {
                      ? 'w-8 h-8 justify-center mx-auto'
                      : 'gap-2 px-2 py-1.5 w-full'
                    }
-                   border-gray-800 bg-gray-900/40
-                   hover:bg-gray-800/60 hover:border-gray-600`}
+                   bg-transparent
+                   hover:bg-white/5`}
         style={{
-          borderColor: item.color + '30'
+          borderColor: 'rgba(255,255,255,0.15)',
+          border: '1px solid rgba(255,255,255,0.15)'
         }}
       >
         <div
@@ -219,9 +220,10 @@ function SidebarItem({ item, collapsed, draggable = false }) {
                        ? 'w-6 h-6 text-xs'
                        : 'w-7 h-7 text-xs'}`}
           style={{
-            backgroundColor: item.color + '20',
-            color: item.color,
-            border: `1px solid ${item.color}30`
+            backgroundColor: item.color + '40',
+            color: '#ffffff',
+            border: `1px solid rgba(255,255,255,0.4)`,
+            fontWeight: 'bold'
           }}
         >
           {item.symbol}
@@ -333,10 +335,13 @@ export default function Sidebar() {
     <motion.div
       animate={{ width: collapsed ? 48 : 200 }}
       transition={{ duration: 0.2, ease: 'easeInOut' }}
-      className="flex flex-col bg-panel-bg border-r 
-                 border-border-subtle flex-shrink-0 
-                 overflow-hidden relative"
-      style={{ minHeight: 0 }}
+      className="flex flex-col border-r 
+                 flex-shrink-0 overflow-hidden relative"
+      style={{ 
+        backgroundColor: '#242424',
+        borderColor: 'rgba(255,255,255,0.2)',
+        minHeight: 0
+      }}
     >
       {/* Toggle button */}
       <div className="flex items-center justify-between 
