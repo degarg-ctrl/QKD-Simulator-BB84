@@ -71,6 +71,14 @@ const useSimulationStore = create((set, get) => ({
   experimentModalOpen: false,
   experimentModalId: null,
 
+  // ─── INSPECTOR STATE ─────────────────────────────────
+  inspector: {
+    isOpen: false,
+    currentIndex: 0,    // index into results.bit_stream
+    isPlaying: false,
+    playSpeed: 800,     // ms between auto-advance steps
+  },
+
   /*
   placedGate shape:
   {
@@ -161,7 +169,13 @@ const useSimulationStore = create((set, get) => ({
       speed: 1.0,
       completedPhotons: [],
       activePhotons: []
-    }
+    },
+    inspector: {
+      isOpen: false,
+      currentIndex: 0,
+      isPlaying: false,
+      playSpeed: 800,
+    },
   }),
 
   addGate: (gate) => set((state) => ({
@@ -190,6 +204,24 @@ const useSimulationStore = create((set, get) => ({
     experimentModalOpen: false,
     experimentModalId: null
   }),
+
+  openInspector: () => set((state) => ({
+    inspector: { ...state.inspector, isOpen: true, 
+                 currentIndex: 0, isPlaying: false }
+  })),
+
+  closeInspector: () => set((state) => ({
+    inspector: { ...state.inspector, isOpen: false, 
+                 isPlaying: false }
+  })),
+
+  setInspectorIndex: (index) => set((state) => ({
+    inspector: { ...state.inspector, currentIndex: index }
+  })),
+
+  setInspectorPlaying: (isPlaying) => set((state) => ({
+    inspector: { ...state.inspector, isPlaying }
+  })),
 
   // Derived getters
   getHasResults: () => get().results !== null,

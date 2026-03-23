@@ -22,6 +22,7 @@ import {
   ReferenceDot
 } from 'recharts'
 import useSimulationStore from '../store/simulationStore'
+import OneTimePad from '../components/results/OneTimePad'
 
 // ─── HELPER: compute theoretical values at exact distance ─
 function getTheoreticalAtDistance(results, distanceKm) {
@@ -540,6 +541,30 @@ export default function ResultsPage() {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* One-Time Pad encryption demo */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded flex items-center
+                            justify-center text-sm"
+                 style={{ 
+                   backgroundColor: '#00aacc20',
+                   border: '1px solid #00aacc40'
+                 }}>
+              🔐
+            </div>
+            <div>
+              <div className="text-xs font-mono uppercase 
+                              tracking-wider text-gray-500 mb-0.5">
+                Cryptographic Application
+              </div>
+              <div className="text-sm font-mono font-bold text-white">
+                One-Time Pad Encryption
+              </div>
+            </div>
+          </div>
+          <OneTimePad />
         </div>
 
         {/* Bit stream detail */}

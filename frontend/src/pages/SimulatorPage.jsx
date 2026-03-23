@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../store/simulationStore'
 import ResultsPage from './ResultsPage'
 import GuidePage from './GuidePage'
@@ -9,10 +9,11 @@ import BottomPanel from '../components/layout/BottomPanel'
 import QuantumCanvas from '../components/canvas/QuantumCanvas'
 import ConfigPanel from '../components/controls/ConfigPanel'
 import ExperimentModal from '../components/experiments/ExperimentModal'
+import PhotonInspector from '../components/inspector/PhotonInspector'
 
 export default function SimulatorPage() {
   const [configCollapsed, setConfigCollapsed] = useState(false)
-  const { activeView } = useSimulationStore()
+  const { activeView, inspector } = useSimulationStore()
 
   if (activeView === 'guide') {
     return (
@@ -45,8 +46,11 @@ export default function SimulatorPage() {
         <Sidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <div className="flex flex-1 overflow-hidden">
-            <div className="flex-1 p-3 overflow-hidden">
+            <div className="flex-1 p-3 overflow-hidden relative">
               <QuantumCanvas className="h-full" />
+              <AnimatePresence>
+                {inspector.isOpen && <PhotonInspector />}
+              </AnimatePresence>
             </div>
             
             <motion.div
