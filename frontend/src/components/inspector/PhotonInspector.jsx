@@ -59,7 +59,7 @@ export default function PhotonInspector() {
   } = useSimulationStore()
 
   // Draggable state
-  const [position, setPosition] = useState({ x: 20, y: 60 })
+  const [position, setPosition] = useState({ x: 20, y: 10 })
   const [isDragging, setIsDragging] = useState(false)
   const dragStart = useRef(null)
   const panelRef = useRef(null)
@@ -163,7 +163,7 @@ export default function PhotonInspector() {
         left: position.x,
         top: position.y,
         zIndex: 100,
-        width: 320,
+        width: 310,
         cursor: isDragging ? 'grabbing' : 'grab',
         userSelect: 'none'
       }}
