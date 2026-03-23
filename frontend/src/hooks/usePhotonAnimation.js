@@ -26,12 +26,14 @@ import { LANE_Y_POSITIONS } from '../components/canvas/QuantumCanvas'
  */
 export function usePhotonAnimation(canvasRef, drawStaticScene) {
 
-  const { results, animation } = useSimulationStore()
+  const { results, animation, syncMode,
+          setInspectorIndex } = useSimulationStore()
   
   const particlesRef = useRef([])        // active PhotonParticle instances
   const frameRef = useRef(null)          // requestAnimationFrame id
   const releaseIndexRef = useRef(0)      // next photon index to release
   const frameCountRef = useRef(0)        // total frames elapsed
+  const photonCompleteRef = useRef(false)
 
   // Release N photons per frame batch
   // Stagger release so photons don't all spawn simultaneously
@@ -79,19 +81,43 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
     }
 
     // Release next batch of photons
-    if (
-      results?.bit_stream &&
-      releaseIndexRef.current < results.bit_stream.length &&
-      frameCountRef.current % FRAMES_BETWEEN_BATCHES === 0
-    ) {
-      const batch = results.bit_stream.slice(
-        releaseIndexRef.current,
-        releaseIndexRef.current + PHOTONS_PER_BATCH
-      )
-      batch.forEach(record => {
-        particlesRef.current.push(createParticle(record))
-      })
-      releaseIndexRef.current += PHOTONS_PER_BATCH
+    if (results?.bit_stream &&
+        releaseIndexRef.current < results.bit_stream.length) {
+
+      const { syncMode } = useSimulationStore.getState()
+
+      if (syncMode) {
+        // Sync mode: one photon at a time
+        // Only release when canvas is empty
+        const canvasEmpty = particlesRef.current.length === 0
+        const isFirstPhoton = releaseIndexRef.current === 0
+
+        if (canvasEmpty && 
+            (isFirstPhoton || photonCompleteRef.current)) {
+          photonCompleteRef.current = false
+          const record = results.bit_stream[
+            releaseIndexRef.current
+          ]
+          if (record) {
+            particlesRef.current.push(createParticle(record))
+            const { setInspectorIndex } = useSimulationStore.getState()
+            setInspectorIndex(releaseIndexRef.current)
+            releaseIndexRef.current += 1
+          }
+        }
+      } else {
+        // Normal mode: batch release
+        if (frameCountRef.current % FRAMES_BETWEEN_BATCHES === 0) {
+          const batch = results.bit_stream.slice(
+            releaseIndexRef.current,
+            releaseIndexRef.current + PHOTONS_PER_BATCH
+          )
+          batch.forEach(record => {
+            particlesRef.current.push(createParticle(record))
+          })
+          releaseIndexRef.current += PHOTONS_PER_BATCH
+        }
+      }
     }
 
     // Redraw static scene (clears canvas each frame)
@@ -105,11 +131,18 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
     const scaleX = (canvas.width / dpr) / 1200  // CANVAS_WIDTH
     const scaleY = (canvas.height / dpr) / 400   // CANVAS_HEIGHT
 
+    const prevCount = particlesRef.current.length
     particlesRef.current = particlesRef.current.filter(particle => {
       const alive = particle.update()
       if (alive) particle.draw(ctx, scaleX, scaleY)
       return alive
     })
+    // Detect photon completion in sync mode
+    const { syncMode: syncModeNow } = useSimulationStore.getState()
+    if (syncModeNow && prevCount > 0 &&
+        particlesRef.current.length === 0) {
+      photonCompleteRef.current = true
+    }
 
     ctx.restore()
 
@@ -118,7 +151,8 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
       releaseIndexRef.current >= results.bit_stream.length
     const allDead = particlesRef.current.length === 0
 
-    if (!allReleased || !allDead) {
+    if (!allReleased || !allDead ||
+        (syncModeNow && !allReleased)) {
       frameRef.current = requestAnimationFrame(animate)
     } else {
       // Animation complete

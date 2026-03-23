@@ -54,7 +54,7 @@ const useSimulationStore = create((set, get) => ({
   animation: {
     isPlaying: false,
     currentPhotonIndex: 0,
-    speed: 1.0,          // multiplier: 0.5 = slow, 1.0 = normal, 2.0 = fast
+    speed: 0.5,          // multiplier: 0.5 = slow, 1.0 = normal, 2.0 = fast
     completedPhotons: [], // photons that have finished traveling
     activePhotons: [],     // photons currently in flight on canvas
     isPaused: false
@@ -80,6 +80,8 @@ const useSimulationStore = create((set, get) => ({
   },
 
   bottomPanelCollapsed: false,
+
+  syncMode: false,
 
   /*
   placedGate shape:
@@ -168,7 +170,7 @@ const useSimulationStore = create((set, get) => ({
     animation: {
       isPlaying: false,
       currentPhotonIndex: 0,
-      speed: 1.0,
+      speed: 0.5,
       completedPhotons: [],
       activePhotons: []
     },
@@ -179,6 +181,7 @@ const useSimulationStore = create((set, get) => ({
       playSpeed: 800,
     },
     bottomPanelCollapsed: false,
+    syncMode: false,
   }),
 
   addGate: (gate) => set((state) => ({
@@ -235,6 +238,8 @@ const useSimulationStore = create((set, get) => ({
   toggleBottomPanel: () => set((state) => ({
     bottomPanelCollapsed: !state.bottomPanelCollapsed
   })),
+
+  setSyncMode: (enabled) => set({ syncMode: enabled }),
 
   // Derived getters
   getHasResults: () => get().results !== null,

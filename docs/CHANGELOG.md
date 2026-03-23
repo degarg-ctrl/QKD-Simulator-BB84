@@ -1,6 +1,11 @@
 # Changelog
 Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 
+[2026-03-23 11:13] | feature/sprint-10-pns-wcp | feat |
+Animation speed reduced to 50% globally.
+Sync Mode: one-by-one photon release linked
+to inspector auto-advance.
+
 [2026-03-23 10:41] | feature/sprint-10-pns-wcp | feat(sprint-10) |
 WCP model: Poisson photon distribution, pulse classification.
 PNS attack: zero-QBER undetectable eavesdropping.
