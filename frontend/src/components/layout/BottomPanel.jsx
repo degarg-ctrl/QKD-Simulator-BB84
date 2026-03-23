@@ -5,6 +5,7 @@
  * Has two tabs: "Performance" (metrics + charts) and "Bit Stream" 
  * (per-photon data table).
  * Only visible after simulation has run.
+ * Supports collapse/expand toggle.
  */
 import { useState } from 'react'
 import { motion } from 'framer-motion'
@@ -14,15 +15,66 @@ import QBERChart from '../metrics/QBERChart'
 import SKRChart from '../metrics/SKRChart'
 
 export default function BottomPanel({ className = '' }) {
-  const { results } = useSimulationStore()
+  const { results, bottomPanelCollapsed, 
+          toggleBottomPanel } = useSimulationStore()
   const [activeTab, setActiveTab] = useState('metrics')
-
-  if (!results) return null
 
   const tabs = [
     { id: 'metrics', label: 'Performance & Security' },
     { id: 'bitstream',   label: 'Bit Stream' },
   ]
+
+  // Collapsed state — thin bar with toggle
+  if (bottomPanelCollapsed) {
+    return (
+      <div
+        className="flex items-center justify-between 
+                   px-4 py-2 flex-shrink-0 cursor-pointer
+                   hover:bg-white/5 transition-colors"
+        style={{
+          borderTop: '1px solid rgba(255,255,255,0.2)',
+          backgroundColor: '#242424'
+        }}
+        onClick={toggleBottomPanel}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono text-gray-500">
+            ▲ Performance & Security
+          </span>
+          {results && (
+            <span className="text-xs font-mono text-gray-600">
+              QBER: {(results.qber * 100).toFixed(2)}% 
+              · SKR: {results.skr.toFixed(3)}
+            </span>
+          )}
+        </div>
+        <span className="text-xs font-mono text-gray-600">
+          Click to expand
+        </span>
+      </div>
+    )
+  }
+
+  // Normal expanded state — no results yet
+  if (!results) return (
+    <div
+      className="flex items-center justify-between 
+                 px-4 py-2 flex-shrink-0"
+      style={{
+        borderTop: '1px solid rgba(255,255,255,0.2)',
+        backgroundColor: '#242424'
+      }}
+    >
+      <span className="text-xs font-mono text-gray-600">
+        Run a simulation to see results
+      </span>
+      <span className="text-xs font-mono text-gray-600 
+                       cursor-pointer hover:text-gray-400"
+            onClick={toggleBottomPanel}>
+        ▼
+      </span>
+    </div>
+  )
 
   return (
     <motion.div
@@ -35,8 +87,9 @@ export default function BottomPanel({ className = '' }) {
         backgroundColor: '#242424'
       }}
     >
-      {/* Tab bar */}
-      <div className="flex items-center px-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
+      {/* Tab bar with collapse toggle */}
+      <div className="flex items-center px-4"
+           style={{ borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -51,6 +104,16 @@ export default function BottomPanel({ className = '' }) {
             {tab.label}
           </button>
         ))}
+        {/* Collapse button on right */}
+        <button
+          onClick={toggleBottomPanel}
+          className="ml-auto text-xs font-mono text-gray-600
+                     hover:text-gray-300 transition-colors 
+                     px-2 py-2"
+          title="Collapse panel"
+        >
+          ▼ collapse
+        </button>
       </div>
 
       {/* Tab content */}

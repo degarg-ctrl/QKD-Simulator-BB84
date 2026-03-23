@@ -54,7 +54,7 @@ const useSimulationStore = create((set, get) => ({
   animation: {
     isPlaying: false,
     currentPhotonIndex: 0,
-    speed: 1.0,          // multiplier: 0.5 = slow, 1.0 = normal, 2.0 = fast
+    speed: 0.5,          // multiplier: 0.5 = slow, 1.0 = normal, 2.0 = fast
     completedPhotons: [], // photons that have finished traveling
     activePhotons: [],     // photons currently in flight on canvas
     isPaused: false
@@ -78,6 +78,10 @@ const useSimulationStore = create((set, get) => ({
     isPlaying: false,
     playSpeed: 800,     // ms between auto-advance steps
   },
+
+  bottomPanelCollapsed: false,
+
+  syncMode: false,
 
   /*
   placedGate shape:
@@ -166,7 +170,7 @@ const useSimulationStore = create((set, get) => ({
     animation: {
       isPlaying: false,
       currentPhotonIndex: 0,
-      speed: 1.0,
+      speed: 0.5,
       completedPhotons: [],
       activePhotons: []
     },
@@ -176,6 +180,8 @@ const useSimulationStore = create((set, get) => ({
       isPlaying: false,
       playSpeed: 800,
     },
+    bottomPanelCollapsed: false,
+    syncMode: false,
   }),
 
   addGate: (gate) => set((state) => ({
@@ -207,12 +213,14 @@ const useSimulationStore = create((set, get) => ({
 
   openInspector: () => set((state) => ({
     inspector: { ...state.inspector, isOpen: true, 
-                 currentIndex: 0, isPlaying: false }
+                 currentIndex: 0, isPlaying: false },
+    bottomPanelCollapsed: true
   })),
 
   closeInspector: () => set((state) => ({
     inspector: { ...state.inspector, isOpen: false, 
-                 isPlaying: false }
+                 isPlaying: false },
+    bottomPanelCollapsed: false
   })),
 
   setInspectorIndex: (index) => set((state) => ({
@@ -222,6 +230,16 @@ const useSimulationStore = create((set, get) => ({
   setInspectorPlaying: (isPlaying) => set((state) => ({
     inspector: { ...state.inspector, isPlaying }
   })),
+
+  setBottomPanelCollapsed: (collapsed) => set({ 
+    bottomPanelCollapsed: collapsed 
+  }),
+
+  toggleBottomPanel: () => set((state) => ({
+    bottomPanelCollapsed: !state.bottomPanelCollapsed
+  })),
+
+  setSyncMode: (enabled) => set({ syncMode: enabled }),
 
   // Derived getters
   getHasResults: () => get().results !== null,

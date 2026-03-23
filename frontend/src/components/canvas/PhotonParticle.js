@@ -26,13 +26,13 @@ export class PhotonParticle {
    * @param {number} laneIndex    - Which lane (0, 1, or 2) to travel on
    * @param {number} speed        - Animation speed multiplier
    */
-  constructor(photonRecord, laneIndex, speed = 1.0) {
+  constructor(photonRecord, laneIndex, speed = 1.0, xOffset = 0) {
     this.record = photonRecord
     this.laneIndex = laneIndex
     this.speed = speed
 
     // Position — starts at Alice
-    this.x = ALICE_X
+    this.x = ALICE_X - xOffset
     this.y = LANE_Y_POSITIONS[laneIndex]
 
     // Movement

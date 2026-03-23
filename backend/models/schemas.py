@@ -6,7 +6,7 @@ class SimulationRequest(BaseModel):
     distance_km: float = Field(ge=0, le=150)
     noise_level: float = Field(ge=0.0, le=1.0)
     attack_prob: float = Field(ge=0.0, le=1.0)
-    attack_strategy: Literal['intercept_resend', 'partial', 'burst']
+    attack_strategy: Literal['intercept_resend', 'partial', 'burst', 'pns']
     gates: list[dict] = Field(
         default=[],
         description="List of quantum gates placed on lanes. "
@@ -29,6 +29,27 @@ class SimulationRequest(BaseModel):
         default=None,
         description="User-defined bases for Exp 2 and 4. "
                     "Max 20 values, each '+' or 'x'."
+    )
+
+    # WCP and PNS attack settings
+    wcp_enabled: bool = Field(
+        default=False,
+        description="Enable Weak Coherent Pulse model. "
+                    "Uses Poisson photon distribution instead "
+                    "of ideal single photons."
+    )
+    mean_photon_number: float = Field(
+        default=0.2,
+        ge=0.05, le=0.5,
+        description="Mean photon number per pulse (mu). "
+                    "Only used when wcp_enabled=True. "
+                    "Typical range: 0.1 to 0.5"
+    )
+    decoy_enabled: bool = Field(
+        default=False,
+        description="Enable decoy state protocol. "
+                    "Detects PNS attack via gain statistics. "
+                    "Requires wcp_enabled=True."
     )
 
     @model_validator(mode='after')
@@ -74,3 +95,11 @@ class SimulationResponse(BaseModel):
     skr_vs_distance: list[dict]
     secure_threshold_breached: bool
     cloning_probe_active: bool = False
+
+    # WCP statistics
+    wcp_enabled: bool = False
+    wcp_stats: dict = Field(default_factory=dict)
+    # PNS attack statistics
+    pns_stats: dict = Field(default_factory=dict)
+    # Decoy state results
+    decoy_results: dict = Field(default_factory=dict)

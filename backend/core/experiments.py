@@ -176,6 +176,69 @@ EXPERIMENT_PRESETS = {
     'user_input': False,
     'requires_cloning_probe': True,
   },
+
+  'exp7': {
+    'name': 'Experiment 7',
+    'title': 'PNS Attack — Undetectable Eavesdropping',
+    'description': (
+      'Real laser sources emit pulses with varying photon '
+      'numbers (Weak Coherent Pulses). Eve exploits '
+      'multi-photon pulses using the PNS attack — '
+      'introducing ZERO detectable QBER. Standard BB84 '
+      'security threshold cannot detect this attack.'
+    ),
+    'learning_objective': (
+      'Understand why ideal single-photon sources matter. '
+      'See that QBER staying at 0% does NOT guarantee '
+      'security when using real laser sources. '
+      'Eve can steal complete key information silently.'
+    ),
+    'default_params': {
+      'n_bits': 2000,
+      'distance_km': 10,
+      'noise_level': 0.0,
+      'attack_prob': 0.8,
+      'attack_strategy': 'pns',
+      'gates': [],
+      'wcp_enabled': True,
+      'mean_photon_number': 0.2,
+      'decoy_enabled': False,
+    },
+    'locked_params': ['attack_strategy', 'wcp_enabled'],
+    'user_input': False,
+  },
+
+  'exp8': {
+    'name': 'Experiment 8',
+    'title': 'Decoy State Protocol — Detecting PNS',
+    'description': (
+      'Alice sends pulses at three different intensities. '
+      'By comparing detection rates between signal and '
+      'decoy states, Alice and Bob can detect whether '
+      'Eve is performing a PNS attack — even though '
+      'QBER appears normal.'
+    ),
+    'learning_objective': (
+      'Understand the decoy state protocol. See how '
+      'comparing gain statistics between signal and '
+      'decoy intensities reveals PNS attack that '
+      'standard QBER analysis cannot detect.'
+    ),
+    'default_params': {
+      'n_bits': 2000,
+      'distance_km': 10,
+      'noise_level': 0.0,
+      'attack_prob': 0.8,
+      'attack_strategy': 'pns',
+      'gates': [],
+      'wcp_enabled': True,
+      'mean_photon_number': 0.5,
+      'decoy_enabled': True,
+    },
+    'locked_params': ['attack_strategy', 
+                      'wcp_enabled', 'decoy_enabled'],
+    'user_input': False,
+  },
 }
 
 def get_experiment_preset(exp_id: str) -> dict:
