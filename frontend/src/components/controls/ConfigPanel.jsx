@@ -22,6 +22,7 @@ import { useState } from 'react'
 import { QuestionTooltip } from '../ui/TooltipPortal'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
+import EditableValue from '../ui/EditableValue'
 
 // Tooltip content — physics explanations for each parameter
 const TOOLTIPS = {
@@ -57,8 +58,9 @@ const TOOLTIPS = {
 
 
 
-function SliderControl({ label, value, min, max, step, onChange, 
-                         displayValue, tooltip }) {
+function SliderControl({ label, value, min, max, step,
+                         onChange, displayValue, 
+                         tooltip, suffix = '' }) {
   return (
     <div className="flex flex-col gap-1.5" id={`control-${label.toLowerCase().replace(' ', '-')}`}>
       <div className="flex items-center justify-between">
@@ -69,10 +71,16 @@ function SliderControl({ label, value, min, max, step, onChange,
           </span>
           <QuestionTooltip content={tooltip} />
         </div>
-        <span className="text-xs font-mono text-indigo-400 
-                         font-semibold">
-          {displayValue}
-        </span>
+        <EditableValue
+          value={displayValue}
+          numericValue={value}
+          min={min}
+          max={max}
+          step={step}
+          onChange={onChange}
+          suffix={suffix}
+          color="#00aacc"
+        />
       </div>
       <div className="relative">
         <input
@@ -193,6 +201,7 @@ export default function ConfigPanel({ className = '' }) {
         onChange={val => setParams({ distance_km: val })}
         displayValue={`${params.distance_km} km`}
         tooltip={TOOLTIPS.distance_km}
+        suffix="km"
       />
 
       {/* Noise Level */}
@@ -205,6 +214,7 @@ export default function ConfigPanel({ className = '' }) {
         onChange={val => setParams({ noise_level: val / 100 })}
         displayValue={`${(params.noise_level * 100).toFixed(1)}%`}
         tooltip={TOOLTIPS.noise_level}
+        suffix="%"
       />
 
       {/* Attack Probability */}
@@ -217,6 +227,7 @@ export default function ConfigPanel({ className = '' }) {
         onChange={val => setParams({ attack_prob: val / 100 })}
         displayValue={`${(params.attack_prob * 100).toFixed(0)}%`}
         tooltip={TOOLTIPS.attack_prob}
+        suffix="%"
       />
 
       {/* Attack Strategy */}

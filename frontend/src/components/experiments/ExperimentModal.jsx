@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
 import { useSimulation } from '../../hooks/useSimulation'
 import PhotonInputTable from './PhotonInputTable'
+import EditableValue from '../ui/EditableValue'
 
 // Experiment data — mirrors backend experiments.py
 const EXPERIMENT_DATA = {
@@ -300,10 +301,16 @@ export default function ExperimentModal() {
                                        text-gray-400">
                         Distance
                       </span>
-                      <span className="text-xs font-mono"
-                            style={{ color: exp.color }}>
-                        {localDistance} km
-                      </span>
+                      <EditableValue
+                        value={`${localDistance} km`}
+                        numericValue={localDistance}
+                        min={0}
+                        max={150}
+                        step={1}
+                        onChange={setLocalDistance}
+                        suffix="km"
+                        color={exp.color}
+                      />
                     </div>
                     <input type="range" min={0} max={150} 
                            step={1}
@@ -325,10 +332,16 @@ export default function ExperimentModal() {
                                        text-gray-400">
                         Noise Level
                       </span>
-                      <span className="text-xs font-mono"
-                            style={{ color: exp.color }}>
-                        {localNoise.toFixed(1)}%
-                      </span>
+                      <EditableValue
+                        value={`${localNoise.toFixed(1)}%`}
+                        numericValue={localNoise}
+                        min={0}
+                        max={10}
+                        step={0.1}
+                        onChange={setLocalNoise}
+                        suffix="%"
+                        color={exp.color}
+                      />
                     </div>
                     <input type="range" min={0} max={10} 
                            step={0.1}
@@ -351,10 +364,16 @@ export default function ExperimentModal() {
                                          text-gray-400">
                           Eve Attack
                         </span>
-                        <span className="text-xs font-mono"
-                              style={{ color: exp.color }}>
-                          {localAttack.toFixed(0)}%
-                        </span>
+                        <EditableValue
+                          value={`${localAttack.toFixed(0)}%`}
+                          numericValue={localAttack}
+                          min={0}
+                          max={100}
+                          step={1}
+                          onChange={setLocalAttack}
+                          suffix="%"
+                          color={exp.color}
+                        />
                       </div>
                       <input type="range" min={0} max={100} 
                              step={1}
@@ -392,10 +411,15 @@ export default function ExperimentModal() {
                                          text-gray-400">
                           Photons
                         </span>
-                        <span className="text-xs font-mono"
-                              style={{ color: exp.color }}>
-                          {localNBits.toLocaleString()}
-                        </span>
+                        <EditableValue
+                          value={localNBits.toLocaleString()}
+                          numericValue={localNBits}
+                          min={100}
+                          max={5000}
+                          step={100}
+                          onChange={setLocalNBits}
+                          color={exp.color}
+                        />
                       </div>
                       <input type="range" min={100} max={5000}
                              step={100}
