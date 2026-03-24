@@ -32,23 +32,23 @@ export default function BottomPanel({ className = '' }) {
                    px-4 py-2 flex-shrink-0 cursor-pointer
                    hover:bg-white/5 transition-colors"
         style={{
-          borderTop: '1px solid rgba(255,255,255,0.2)',
-          backgroundColor: '#242424'
+          borderTop: '1px solid var(--border-color)',
+          backgroundColor: 'var(--panel-bg)'
         }}
         onClick={toggleBottomPanel}
       >
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-gray-500">
+          <span className="text-xs font-mono text-[var(--text-muted)]">
             ▲ Performance & Security
           </span>
           {results && (
-            <span className="text-xs font-mono text-gray-600">
+            <span className="text-xs font-mono text-[var(--text-subtle)]">
               QBER: {(results.qber * 100).toFixed(2)}% 
               · SKR: {results.skr.toFixed(3)}
             </span>
           )}
         </div>
-        <span className="text-xs font-mono text-gray-600">
+        <span className="text-xs font-mono text-[var(--text-subtle)]">
           Click to expand
         </span>
       </div>
@@ -61,15 +61,15 @@ export default function BottomPanel({ className = '' }) {
       className="flex items-center justify-between 
                  px-4 py-2 flex-shrink-0"
       style={{
-        borderTop: '1px solid rgba(255,255,255,0.2)',
-        backgroundColor: '#242424'
+        borderTop: '1px solid var(--border-color)',
+        backgroundColor: 'var(--panel-bg)'
       }}
     >
-      <span className="text-xs font-mono text-gray-600">
+      <span className="text-xs font-mono text-[var(--text-subtle)]">
         Run a simulation to see results
       </span>
-      <span className="text-xs font-mono text-gray-600 
-                       cursor-pointer hover:text-gray-400"
+      <span className="text-xs font-mono text-[var(--text-subtle)] 
+                       cursor-pointer hover:text-[var(--text-primary)]"
             onClick={toggleBottomPanel}>
         ▼
       </span>
@@ -83,13 +83,13 @@ export default function BottomPanel({ className = '' }) {
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={`flex-shrink-0 overflow-hidden ${className}`}
       style={{ 
-        borderTop: '1px solid rgba(255,255,255,0.2)',
-        backgroundColor: '#242424'
+        borderTop: '1px solid var(--border-color)',
+        backgroundColor: 'var(--panel-bg)'
       }}
     >
       {/* Tab bar with collapse toggle */}
       <div className="flex items-center px-4"
-           style={{ borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
+           style={{ borderBottom: '1px solid var(--border-color)' }}>
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -97,8 +97,8 @@ export default function BottomPanel({ className = '' }) {
             className={`px-4 py-2 text-xs font-mono tracking-wider
                        border-b-2 transition-colors
                        ${activeTab === tab.id
-                         ? 'border-indigo-500 text-white'
-                         : 'border-transparent text-gray-500 hover:text-gray-300'
+                         ? 'border-indigo-500 text-[var(--text-primary)]'
+                         : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-subtle)]'
                        }`}
           >
             {tab.label}
@@ -107,8 +107,8 @@ export default function BottomPanel({ className = '' }) {
         {/* Collapse button on right */}
         <button
           onClick={toggleBottomPanel}
-          className="ml-auto text-xs font-mono text-gray-600
-                     hover:text-gray-300 transition-colors 
+          className="ml-auto text-xs font-mono text-[var(--text-muted)]
+                     hover:text-[var(--text-primary)] transition-colors 
                      px-2 py-2"
           title="Collapse panel"
         >
@@ -169,9 +169,9 @@ export default function BottomPanel({ className = '' }) {
             </div>
             {/* Theoretical vs Simulated explanation */}
             <div className="mt-2 flex items-start gap-2 
-                            text-xs font-mono text-gray-600
+                            text-xs font-mono text-[var(--text-subtle)]
                             overflow-hidden">
-              <span className="text-gray-700">ℹ</span>
+              <span className="text-[var(--text-muted)]">ℹ</span>
               <span>
                 Graph shows theoretical model across distances. 
                 Simulated value shows your actual run result. 
@@ -187,7 +187,7 @@ export default function BottomPanel({ className = '' }) {
           <div className="overflow-auto max-h-48">
             <table className="w-full text-xs font-mono">
               <thead>
-                <tr className="text-gray-500 border-b border-gray-800 text-left">
+                <tr className="text-[var(--text-muted)] border-b border-[var(--border-color)] text-left">
                   <th className="py-2 pr-4">#</th>
                   <th className="py-2 pr-4">Alice Bit</th>
                   <th className="py-2 pr-4">A. Basis</th>
@@ -201,14 +201,14 @@ export default function BottomPanel({ className = '' }) {
               <tbody>
                 {results.bit_stream.map((photon, i) => (
                   <tr key={i}
-                      className={`border-b border-gray-900/50
+                      className={`border-b border-[var(--border-color)]
                         ${photon.intercepted ? 'bg-red-950/20' : ''}
                         ${photon.match ? '' : 'opacity-40'}
                       `}>
-                    <td className="py-1 pr-4 text-gray-600">
+                    <td className="py-1 pr-4 text-[var(--text-muted)]">
                       {photon.index}
                     </td>
-                    <td className="py-1 pr-4 text-gray-300">
+                    <td className="py-1 pr-4 text-[var(--text-muted)]">
                       {photon.alice_bit}
                     </td>
                     <td className="py-1 pr-4" style={{
@@ -223,7 +223,7 @@ export default function BottomPanel({ className = '' }) {
                     }}>
                       {photon.bob_basis}
                     </td>
-                    <td className="py-1 pr-4 text-gray-300">
+                    <td className="py-1 pr-4 text-[var(--text-muted)]">
                       {photon.bob_bit}
                     </td>
                     <td className="py-1 pr-4">
@@ -238,7 +238,7 @@ export default function BottomPanel({ className = '' }) {
                         {photon.intercepted ? '⚡' : '—'}
                       </span>
                     </td>
-                    <td className="py-1 text-gray-400">
+                    <td className="py-1 text-[var(--text-subtle)]">
                       {photon.polarization_angle}°
                     </td>
                   </tr>

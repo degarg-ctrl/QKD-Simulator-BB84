@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../store/simulationStore'
+import LandingPage from './LandingPage'
 import ResultsPage from './ResultsPage'
 import GuidePage from './GuidePage'
 import TopBar from '../components/layout/TopBar'
@@ -15,9 +16,21 @@ export default function SimulatorPage() {
   const [configCollapsed, setConfigCollapsed] = useState(false)
   const { activeView, inspector } = useSimulationStore()
 
+  if (activeView === 'landing') {
+    return (
+      <div className="h-screen flex flex-col overflow-hidden"
+           style={{ backgroundColor: 'var(--canvas-bg)' }}>
+        <TopBar />
+        <div className="flex-1 overflow-y-auto">
+          <LandingPage />
+        </div>
+      </div>
+    )
+  }
+
   if (activeView === 'guide') {
     return (
-      <div className="bg-[#2a2a2a] h-screen flex flex-col">
+      <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--canvas-bg)' }}>
         <TopBar />
         <div className="flex-1 overflow-y-auto">
           <GuidePage />
@@ -29,7 +42,7 @@ export default function SimulatorPage() {
 
   if (activeView === 'results') {
     return (
-      <div className="bg-[#2a2a2a] h-screen flex flex-col">
+      <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--canvas-bg)' }}>
         <TopBar />
         <div className="flex-1 overflow-hidden">
           <ResultsPage />
@@ -40,7 +53,7 @@ export default function SimulatorPage() {
   }
 
   return (
-    <div className="bg-[#2a2a2a] h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--canvas-bg)' }}>
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
@@ -59,17 +72,17 @@ export default function SimulatorPage() {
               className="border-l overflow-hidden 
                          flex-shrink-0 relative"
               style={{ 
-                borderColor: 'rgba(255,255,255,0.2)',
-                backgroundColor: '#2a2a2a'
+                borderColor: 'var(--border-color)',
+                backgroundColor: 'var(--canvas-bg)'
               }}
             >
               {/* Collapse toggle tab */}
               <button
                 onClick={() => setConfigCollapsed(!configCollapsed)}
                 className="absolute -left-3 top-1/2 -translate-y-1/2
-                           w-3 h-12 bg-[#242424] border border-gray-600
+                           w-3 h-12 bg-[var(--panel-bg)] border border-[var(--border-color)]
                            rounded-l flex items-center justify-center
-                           text-gray-500 hover:text-white z-10
+                           text-[var(--text-muted)] hover:text-[var(--text-primary)] z-10
                            transition-colors"
               >
                 <span className="text-xs">

@@ -14,7 +14,8 @@ export default function TopBar() {
   const { results, reset, params, animation, 
           togglePause, placedGates, clearGates,
           openInspector, inspector,
-          activeView, setActiveView } = useSimulationStore()
+          activeView, setActiveView,
+          theme, setTheme } = useSimulationStore()
 
   const isBreached = results?.secure_threshold_breached ?? false
   const hasResults = results !== null
@@ -23,8 +24,8 @@ export default function TopBar() {
     <div className="flex items-center justify-between px-4 py-2
                     flex-shrink-0 h-12"
          style={{
-           backgroundColor: '#242424',
-           borderBottom: '1px solid rgba(255,255,255,0.2)'
+           backgroundColor: 'var(--panel-bg)',
+           borderBottom: '1px solid var(--border-color)'
          }}>
       {/* Left: Logo and badge */}
       <div className="flex items-center gap-3">
@@ -38,13 +39,17 @@ export default function TopBar() {
           <ellipse cx="12" cy="12" rx="10" ry="4" 
                    transform="rotate(120 12 12)"/>
         </svg>
-        <span className="font-mono text-sm text-white tracking-wider
+        <span className="font-mono text-sm text-[var(--text-primary)] tracking-wider
                          font-semibold">
           QKD Simulator
         </span>
-        <span className="px-1.5 py-0.5 bg-indigo-900/40 
-                         border border-indigo-700/40 rounded 
-                         text-xs text-indigo-400 font-mono">
+        <span className="px-1.5 py-0.5 rounded 
+                         text-xs font-mono"
+              style={{
+                backgroundColor: 'rgba(0, 204, 255, 0.15)',
+                border: '1px solid rgba(0, 204, 255, 0.5)',
+                color: '#00c8ff'
+              }}>
           BB84
         </span>
       </div>
@@ -85,8 +90,8 @@ export default function TopBar() {
         )}
         {!isLoading && !hasResults && (
           <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-600" />
-            <span className="text-xs font-mono text-gray-500">
+            <div className="w-1.5 h-1.5 rounded-full bg-[var(--text-subtle)]" />
+            <span className="text-xs font-mono text-[var(--text-muted)]">
               READY
             </span>
           </div>
@@ -97,11 +102,11 @@ export default function TopBar() {
       <div className="flex items-center gap-2">
         {/* View navigation */}
         <div className="flex items-center gap-1 
-                        border border-gray-800 rounded p-0.5">
+                        border border-[var(--border-color)] rounded p-0.5">
           {[
-            { id: 'simulator', label: 'SIM' },
-            { id: 'guide',     label: 'GUIDE' },
-            { id: 'results',   label: 'RESULTS' },
+            { id: 'landing',    label: 'HOME' },
+            { id: 'simulator',  label: 'SIM' },
+            { id: 'results',    label: 'RESULTS' },
           ].map(view => (
             <button
               key={view.id}
@@ -118,11 +123,32 @@ export default function TopBar() {
           ))}
         </div>
         <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="px-2 py-1 rounded text-xs font-mono
+               border transition-colors flex items-center justify-center
+               w-7 h-7"
+          style={{
+            borderColor: 'var(--border-color)',
+            color: 'var(--text-muted)',
+            backgroundColor: 'transparent'
+          }}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? '☀' : '🌙'}
+        </button>
+        <button
+          onClick={() => setActiveView('guide')}
+          className={`px-3 py-1 text-xs font-mono rounded transition-colors ${activeView === 'guide' ? 'bg-quantum-blue text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+          style={activeView === 'guide' ? {} : { border: '1px solid var(--border-color)', backgroundColor: 'transparent' }}
+        >
+          GUIDE
+        </button>
+        <button
           onClick={reset}
           disabled={isLoading || !hasResults}
-          className="px-3 py-1 text-xs font-mono text-gray-400
-                     hover:text-white border border-gray-800 
-                     hover:border-gray-600 rounded transition-colors
+          className="px-3 py-1 text-xs font-mono text-[var(--text-muted)]
+                     hover:text-[var(--text-primary)] border border-[var(--border-color)] 
+                     hover:border-[var(--text-subtle)] rounded transition-colors
                      disabled:opacity-30 disabled:cursor-not-allowed"
         >
           RESET
@@ -131,8 +157,8 @@ export default function TopBar() {
           <button
             onClick={clearGates}
             className="px-3 py-1 text-xs font-mono
-                       border border-gray-700 rounded
-                       text-gray-400 hover:text-red-400
+                       border border-[var(--border-color)] rounded
+                       text-[var(--text-muted)] hover:text-red-400
                        hover:border-red-800 transition-colors"
           >
             ✕ GATES ({placedGates.length})
@@ -145,8 +171,8 @@ export default function TopBar() {
                        border rounded transition-colors"
             style={{
               borderColor: inspector.isOpen
-                ? '#00aacc' : 'rgba(255,255,255,0.2)',
-              color: inspector.isOpen ? '#00aacc' : '#9ca3af',
+                ? '#00aacc' : 'var(--border-color)',
+              color: inspector.isOpen ? '#00aacc' : 'var(--text-muted)',
               backgroundColor: inspector.isOpen
                 ? '#00aacc15' : 'transparent'
             }}
@@ -159,8 +185,8 @@ export default function TopBar() {
             onClick={togglePause}
             className="px-3 py-1 text-xs font-mono
                        border rounded transition-colors
-                       border-gray-700 hover:border-gray-500
-                       text-gray-300 hover:text-white"
+                       border-[var(--border-color)] hover:border-[var(--text-subtle)]
+                       text-[var(--text-muted)] hover:text-[var(--text-primary)]"
           >
             {animation.isPaused ? '▶ RESUME' : '⏸ PAUSE'}
           </button>

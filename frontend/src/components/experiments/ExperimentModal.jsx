@@ -204,15 +204,15 @@ export default function ExperimentModal() {
             className="fixed inset-0 z-[110] flex items-center 
                        justify-center p-4 pointer-events-none"
           >
-            <div className="bg-gray-950 border rounded-xl 
+            <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] 
                             shadow-2xl w-full max-w-2xl 
                             max-h-[90vh] overflow-y-auto
-                            pointer-events-auto"
+                            pointer-events-auto rounded-xl"
                  style={{ borderColor: exp.color + '40' }}>
 
               {/* Header */}
               <div className="flex items-start justify-between 
-                              p-6 border-b border-gray-800">
+                              p-6 border-b border-[var(--border-color)]">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-mono px-2 py-0.5 
@@ -235,14 +235,14 @@ export default function ExperimentModal() {
                       </span>
                     )}
                   </div>
-                  <h2 className="text-lg font-bold text-white 
+                  <h2 className="text-lg font-bold text-[var(--text-primary)] 
                                  font-mono">
                     {exp.title}
                   </h2>
                 </div>
                 <button
                   onClick={closeExperimentModal}
-                  className="text-gray-500 hover:text-white 
+                  className="text-[var(--text-muted)] hover:text-[var(--text-primary)] 
                              transition-colors text-xl leading-none
                              mt-1"
                 >
@@ -254,18 +254,18 @@ export default function ExperimentModal() {
 
                 {/* Description */}
                 <div className="flex flex-col gap-3">
-                  <p className="text-sm text-gray-300 
+                  <p className="text-sm text-[var(--text-muted)] 
                                 leading-relaxed">
                     {exp.description}
                   </p>
-                  <div className="p-3 bg-gray-900/50 rounded-lg 
-                                  border border-gray-800">
+                  <div className="p-3 bg-[var(--panel-dark)]/10 rounded-lg 
+                                  border border-[var(--border-color)]">
                     <div className="text-xs font-mono uppercase 
                                     tracking-wider mb-1"
                          style={{ color: exp.color }}>
                       Learning Objective
                     </div>
-                    <p className="text-xs text-gray-400 
+                    <p className="text-xs text-[var(--text-subtle)] 
                                   leading-relaxed">
                       {exp.learning_objective}
                     </p>
@@ -280,7 +280,7 @@ export default function ExperimentModal() {
                                     mb-1">
                       ⚠ Before Starting
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-[var(--text-subtle)]">
                       Drag quantum gates from the Toolbox onto 
                       the channel lanes on the canvas before 
                       clicking Start. Gates placed now will be 
@@ -296,7 +296,7 @@ export default function ExperimentModal() {
                                     mb-1">
                       ⚠ Before Starting
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-[var(--text-subtle)]">
                       Drag the Cloning Probe from the Toolbox 
                       onto a channel lane before clicking Start. 
                       The probe will attempt to copy photon states, 
@@ -308,7 +308,7 @@ export default function ExperimentModal() {
                 {/* User input table for exp2 and exp4 */}
                 {exp.user_input && (
                   <div className="flex flex-col gap-2">
-                    <div className="text-xs font-mono text-gray-500 
+                    <div className="text-xs font-mono text-[var(--text-muted)] 
                                     uppercase tracking-wider">
                       Photon Configuration
                     </div>
@@ -325,7 +325,7 @@ export default function ExperimentModal() {
 
                 {/* Channel settings */}
                 <div className="flex flex-col gap-4">
-                  <div className="text-xs font-mono text-gray-500 
+                  <div className="text-xs font-mono text-[var(--text-muted)] 
                                   uppercase tracking-wider">
                     Channel Settings
                   </div>
@@ -335,7 +335,7 @@ export default function ExperimentModal() {
                     <div className="flex justify-between 
                                     items-center">
                       <span className="text-xs font-mono 
-                                       text-gray-400">
+                                       text-[var(--text-muted)]">
                         Distance
                       </span>
                       <EditableValue
@@ -355,7 +355,7 @@ export default function ExperimentModal() {
                            onChange={e => 
                              setLocalDistance(Number(e.target.value))
                            }
-                           className="w-full h-1 bg-gray-800 
+                           className="w-full h-1 bg-[var(--panel-dark)]/20 
                                       rounded-full appearance-none
                                       cursor-pointer accent-indigo-500"
                     />
@@ -366,7 +366,7 @@ export default function ExperimentModal() {
                     <div className="flex justify-between 
                                     items-center">
                       <span className="text-xs font-mono 
-                                       text-gray-400">
+                                       text-[var(--text-muted)]">
                         Noise Level
                       </span>
                       <EditableValue
@@ -386,7 +386,7 @@ export default function ExperimentModal() {
                            onChange={e => 
                              setLocalNoise(Number(e.target.value))
                            }
-                           className="w-full h-1 bg-gray-800 
+                           className="w-full h-1 bg-[var(--panel-dark)]/20 
                                       rounded-full appearance-none
                                       cursor-pointer accent-indigo-500"
                     />
@@ -398,7 +398,7 @@ export default function ExperimentModal() {
                       <div className="flex justify-between 
                                       items-center">
                         <span className="text-xs font-mono 
-                                         text-gray-400">
+                                         text-[var(--text-muted)]">
                           Eve Attack
                         </span>
                         <EditableValue
@@ -418,7 +418,7 @@ export default function ExperimentModal() {
                              onChange={e => 
                                setLocalAttack(Number(e.target.value))
                              }
-                             className="w-full h-1 bg-gray-800 
+                             className="w-full h-1 bg-[var(--panel-dark)]/20 
                                         rounded-full appearance-none
                                         cursor-pointer accent-indigo-500"
                       />
@@ -427,7 +427,7 @@ export default function ExperimentModal() {
 
                   {/* Locked params info */}
                   {exp.locked.length > 0 && (
-                    <div className="text-xs text-gray-600 
+                    <div className="text-xs text-[var(--text-subtle)] 
                                     font-mono">
                       ℹ Eve attack is fixed for this experiment
                       {exp.defaults.attack_prob === 0 
@@ -445,7 +445,7 @@ export default function ExperimentModal() {
                       <div className="flex justify-between 
                                       items-center">
                         <span className="text-xs font-mono 
-                                         text-gray-400">
+                                         text-[var(--text-muted)]">
                           Photons
                         </span>
                         <EditableValue
@@ -464,7 +464,7 @@ export default function ExperimentModal() {
                              onChange={e => 
                                setLocalNBits(Number(e.target.value))
                              }
-                             className="w-full h-1 bg-gray-800 
+                             className="w-full h-1 bg-[var(--panel-dark)]/20 
                                         rounded-full appearance-none
                                         cursor-pointer accent-indigo-500"
                       />
@@ -475,11 +475,11 @@ export default function ExperimentModal() {
                 {/* Footer buttons */}
                 <div className="flex justify-between 
                                 items-center pt-2 
-                                border-t border-gray-800">
+                                border-t border-[var(--border-color)]">
                   <button
                     onClick={closeExperimentModal}
                     className="px-4 py-2 text-sm font-mono 
-                               text-gray-500 hover:text-white
+                               text-[var(--text-muted)] hover:text-[var(--text-primary)]
                                transition-colors"
                   >
                     Cancel

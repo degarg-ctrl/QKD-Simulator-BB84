@@ -30,7 +30,7 @@ const ENTITY_Y = 200
 const LANE_Y_POSITIONS = [150, 200, 250]  // 3 channel lanes
 
 const COLORS = {
-  background:      '#2a2a2a',
+  background:      '#1a1a2e',
   laneLine:        '#ffffff',
   laneGlow:        'rgba(255,255,255,0.3)',
   aliceNode:       '#00d4ff',
@@ -240,8 +240,8 @@ export default function QuantumCanvas({ className = '' }) {
    * Draw the static background.
    */
   const drawBackground = useCallback((ctx, width, height) => {
-    // Solid charcoal base
-    ctx.fillStyle = '#2a2a2a'
+    // Solid charcoal-blue base
+    ctx.fillStyle = '#1a1a2e'
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
     // Subtle grid with white lines
@@ -405,7 +405,11 @@ export default function QuantumCanvas({ className = '' }) {
 
   return (
     <div
-      className={`relative w-full bg-[#2a2a2a] rounded-lg overflow-hidden border border-[rgba(255,255,255,0.2)] shadow-2xl ${className}`}
+      className={`relative w-full rounded-lg overflow-hidden border shadow-2xl ${className}`}
+      style={{ 
+        background: '#1a1a2e',
+        borderColor: 'rgba(255,255,255,0.08)' 
+      }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
       onContextMenu={handleContextMenu}

@@ -223,8 +223,8 @@ function SidebarItem({ item, collapsed, draggable = false }) {
                    bg-transparent
                    hover:bg-white/5`}
         style={{
-          borderColor: 'rgba(255,255,255,0.15)',
-          border: '1px solid rgba(255,255,255,0.15)'
+          borderColor: 'var(--border-color)',
+          border: '1px solid var(--border-color)'
         }}
       >
         <div
@@ -235,8 +235,8 @@ function SidebarItem({ item, collapsed, draggable = false }) {
                        : 'w-7 h-7 text-xs'}`}
           style={{
             backgroundColor: item.color + '40',
-            color: '#ffffff',
-            border: `1px solid rgba(255,255,255,0.4)`,
+            color: 'var(--text-primary)',
+            border: `1px solid var(--border-color)`,
             fontWeight: 'bold'
           }}
         >
@@ -249,7 +249,7 @@ function SidebarItem({ item, collapsed, draggable = false }) {
               animate={{ opacity: 1, width: 'auto' }}
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: 0.15 }}
-              className="text-xs font-mono text-gray-300
+              className="text-xs font-mono text-[var(--text-muted)]
                          whitespace-nowrap overflow-hidden"
             >
               {item.label}
@@ -280,7 +280,7 @@ function ExperimentButton({ exp, collapsed, isActive, onClick, disabled = false 
                    }
                    ${isActive && !disabled
                      ? 'border-opacity-60 bg-opacity-20'
-                     : 'border-gray-800 bg-gray-900/20 hover:border-gray-700'
+                     : 'border-[var(--border-color)] bg-[var(--panel-dark)]/20 hover:border-[var(--text-subtle)]'
                    }`}
         style={{
           borderColor: isActive && !disabled ? exp.color + '60' : undefined,
@@ -308,11 +308,11 @@ function ExperimentButton({ exp, collapsed, isActive, onClick, disabled = false 
               transition={{ duration: 0.15 }}
               className="overflow-hidden"
             >
-              <div className="text-xs font-mono text-gray-300
+              <div className="text-xs font-mono text-[var(--text-muted)]
                               whitespace-nowrap">
                 {exp.label}
               </div>
-              <div className="text-xs text-gray-600 
+              <div className="text-xs text-[var(--text-subtle)] 
                               whitespace-nowrap">
                 {exp.description}
               </div>
@@ -327,11 +327,11 @@ function ExperimentButton({ exp, collapsed, isActive, onClick, disabled = false 
 // Section header
 function SectionHeader({ label, collapsed }) {
   if (collapsed) return (
-    <div className="w-full h-px bg-gray-800 my-1" />
+    <div className="w-full h-px bg-[var(--border-color)] my-1" />
   )
   return (
     <div className="px-1 pt-3 pb-1">
-      <span className="text-xs font-mono text-gray-600 
+      <span className="text-xs font-mono text-[var(--text-subtle)] 
                        uppercase tracking-widest">
         {label}
       </span>
@@ -356,8 +356,8 @@ export default function Sidebar() {
       className="flex flex-col border-r 
                  flex-shrink-0 overflow-hidden relative"
       style={{ 
-        backgroundColor: '#242424',
-        borderColor: 'rgba(255,255,255,0.2)',
+        backgroundColor: 'var(--panel-bg)',
+        borderColor: 'var(--border-color)',
         minHeight: 0
       }}
     >
@@ -366,7 +366,7 @@ export default function Sidebar() {
                       px-2 py-2 border-b border-border-subtle
                       flex-shrink-0">
         {!collapsed && (
-          <span className="text-xs font-mono text-gray-600 
+          <span className="text-xs font-mono text-[var(--text-subtle)] 
                            uppercase tracking-widest">
             Toolbox
           </span>
@@ -374,7 +374,7 @@ export default function Sidebar() {
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="w-7 h-7 rounded flex items-center justify-center
-                     text-gray-500 hover:text-white hover:bg-gray-800
+                     text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--panel-dark)]
                      transition-colors ml-auto flex-shrink-0"
         >
           <span className="text-xs font-mono">

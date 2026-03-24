@@ -70,13 +70,13 @@ export default function EditableValue({
           className="w-16 px-1.5 py-0.5 text-xs font-mono
                      rounded outline-none text-right"
           style={{
-            backgroundColor: '#1e1e1e',
+            backgroundColor: 'var(--panel-dark)',
             border: `1px solid ${color}`,
             color: color
           }}
         />
         {suffix && (
-          <span className="text-xs font-mono text-gray-500">
+          <span className="text-xs font-mono text-[var(--text-muted)]">
             {suffix}
           </span>
         )}
