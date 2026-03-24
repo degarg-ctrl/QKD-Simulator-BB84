@@ -84,10 +84,10 @@ export default function OneTimePad() {
     return (
       <div className="p-4 rounded-lg text-center"
            style={{ 
-             backgroundColor: '#242424',
-             border: '1px solid rgba(255,255,255,0.1)'
+             backgroundColor: 'var(--panel-dark)',
+             border: '1px solid var(--border-color)'
            }}>
-        <div className="text-gray-500 text-sm font-mono">
+        <div className="text-[var(--text-muted)] text-sm font-mono">
           Run a simulation first to generate a key.
           Need at least 8 sifted key bits for encryption.
         </div>
@@ -106,7 +106,7 @@ export default function OneTimePad() {
              border: '1px solid #00aacc30'
            }}>
         <div className="flex flex-col gap-0.5">
-          <div className="text-xs font-mono text-gray-400">
+          <div className="text-xs font-mono text-[var(--text-muted)]">
             Sifted Key Available
           </div>
           <div className="text-lg font-mono font-bold 
@@ -115,11 +115,11 @@ export default function OneTimePad() {
           </div>
         </div>
         <div className="flex flex-col gap-0.5 text-right">
-          <div className="text-xs font-mono text-gray-400">
+          <div className="text-xs font-mono text-[var(--text-muted)]">
             Max message length
           </div>
           <div className="text-lg font-mono font-bold 
-                          text-white">
+                          text-[var(--text-primary)]">
             {maxChars} characters
           </div>
         </div>
@@ -139,15 +139,15 @@ export default function OneTimePad() {
           }
           placeholder={`Enter up to ${maxChars} characters...`}
           className="px-3 py-2 rounded-lg text-sm font-mono
-                     text-white placeholder-gray-600
+                     text-[var(--text-primary)] placeholder-[var(--text-subtle)]
                      outline-none transition-colors"
           style={{
-            backgroundColor: '#1e1e1e',
-            border: '1px solid rgba(255,255,255,0.2)',
+            backgroundColor: 'var(--panel-dark)',
+            border: '1px solid var(--border-color)',
           }}
           maxLength={maxChars}
         />
-        <div className="text-xs font-mono text-gray-600">
+        <div className="text-xs font-mono text-[var(--text-subtle)]">
           {message.length}/{maxChars} characters used
           · {message.length * 8}/{keyBits.length} key bits consumed
         </div>
@@ -163,13 +163,13 @@ export default function OneTimePad() {
           {/* Per-character table */}
           <div className="overflow-auto rounded-lg"
                style={{ 
-                 border: '1px solid rgba(255,255,255,0.1)' 
+                 border: '1px solid var(--border-color)' 
                }}>
             <table className="w-full text-xs font-mono">
               <thead>
                 <tr style={{ 
-                  backgroundColor: '#1e1e1e',
-                  borderBottom: '1px solid rgba(255,255,255,0.1)'
+                  backgroundColor: 'var(--panel-dark)',
+                  borderBottom: '1px solid var(--border-color)'
                 }}>
                   {['Char', 'ASCII', 'Message (bin)', 
                     'Key bits', 'XOR Result', 
@@ -187,15 +187,15 @@ export default function OneTimePad() {
                 {encryption.rows.map((row, i) => (
                   <tr key={i}
                       style={{ 
-                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                        borderBottom: '1px solid var(--border-color)',
                         backgroundColor: i % 2 === 0 
-                          ? '#242424' : 'transparent'
+                          ? 'var(--panel-bg)' : 'transparent'
                       }}>
-                    <td className="px-3 py-2 text-white 
+                    <td className="px-3 py-2 text-[var(--text-primary)] 
                                    font-bold text-sm">
                       {row.char}
                     </td>
-                    <td className="px-3 py-2 text-gray-400">
+                    <td className="px-3 py-2 text-[var(--text-muted)]">
                       {row.ascii}
                     </td>
                     <td className="px-3 py-2 text-quantum-blue">
@@ -221,10 +221,10 @@ export default function OneTimePad() {
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 rounded-lg"
                  style={{ 
-                   backgroundColor: '#1e1e1e',
-                   border: '1px solid rgba(255,255,255,0.1)'
+                   backgroundColor: 'var(--panel-dark)',
+                   border: '1px solid var(--border-color)'
                  }}>
-              <div className="text-xs font-mono text-gray-500 
+              <div className="text-xs font-mono text-[var(--text-muted)] 
                               uppercase tracking-wider mb-1">
                 Encrypted Message
               </div>
@@ -249,7 +249,7 @@ export default function OneTimePad() {
                 Decrypted Message
               </div>
               <div className="text-lg font-mono font-bold 
-                              text-white">
+                              text-[var(--text-primary)]">
                 {encryption.decryptedFull}
                 <span className="ml-2 text-sm"
                       style={{ 
@@ -266,10 +266,10 @@ export default function OneTimePad() {
           <div className="p-3 rounded-lg text-xs font-mono 
                           text-gray-500 leading-relaxed"
                style={{ 
-                 backgroundColor: '#1e1e1e',
-                 border: '1px solid rgba(255,255,255,0.08)'
+                 backgroundColor: 'var(--panel-dark)',
+                 border: '1px solid var(--border-color)'
                }}>
-            <span className="text-gray-400">ℹ</span>
+            <span className="text-[var(--text-muted)]">ℹ</span>
             {' '}XOR encryption with a random key is the 
             one-time pad — proven by Claude Shannon (1949) 
             to be information-theoretically secure when the 

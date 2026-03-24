@@ -51,7 +51,7 @@ const useSimulationStore = create((set, get) => ({
   error: null,
 
   // ─── VIEW STATE ──────────────────────────────────────────
-  activeView: 'simulator',   // 'simulator' | 'guide' | 'results'
+  activeView: 'landing',   // 'landing' | 'simulator' | 'guide' | 'results'
 
   // ─── ANIMATION STATE ─────────────────────────────────────
   animation: {
@@ -89,6 +89,8 @@ const useSimulationStore = create((set, get) => ({
   sourceModel: 'ideal',
   // 'ideal' = perfect single photons, standard BB84
   // 'realistic' = WCP source, PNS vulnerable
+
+  theme: 'dark',  // 'dark' | 'light'
 
   /*
   placedGate shape:
@@ -273,6 +275,18 @@ const useSimulationStore = create((set, get) => ({
     }
   }),
 
+  setTheme: (theme) => {
+    // Apply to document root
+    if (theme === 'light') {
+      document.documentElement.classList.add('light')
+    } else {
+      document.documentElement.classList.remove('light')
+    }
+    // Persist to localStorage
+    localStorage.setItem('qkd-theme', theme)
+    return set({ theme })
+  },
+
   // Derived getters
   getHasResults: () => get().results !== null,
   getIsThresholdBreached: () => 
@@ -281,5 +295,9 @@ const useSimulationStore = create((set, get) => ({
   getSKR: () => get().results?.skr ?? 0,
 
 }))
+
+// Initialize theme from localStorage
+const savedTheme = localStorage.getItem('qkd-theme') || 'dark'
+useSimulationStore.getState().setTheme(savedTheme)
 
 export default useSimulationStore

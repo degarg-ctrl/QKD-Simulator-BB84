@@ -219,13 +219,10 @@ function StepCard({ stepData, isActive, onClick }) {
     <motion.div
       layout
       onClick={onClick}
-      className={`border rounded-lg cursor-pointer transition-colors
-                  ${isActive 
-                    ? 'border-opacity-60 bg-gray-900/60' 
-                    : 'border-gray-800 bg-gray-900/20 hover:border-gray-700'
-                  }`}
+      className="border rounded-lg cursor-pointer transition-colors"
       style={{ 
-        borderColor: isActive ? stepData.color + '60' : undefined 
+        backgroundColor: isActive ? 'var(--card-bg)' : 'transparent',
+        borderColor: isActive ? stepData.color + '60' : 'var(--card-border)' 
       }}
     >
       <div className="flex items-center gap-3 p-4">
@@ -240,10 +237,12 @@ function StepCard({ stepData, isActive, onClick }) {
           {stepData.step}
         </div>
         <div className="flex-1">
-          <div className="text-sm font-mono text-white">
+          <div className="text-sm font-mono"
+               style={{ color: 'var(--text-primary)' }}>
             {stepData.title}
           </div>
-          <div className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+          <div className="text-xs mt-0.5 line-clamp-1"
+               style={{ color: 'var(--text-muted)' }}>
             {stepData.description.slice(0, 80)}...
           </div>
         </div>
@@ -303,8 +302,8 @@ function GlossaryItem({ term, definition }) {
             exit={{ height: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 text-sm text-gray-400 
-                            leading-relaxed border-t border-gray-800">
+            <div className="px-4 pb-4 text-sm leading-relaxed border-t"
+                 style={{ color: 'var(--text-muted)', borderColor: 'var(--border-color)' }}>
               <p className="pt-3">{definition}</p>
             </div>
           </motion.div>
@@ -327,7 +326,7 @@ const SECTIONS = [
 export default function GuidePage() {
   const [activeStep, setActiveStep] = useState(0)
   const [activeSection, setActiveSection] = useState('intro')
-  const { setActiveView } = useSimulationStore()
+  const { setActiveView, theme } = useSimulationStore()
 
   // Update active section based on scroll position
   useEffect(() => {
@@ -348,11 +347,14 @@ export default function GuidePage() {
   }, [])
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen text-white">
+    <div className="min-h-screen"
+         style={{ background: 'var(--bg-primary)',
+                  color: 'var(--text-primary)' }}>
       
       {/* Top nav */}
-      <div className="sticky top-0 z-40 bg-[#11111a]/95 backdrop-blur
-                      border-b border-gray-800">
+      <div className="sticky top-0 z-40 backdrop-blur border-b"
+           style={{ background: 'var(--panel-bg)',
+                    borderColor: 'var(--border-color)' }}>
         <div className="max-w-5xl mx-auto px-6 py-3 
                         flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -364,7 +366,8 @@ export default function GuidePage() {
               ← Simulator
             </button>
             <span className="text-gray-700">|</span>
-            <span className="font-mono text-sm text-white">
+            <span className="font-mono text-sm"
+                  style={{ color: 'var(--text-primary)' }}>
               BB84 Guide
             </span>
           </div>
@@ -380,9 +383,14 @@ export default function GuidePage() {
                 className={`px-3 py-1 text-xs font-mono rounded
                            transition-colors
                            ${activeSection === s.id
-                             ? 'text-white bg-gray-800'
-                             : 'text-gray-500 hover:text-gray-300'
+                             ? 'bg-gray-800/20' 
+                             : 'hover:text-gray-300'
                            }`}
+                style={{
+                  color: activeSection === s.id 
+                    ? 'var(--text-primary)' 
+                    : 'var(--text-muted)'
+                }}
               >
                 {s.label}
               </button>
@@ -402,32 +410,38 @@ export default function GuidePage() {
                             uppercase tracking-widest mb-2">
               Introduction
             </div>
-            <h1 className="text-3xl font-bold text-white mb-4">
+            <h1 className="text-3xl font-bold mb-4"
+                style={{ color: 'var(--text-primary)' }}>
               {QKD_INTRO.title}
             </h1>
-            <p className="text-gray-300 leading-relaxed text-lg max-w-3xl">
+            <p className="leading-relaxed text-lg max-w-3xl"
+               style={{ color: 'var(--text-secondary)' }}>
               {QKD_INTRO.summary}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="p-5 bg-[#11111a] border border-gray-800 
-                            rounded-lg">
+            <div className="p-5 rounded-lg border"
+                 style={{ background: 'var(--card-bg)', 
+                          borderColor: 'var(--card-border)' }}>
               <div className="text-xs font-mono text-yellow-400 
                               uppercase tracking-wider mb-3">
                 ⚠ The Quantum Threat
               </div>
-              <p className="text-gray-300 text-sm leading-relaxed">
+              <p className="text-sm leading-relaxed"
+                 style={{ color: 'var(--text-secondary)' }}>
                 {QKD_INTRO.whyItMatters}
               </p>
             </div>
-            <div className="p-5 bg-[#11111a] border border-gray-800 
-                            rounded-lg">
+            <div className="p-5 rounded-lg border"
+                 style={{ background: 'var(--card-bg)', 
+                          borderColor: 'var(--card-border)' }}>
               <div className="text-xs font-mono text-[#22c55e] 
                               uppercase tracking-wider mb-3">
                 ✓ The Quantum Solution
               </div>
-              <p className="text-gray-300 text-sm leading-relaxed">
+              <p className="text-sm leading-relaxed"
+                 style={{ color: 'var(--text-secondary)' }}>
                 {QKD_INTRO.keyPrinciple}
               </p>
             </div>
@@ -445,10 +459,12 @@ export default function GuidePage() {
                             uppercase tracking-widest mb-2">
               Protocol
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-2xl font-bold mb-2"
+                style={{ color: 'var(--text-primary)' }}>
               The BB84 Protocol — Step by Step
             </h2>
-            <p className="text-gray-400 text-sm">
+            <p className="text-sm"
+               style={{ color: 'var(--text-muted)' }}>
               Click each step to expand the full explanation.
             </p>
           </div>
@@ -473,14 +489,16 @@ export default function GuidePage() {
                             uppercase tracking-widest mb-2">
               Security
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">
+            <h2 className="text-2xl font-bold mb-4"
+                style={{ color: 'var(--text-primary)' }}>
               Security Analysis
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="p-4 bg-green-950/20 border 
-                            border-green-900/40 rounded-lg">
+            <div className="p-4 rounded-lg border"
+                 style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                          borderColor: 'rgba(34, 197, 94, 0.3)' }}>
               <div className="text-xs font-mono text-[#22c55e] 
                               mb-2 uppercase tracking-wider">
                 QBER &lt; 7%
@@ -489,14 +507,16 @@ export default function GuidePage() {
                               text-[#22c55e] mb-2">
                 Secure
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs"
+                 style={{ color: 'var(--text-muted)' }}>
                 Channel noise is within acceptable limits. 
                 No significant eavesdropping detected. 
                 Key extraction proceeds normally.
               </p>
             </div>
-            <div className="p-4 bg-yellow-950/20 border 
-                            border-yellow-900/40 rounded-lg">
+            <div className="p-4 rounded-lg border"
+                 style={{ backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                          borderColor: 'rgba(234, 179, 8, 0.3)' }}>
               <div className="text-xs font-mono text-yellow-400 
                               mb-2 uppercase tracking-wider">
                 7% ≤ QBER &lt; 11%
@@ -505,14 +525,16 @@ export default function GuidePage() {
                               text-yellow-400 mb-2">
                 Warning
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs"
+                 style={{ color: 'var(--text-muted)' }}>
                 Elevated error rate. Possible partial 
                 eavesdropping or high channel noise. 
                 Key rate significantly degraded.
               </p>
             </div>
-            <div className="p-4 bg-red-950/20 border 
-                            border-red-900/40 rounded-lg">
+            <div className="p-4 rounded-lg border"
+                 style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                          borderColor: 'rgba(239, 68, 68, 0.3)' }}>
               <div className="text-xs font-mono text-[#ef4444] 
                               mb-2 uppercase tracking-wider">
                 QBER ≥ 11%
@@ -521,7 +543,8 @@ export default function GuidePage() {
                               text-[#ef4444] mb-2">
                 Abort
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs"
+                 style={{ color: 'var(--text-muted)' }}>
                 Security threshold breached. Session aborted. 
                 Eve likely intercepting significant fraction 
                 of photons. SKR = 0.
@@ -529,14 +552,15 @@ export default function GuidePage() {
             </div>
           </div>
 
-          <div className="p-5 bg-[#11111a] border border-gray-800 
-                          rounded-lg">
-            <div className="text-xs font-mono text-gray-500 
-                            uppercase tracking-wider mb-3">
+          <div className="p-5 rounded-lg border"
+               style={{ background: 'var(--card-bg)', 
+                        borderColor: 'var(--card-border)' }}>
+            <div className="text-xs font-mono uppercase tracking-wider mb-3"
+                 style={{ color: 'var(--text-muted)' }}>
               Secret Key Rate Formula
             </div>
-            <div className="font-mono text-center text-lg 
-                            text-[#6366f1] py-4">
+            <div className="font-mono text-center text-lg py-4"
+                 style={{ color: '#6366f1' }}>
               R = S × (1 - 2H(Q))
             </div>
             <div className="grid grid-cols-3 gap-4 mt-2">
@@ -544,7 +568,8 @@ export default function GuidePage() {
                 <div className="font-mono text-[#6366f1] text-sm">
                   R
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs mt-1"
+                     style={{ color: 'var(--text-muted)' }}>
                   Secret Key Rate
                 </div>
               </div>
@@ -552,7 +577,8 @@ export default function GuidePage() {
                 <div className="font-mono text-[#22c55e] text-sm">
                   S
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs mt-1"
+                     style={{ color: 'var(--text-muted)' }}>
                   Sifted Key Rate
                 </div>
               </div>
@@ -560,7 +586,8 @@ export default function GuidePage() {
                 <div className="font-mono text-yellow-400 text-sm">
                   H(Q)
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs mt-1"
+                     style={{ color: 'var(--text-muted)' }}>
                   Binary Entropy of QBER
                 </div>
               </div>
@@ -575,10 +602,12 @@ export default function GuidePage() {
                             uppercase tracking-widest mb-2">
               Mathematics
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-2xl font-bold mb-2"
+                style={{ color: 'var(--text-primary)' }}>
               Key Formulas
             </h2>
-            <p className="text-gray-400 text-sm">
+            <p className="text-sm"
+               style={{ color: 'var(--text-muted)' }}>
               The physics and information theory behind BB84.
             </p>
           </div>
@@ -593,18 +622,21 @@ export default function GuidePage() {
                               font-mono font-bold text-quantum-blue">
                 Q
               </div>
-              <h3 className="text-lg font-mono font-bold text-white">
+              <h3 className="text-lg font-mono font-bold"
+                  style={{ color: 'var(--text-primary)' }}>
                 Quantum Bit Error Rate (QBER)
               </h3>
             </div>
 
             {/* Formula display */}
-            <div className="p-4 bg-gray-950 rounded-lg border 
-                            border-gray-800 text-center">
+            <div className="p-4 rounded-lg border text-center"
+                 style={{ background: '#1a1a2e', 
+                          borderColor: 'rgba(255,255,255,0.1)' }}>
               <div className="text-2xl font-mono text-quantum-blue">
                 QBER = E / N
               </div>
-              <div className="text-sm text-gray-500 mt-2 font-mono">
+              <div className="text-sm mt-2 font-mono"
+                   style={{ color: '#94a3b8' }}>
                 E = erroneous bits in sample | N = total sampled bits
               </div>
             </div>
@@ -615,7 +647,8 @@ export default function GuidePage() {
                               uppercase tracking-wider">
                 Derivation Context
               </div>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm leading-relaxed"
+                 style={{ color: 'var(--text-secondary)' }}>
                 After sifting, Alice and Bob sacrifice a random 
                 sample (default 10%) of their matching bits for 
                 error checking. They publicly compare these bits — 
@@ -623,7 +656,8 @@ export default function GuidePage() {
                 eavesdropping. The QBER is the fraction of 
                 discrepant bits in this sample.
               </p>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm leading-relaxed"
+                 style={{ color: 'var(--text-secondary)' }}>
                 Without Eve: errors come only from thermal noise 
                 and dark counts — typically 0-3%. With Eve's 
                 intercept-resend attack: Eve randomly guesses 
@@ -634,8 +668,9 @@ export default function GuidePage() {
             </div>
 
             {/* Worked example */}
-            <div className="p-4 bg-gray-950/50 rounded-lg 
-                            border border-gray-800">
+            <div className="p-4 rounded-lg border"
+                 style={{ background: '#1a1a2e', 
+                          borderColor: 'rgba(255,255,255,0.1)' }}>
               <div className="text-xs font-mono text-quantum-green 
                               uppercase tracking-wider mb-3">
                 Worked Example
@@ -675,47 +710,50 @@ export default function GuidePage() {
                               uppercase tracking-wider">
                 QBER vs Eve Interception Rate
               </div>
-              <ResponsiveContainer width="100%" height={180}>
-                <LineChart
-                  data={Array.from({length: 11}, (_, i) => ({
-                    eve: i * 10,
-                    qber: parseFloat((i * 0.1 * 0.25 * 100).toFixed(2))
-                  }))}
-                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" 
-                                 stroke="#1e1e2e" />
-                  <XAxis dataKey="eve" stroke="#4b5563"
-                    tick={{ fill: '#4b5563', fontSize: 10,
-                            fontFamily: 'monospace' }}
-                    label={{ value: 'Eve Interception %',
-                             position: 'insideBottom',
-                             offset: -2,
-                             fill: '#4b5563', fontSize: 10 }}
-                  />
-                  <YAxis stroke="#4b5563"
-                    tick={{ fill: '#4b5563', fontSize: 10,
-                            fontFamily: 'monospace' }}
-                    tickFormatter={v => `${v}%`}
-                  />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#111',
-                      border: '1px solid #333', borderRadius: '6px',
-                      fontFamily: 'monospace', fontSize: '11px' }}
-                    formatter={(v) => [`${v}%`, 'QBER']}
-                    labelFormatter={(l) => `Eve: ${l}%`}
-                  />
-                  <ReferenceLine y={11} stroke="#ef4444"
-                    strokeDasharray="4 4"
-                    label={{ value: '11% threshold',
-                             fill: '#ef4444', fontSize: 9,
-                             fontFamily: 'monospace' }}
-                  />
-                  <Line type="monotone" dataKey="qber"
-                    stroke="#6366f1" strokeWidth={2} dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <div style={{ background: 'var(--card-bg)', 
+                            borderRadius: '8px', padding: '16px' }}>
+                <ResponsiveContainer width="100%" height={180}>
+                  <LineChart
+                    data={Array.from({length: 11}, (_, i) => ({
+                      eve: i * 10,
+                      qber: parseFloat((i * 0.1 * 0.25 * 100).toFixed(2))
+                    }))}
+                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" 
+                                   stroke="var(--panel-border)" />
+                    <XAxis dataKey="eve" stroke="var(--text-secondary)"
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 10,
+                              fontFamily: 'monospace' }}
+                      label={{ value: 'Interception %',
+                               position: 'insideBottom',
+                               offset: -2,
+                               fill: 'var(--text-secondary)', fontSize: 10 }}
+                    />
+                    <YAxis stroke="var(--text-secondary)"
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 10,
+                              fontFamily: 'monospace' }}
+                      tickFormatter={v => `${v}%`}
+                    />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: 'var(--panel-bg)',
+                        border: '1px solid var(--border-color)', borderRadius: '6px',
+                        fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-primary)' }}
+                      formatter={(v) => [`${v}%`, 'QBER']}
+                      labelFormatter={(l) => `Eve: ${l}%`}
+                    />
+                    <ReferenceLine y={11} stroke="#ef4444"
+                      strokeDasharray="4 4"
+                      label={{ value: '11% threshold',
+                               fill: '#ef4444', fontSize: 9,
+                               fontFamily: 'monospace' }}
+                    />
+                    <Line type="monotone" dataKey="qber"
+                      stroke="#6366f1" strokeWidth={2} dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
@@ -729,17 +767,20 @@ export default function GuidePage() {
                               font-mono font-bold text-yellow-400">
                 H
               </div>
-              <h3 className="text-lg font-mono font-bold text-white">
+              <h3 className="text-lg font-mono font-bold"
+                  style={{ color: 'var(--text-primary)' }}>
                 Binary Entropy H(Q)
               </h3>
             </div>
 
-            <div className="p-4 bg-gray-950 rounded-lg border 
-                            border-gray-800 text-center">
+            <div className="p-4 rounded-lg border text-center"
+                 style={{ background: '#1a1a2e', 
+                          borderColor: 'rgba(255,255,255,0.1)' }}>
               <div className="text-xl font-mono text-yellow-400">
                 H(Q) = -Q·log₂(Q) - (1-Q)·log₂(1-Q)
               </div>
-              <div className="text-sm text-gray-500 mt-2 font-mono">
+              <div className="text-sm mt-2 font-mono"
+                   style={{ color: '#94a3b8' }}>
                 Q = QBER | H(0) = 0 | H(0.5) = 1 | H(0.11) ≈ 0.5
               </div>
             </div>
@@ -749,7 +790,8 @@ export default function GuidePage() {
                               uppercase tracking-wider">
                 Derivation Context
               </div>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm leading-relaxed"
+                 style={{ color: 'var(--text-secondary)' }}>
                 Binary entropy measures the uncertainty in a 
                 biased coin flip. When Q=0, there are no errors — 
                 complete certainty, H=0. When Q=0.5, every bit is 
@@ -757,7 +799,8 @@ export default function GuidePage() {
                 is symmetric around Q=0.5 and reaches its maximum 
                 there.
               </p>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm leading-relaxed"
+                 style={{ color: 'var(--text-secondary)' }}>
                 In BB84, H(Q) quantifies how much information Eve 
                 might have gained about the key. Higher QBER means 
                 Eve likely intercepted more photons, gaining more 
@@ -765,8 +808,9 @@ export default function GuidePage() {
               </p>
             </div>
 
-            <div className="p-4 bg-gray-950/50 rounded-lg 
-                            border border-gray-800">
+            <div className="p-4 rounded-lg border"
+                 style={{ background: '#1a1a2e', 
+                          borderColor: 'rgba(255,255,255,0.1)' }}>
               <div className="text-xs font-mono text-quantum-green 
                               uppercase tracking-wider mb-3">
                 Worked Example
@@ -796,52 +840,55 @@ export default function GuidePage() {
                               uppercase tracking-wider">
                 Binary Entropy Curve
               </div>
-              <ResponsiveContainer width="100%" height={180}>
-                <LineChart
-                  data={Array.from({length: 51}, (_, i) => {
-                    const q = i * 0.01
-                    const h = q === 0 || q === 1 ? 0
-                      : -(q * Math.log2(q)) 
-                        - ((1-q) * Math.log2(1-q))
-                    return { 
-                      q: parseFloat((q * 100).toFixed(0)),
-                      h: parseFloat(h.toFixed(3))
-                    }
-                  })}
-                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3"
-                                 stroke="#1e1e2e" />
-                  <XAxis dataKey="q" stroke="#4b5563"
-                    tick={{ fill: '#4b5563', fontSize: 10,
-                            fontFamily: 'monospace' }}
-                    label={{ value: 'QBER %',
-                             position: 'insideBottom',
-                             offset: -2,
-                             fill: '#4b5563', fontSize: 10 }}
-                  />
-                  <YAxis stroke="#4b5563"
-                    tick={{ fill: '#4b5563', fontSize: 10,
-                            fontFamily: 'monospace' }}
-                  />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#111',
-                      border: '1px solid #333', borderRadius: '6px',
-                      fontFamily: 'monospace', fontSize: '11px' }}
-                    formatter={(v) => [v, 'H(Q)']}
-                    labelFormatter={(l) => `QBER: ${l}%`}
-                  />
-                  <ReferenceLine x={11} stroke="#ef4444"
-                    strokeDasharray="4 4"
-                    label={{ value: 'Q=11%',
-                             fill: '#ef4444', fontSize: 9,
-                             fontFamily: 'monospace' }}
-                  />
-                  <Line type="monotone" dataKey="h"
-                    stroke="#f59e0b" strokeWidth={2} dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <div style={{ background: 'var(--card-bg)', 
+                            borderRadius: '8px', padding: '16px' }}>
+                <ResponsiveContainer width="100%" height={180}>
+                  <LineChart
+                    data={Array.from({length: 51}, (_, i) => {
+                      const q = i * 0.01
+                      const h = q === 0 || q === 1 ? 0
+                        : -(q * Math.log2(q)) 
+                          - ((1-q) * Math.log2(1-q))
+                      return { 
+                        q: parseFloat((q * 100).toFixed(0)),
+                        h: parseFloat(h.toFixed(3))
+                      }
+                    })}
+                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3"
+                                   stroke="var(--panel-border)" />
+                    <XAxis dataKey="q" stroke="var(--text-secondary)"
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 10,
+                              fontFamily: 'monospace' }}
+                      label={{ value: 'QBER %',
+                               position: 'insideBottom',
+                               offset: -2,
+                               fill: 'var(--text-secondary)', fontSize: 10 }}
+                    />
+                    <YAxis stroke="var(--text-secondary)"
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 10,
+                              fontFamily: 'monospace' }}
+                    />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: 'var(--panel-bg)',
+                        border: '1px solid var(--border-color)', borderRadius: '6px',
+                        fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-primary)' }}
+                      formatter={(v) => [v, 'H(Q)']}
+                      labelFormatter={(l) => `QBER: ${l}%`}
+                    />
+                    <ReferenceLine x={11} stroke="#ef4444"
+                      strokeDasharray="4 4"
+                      label={{ value: 'Q=11%',
+                               fill: '#ef4444', fontSize: 9,
+                               fontFamily: 'monospace' }}
+                    />
+                    <Line type="monotone" dataKey="h"
+                      stroke="#f59e0b" strokeWidth={2} dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
@@ -855,20 +902,24 @@ export default function GuidePage() {
                               font-mono font-bold text-quantum-green">
                 R
               </div>
-              <h3 className="text-lg font-mono font-bold text-white">
+              <h3 className="text-lg font-mono font-bold"
+                  style={{ color: 'var(--text-primary)' }}>
                 Secret Key Rate (SKR)
               </h3>
             </div>
 
-            <div className="p-4 bg-gray-950 rounded-lg border 
-                            border-gray-800 text-center">
+            <div className="p-4 rounded-lg border text-center"
+                 style={{ background: '#1a1a2e', 
+                          borderColor: 'rgba(255,255,255,0.1)' }}>
               <div className="text-2xl font-mono text-quantum-green">
                 R = S · (1 - 2·H(Q))
               </div>
-              <div className="text-sm text-gray-500 mt-2 font-mono">
+              <div className="text-sm mt-2 font-mono"
+                   style={{ color: '#94a3b8' }}>
                 S = sifted key rate | H(Q) = binary entropy of QBER
               </div>
-              <div className="text-xs text-gray-600 mt-1 font-mono">
+              <div className="text-xs mt-1 font-mono"
+                   style={{ color: '#64748b' }}>
                 R = 0 when Q ≥ 0.11
               </div>
             </div>
@@ -878,7 +929,8 @@ export default function GuidePage() {
                               uppercase tracking-wider">
                 Derivation Context
               </div>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm leading-relaxed"
+                 style={{ color: 'var(--text-secondary)' }}>
                 The SKR formula comes from information theory. 
                 The term (1 - 2H(Q)) represents the fraction of 
                 sifted bits that can be made secure after accounting 
@@ -888,7 +940,8 @@ export default function GuidePage() {
                 (removing H(Q) bits of potential Eve knowledge) 
                 must be applied.
               </p>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm leading-relaxed"
+                 style={{ color: 'var(--text-secondary)' }}>
                 When QBER reaches 11%, H(0.11) ≈ 0.5, making 
                 1 - 2×0.5 = 0. No secure bits can be extracted. 
                 Above 11%, the term goes negative — the channel 
@@ -896,8 +949,9 @@ export default function GuidePage() {
               </p>
             </div>
 
-            <div className="p-4 bg-gray-950/50 rounded-lg 
-                            border border-gray-800">
+            <div className="p-4 rounded-lg border"
+                 style={{ background: '#1a1a2e', 
+                          borderColor: 'rgba(255,255,255,0.1)' }}>
               <div className="text-xs font-mono text-quantum-green 
                               uppercase tracking-wider mb-3">
                 Worked Example
@@ -938,54 +992,57 @@ export default function GuidePage() {
                               uppercase tracking-wider">
                 SKR vs QBER Curve
               </div>
-              <ResponsiveContainer width="100%" height={180}>
-                <LineChart
-                  data={Array.from({length: 16}, (_, i) => {
-                    const q = i * 0.01
-                    const h = q === 0 ? 0
-                      : -(q * Math.log2(q))
-                        - ((1-q) * Math.log2(1-q))
-                    const s = 0.042
-                    const r = Math.max(0, s * (1 - 2 * h))
-                    return {
-                      qber: parseFloat((q * 100).toFixed(0)),
-                      skr: parseFloat(r.toFixed(4))
-                    }
-                  })}
-                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3"
-                                 stroke="#1e1e2e" />
-                  <XAxis dataKey="qber" stroke="#4b5563"
-                    tick={{ fill: '#4b5563', fontSize: 10,
-                            fontFamily: 'monospace' }}
-                    label={{ value: 'QBER %',
-                             position: 'insideBottom',
-                             offset: -2,
-                             fill: '#4b5563', fontSize: 10 }}
-                  />
-                  <YAxis stroke="#4b5563"
-                    tick={{ fill: '#4b5563', fontSize: 10,
-                            fontFamily: 'monospace' }}
-                  />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#111',
-                      border: '1px solid #333', borderRadius: '6px',
-                      fontFamily: 'monospace', fontSize: '11px' }}
-                    formatter={(v) => [v, 'SKR']}
-                    labelFormatter={(l) => `QBER: ${l}%`}
-                  />
-                  <ReferenceLine x={11} stroke="#ef4444"
-                    strokeDasharray="4 4"
-                    label={{ value: 'threshold',
-                             fill: '#ef4444', fontSize: 9,
-                             fontFamily: 'monospace' }}
-                  />
-                  <Line type="monotone" dataKey="skr"
-                    stroke="#22c55e" strokeWidth={2} dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <div style={{ background: 'var(--card-bg)', 
+                            borderRadius: '8px', padding: '16px' }}>
+                <ResponsiveContainer width="100%" height={180}>
+                  <LineChart
+                    data={Array.from({length: 16}, (_, i) => {
+                      const q = i * 0.01
+                      const h = q === 0 ? 0
+                        : -(q * Math.log2(q))
+                          - ((1-q) * Math.log2(1-q))
+                      const s = 0.042
+                      const r = Math.max(0, s * (1 - 2 * h))
+                      return {
+                        qber: parseFloat((q * 100).toFixed(0)),
+                        skr: parseFloat(r.toFixed(4))
+                      }
+                    })}
+                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3"
+                                   stroke="var(--panel-border)" />
+                    <XAxis dataKey="qber" stroke="var(--text-secondary)"
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 10,
+                              fontFamily: 'monospace' }}
+                      label={{ value: 'QBER %',
+                               position: 'insideBottom',
+                               offset: -2,
+                               fill: 'var(--text-secondary)', fontSize: 10 }}
+                    />
+                    <YAxis stroke="var(--text-secondary)"
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 10,
+                              fontFamily: 'monospace' }}
+                    />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: 'var(--panel-bg)',
+                        border: '1px solid var(--border-color)', borderRadius: '6px',
+                        fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-primary)' }}
+                      formatter={(v) => [v, 'SKR']}
+                      labelFormatter={(l) => `QBER: ${l}%`}
+                    />
+                    <ReferenceLine x={11} stroke="#ef4444"
+                      strokeDasharray="4 4"
+                      label={{ value: 'threshold',
+                               fill: '#ef4444', fontSize: 9,
+                               fontFamily: 'monospace' }}
+                    />
+                    <Line type="monotone" dataKey="skr"
+                      stroke="#22c55e" strokeWidth={2} dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
@@ -999,20 +1056,24 @@ export default function GuidePage() {
                               font-mono font-bold text-purple-400">
                 P
               </div>
-              <h3 className="text-lg font-mono font-bold text-white">
+              <h3 className="text-lg font-mono font-bold"
+                  style={{ color: 'var(--text-primary)' }}>
                 Fiber Attenuation (Beer-Lambert Law)
               </h3>
             </div>
 
-            <div className="p-4 bg-gray-950 rounded-lg border 
-                            border-gray-800 text-center">
+            <div className="p-4 rounded-lg border text-center"
+                 style={{ background: '#1a1a2e', 
+                          borderColor: 'rgba(255,255,255,0.1)' }}>
               <div className="text-xl font-mono text-purple-400">
                 P_survive = 10^(-α·d / 10)
               </div>
-              <div className="text-sm text-gray-500 mt-2 font-mono">
+              <div className="text-sm mt-2 font-mono"
+                   style={{ color: '#94a3b8' }}>
                 α = 0.2 dB/km | d = distance in km
               </div>
-              <div className="text-xs text-gray-600 mt-1 font-mono">
+              <div className="text-xs mt-1 font-mono"
+                   style={{ color: '#64748b' }}>
                 P_detect = P_survive · η + P_dark · (1 - P_survive · η)
               </div>
             </div>
@@ -1022,7 +1083,8 @@ export default function GuidePage() {
                               uppercase tracking-wider">
                 Derivation Context
               </div>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm leading-relaxed"
+                 style={{ color: 'var(--text-secondary)' }}>
                 Photons in fiber optic cables are absorbed and 
                 scattered by the glass medium. The Beer-Lambert 
                 law describes this exponential decay. Modern 
@@ -1030,7 +1092,8 @@ export default function GuidePage() {
                 ~0.2 dB/km at 1550nm wavelength — the standard 
                 for quantum communication.
               </p>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm leading-relaxed"
+                 style={{ color: 'var(--text-secondary)' }}>
                 The detection probability adds detector efficiency 
                 η (probability a surviving photon is actually 
                 detected) and dark counts P_dark (false detections 
@@ -1038,8 +1101,9 @@ export default function GuidePage() {
               </p>
             </div>
 
-            <div className="p-4 bg-gray-950/50 rounded-lg 
-                            border border-gray-800">
+            <div className="p-4 rounded-lg border"
+                 style={{ background: '#1a1a2e', 
+                          borderColor: 'rgba(255,255,255,0.1)' }}>
               <div className="text-xs font-mono text-quantum-green 
                               uppercase tracking-wider mb-3">
                 Worked Example
@@ -1074,52 +1138,56 @@ export default function GuidePage() {
                               uppercase tracking-wider">
                 Photon Survival vs Distance
               </div>
-              <ResponsiveContainer width="100%" height={180}>
-                <LineChart
-                  data={Array.from({length: 21}, (_, i) => {
-                    const d = i * 5
-                    const p = Math.pow(10, -0.2 * d / 10) * 100
-                    const det = p * 0.85 / 100
-                    return {
-                      distance: d,
-                      survival: parseFloat(p.toFixed(2)),
-                      detected: parseFloat((det * 100).toFixed(2))
-                    }
-                  })}
-                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3"
-                                 stroke="#1e1e2e" />
-                  <XAxis dataKey="distance" stroke="#4b5563"
-                    tick={{ fill: '#4b5563', fontSize: 10,
-                            fontFamily: 'monospace' }}
-                    label={{ value: 'km',
-                             position: 'insideRight',
-                             fill: '#4b5563', fontSize: 10 }}
-                  />
-                  <YAxis stroke="#4b5563"
-                    tick={{ fill: '#4b5563', fontSize: 10,
-                            fontFamily: 'monospace' }}
-                    tickFormatter={v => `${v}%`}
-                  />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#111',
-                      border: '1px solid #333', borderRadius: '6px',
-                      fontFamily: 'monospace', fontSize: '11px' }}
-                    labelFormatter={(l) => `${l} km`}
-                  />
-                  <Line type="monotone" dataKey="survival"
-                    stroke="#a855f7" strokeWidth={2}
-                    dot={false} name="Survival %"
-                  />
-                  <Line type="monotone" dataKey="detected"
-                    stroke="#6366f1" strokeWidth={2}
-                    dot={false} name="Detected %"
-                    strokeDasharray="4 4"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-              <div className="text-xs text-gray-600 font-mono">
+              <div style={{ background: 'var(--card-bg)', 
+                            borderRadius: '8px', padding: '16px' }}>
+                <ResponsiveContainer width="100%" height={180}>
+                  <LineChart
+                    data={Array.from({length: 21}, (_, i) => {
+                      const d = i * 5
+                      const p = Math.pow(10, -0.2 * d / 10) * 100
+                      const det = p * 0.85 / 100
+                      return {
+                        distance: d,
+                        survival: parseFloat(p.toFixed(2)),
+                        detected: parseFloat((det * 100).toFixed(2))
+                      }
+                    })}
+                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3"
+                                   stroke="var(--panel-border)" />
+                    <XAxis dataKey="distance" stroke="var(--text-secondary)"
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 10,
+                              fontFamily: 'monospace' }}
+                      label={{ value: 'km',
+                               position: 'insideRight',
+                               fill: 'var(--text-secondary)', fontSize: 10 }}
+                    />
+                    <YAxis stroke="var(--text-secondary)"
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 10,
+                              fontFamily: 'monospace' }}
+                      tickFormatter={v => `${v}%`}
+                    />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: 'var(--panel-bg)',
+                        border: '1px solid var(--border-color)', borderRadius: '6px',
+                        fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-primary)' }}
+                      labelFormatter={(l) => `${l} km`}
+                    />
+                    <Line type="monotone" dataKey="survival"
+                      stroke="#a855f7" strokeWidth={2}
+                      dot={false} name="Survival %"
+                    />
+                    <Line type="monotone" dataKey="detected"
+                      stroke="#6366f1" strokeWidth={2}
+                      dot={false} name="Detected %"
+                      strokeDasharray="4 4"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="text-xs font-mono"
+                   style={{ color: 'var(--text-muted)' }}>
                 <span className="text-purple-400">━</span> Photon survival (fiber only)
                 &nbsp;&nbsp;
                 <span className="text-quantum-blue">╌</span> Detected (after η=0.85)
@@ -1136,7 +1204,8 @@ export default function GuidePage() {
                             uppercase tracking-widest mb-2">
               Tutorial
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">
+            <h2 className="text-2xl font-bold mb-4"
+                style={{ color: 'var(--text-primary)' }}>
               Using the Simulator
             </h2>
           </div>
@@ -1195,18 +1264,20 @@ export default function GuidePage() {
               },
             ].map(item => (
               <div key={item.step}
-                   className="flex gap-4 p-4 bg-[#11111a] 
-                              border border-gray-800 rounded-lg">
+                   className="flex gap-4 p-4 rounded-lg border"
+                   style={{ background: 'var(--card-bg)', 
+                            borderColor: 'var(--card-border)' }}>
                 <div className="text-2xl font-mono font-bold 
                                 text-gray-700 flex-shrink-0 w-10">
                   {item.step}
                 </div>
                 <div className="flex-1">
-                  <div className="font-mono text-white text-sm 
-                                  font-semibold mb-1">
+                  <div className="font-mono text-sm font-semibold mb-1"
+                       style={{ color: 'var(--text-primary)' }}>
                     {item.title}
                   </div>
-                  <p className="text-gray-400 text-sm leading-relaxed">
+                  <p className="text-sm leading-relaxed"
+                     style={{ color: 'var(--text-secondary)' }}>
                     {item.description}
                   </p>
                   <div className="mt-2 text-xs font-mono 
@@ -1226,7 +1297,8 @@ export default function GuidePage() {
                             uppercase tracking-widest mb-2">
               Reference
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">
+            <h2 className="text-2xl font-bold mb-4"
+                style={{ color: 'var(--text-primary)' }}>
               Glossary
             </h2>
           </div>
@@ -1242,8 +1314,8 @@ export default function GuidePage() {
         </section>
 
         {/* Footer */}
-        <div className="border-t border-gray-800 pt-8 
-                        text-center mb-20">
+        <div className="border-t pt-8 text-center mb-20"
+             style={{ borderColor: 'var(--border-color)' }}>
           <button
             onClick={() => setActiveView('simulator')}
             className="inline-flex items-center gap-2 px-6 py-3
