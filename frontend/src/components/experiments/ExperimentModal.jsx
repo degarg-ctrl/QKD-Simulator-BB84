@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
 import { useSimulation } from '../../hooks/useSimulation'
 import PhotonInputTable from './PhotonInputTable'
+import EditableValue from '../ui/EditableValue'
 
 // Experiment data — mirrors backend experiments.py
 const EXPERIMENT_DATA = {
@@ -74,6 +75,26 @@ const EXPERIMENT_DATA = {
     user_input: false,
     requires_cloning_probe: true,
   },
+  exp7: {
+    name: 'Experiment 7',
+    title: 'PNS Attack — Undetectable Eavesdropping',
+    color: '#ccaa00',
+    description: 'Real laser sources emit pulses with varying photon numbers (Weak Coherent Pulses). Eve exploits multi-photon pulses using the PNS attack — introducing ZERO detectable QBER. Standard BB84 security threshold cannot detect this attack.',
+    learning_objective: 'Understand why ideal single-photon sources matter. See that QBER staying at 0% does NOT guarantee security when using real laser sources. Eve can steal complete key information silently.',
+    defaults: { n_bits: 2000, distance_km: 10, noise_level: 0.0, attack_prob: 0.8 },
+    locked: ['attack_strategy', 'wcp_enabled'],
+    user_input: false,
+  },
+  exp8: {
+    name: 'Experiment 8',
+    title: 'Decoy State Protocol — Detecting PNS',
+    color: '#00aacc',
+    description: 'Alice sends pulses at three different intensities. By comparing detection rates between signal and decoy states, Alice and Bob can detect whether Eve is performing a PNS attack — even though QBER appears normal.',
+    learning_objective: 'Understand the decoy state protocol. See how comparing gain statistics between signal and decoy intensities reveals PNS attack that standard QBER analysis cannot detect.',
+    defaults: { n_bits: 2000, distance_km: 10, noise_level: 0.0, attack_prob: 0.8 },
+    locked: ['attack_strategy', 'wcp_enabled', 'decoy_enabled'],
+    user_input: false,
+  },
 }
 
 export default function ExperimentModal() {
@@ -83,7 +104,8 @@ export default function ExperimentModal() {
     closeExperimentModal,
     setParams,
     setActiveExperiment,
-    params
+    params,
+    sourceModel
   } = useSimulationStore()
 
   const { runSimulation } = useSimulation()
@@ -118,6 +140,11 @@ export default function ExperimentModal() {
 
   const handleStart = () => {
     if (!exp) return
+    // Safety guard for realistic-only experiments
+    if (['exp7', 'exp8'].includes(experimentModalId) &&
+        useSimulationStore.getState().sourceModel === 'ideal') {
+      return
+    }
 
     // Build params for this experiment
     const newParams = {
@@ -196,6 +223,17 @@ export default function ExperimentModal() {
                           }}>
                       {exp.name}
                     </span>
+                    {['exp7', 'exp8'].includes(experimentModalId) && (
+                      <span className="text-xs font-mono px-2 py-0.5
+                                       rounded ml-2"
+                            style={{
+                              backgroundColor: '#ccaa0020',
+                              color: '#ccaa00',
+                              border: '1px solid #ccaa0040'
+                            }}>
+                        🔬 Requires Realistic Mode
+                      </span>
+                    )}
                   </div>
                   <h2 className="text-lg font-bold text-white 
                                  font-mono">
@@ -300,10 +338,16 @@ export default function ExperimentModal() {
                                        text-gray-400">
                         Distance
                       </span>
-                      <span className="text-xs font-mono"
-                            style={{ color: exp.color }}>
-                        {localDistance} km
-                      </span>
+                      <EditableValue
+                        value={`${localDistance} km`}
+                        numericValue={localDistance}
+                        min={0}
+                        max={150}
+                        step={1}
+                        onChange={setLocalDistance}
+                        suffix="km"
+                        color={exp.color}
+                      />
                     </div>
                     <input type="range" min={0} max={150} 
                            step={1}
@@ -325,10 +369,16 @@ export default function ExperimentModal() {
                                        text-gray-400">
                         Noise Level
                       </span>
-                      <span className="text-xs font-mono"
-                            style={{ color: exp.color }}>
-                        {localNoise.toFixed(1)}%
-                      </span>
+                      <EditableValue
+                        value={`${localNoise.toFixed(1)}%`}
+                        numericValue={localNoise}
+                        min={0}
+                        max={10}
+                        step={0.1}
+                        onChange={setLocalNoise}
+                        suffix="%"
+                        color={exp.color}
+                      />
                     </div>
                     <input type="range" min={0} max={10} 
                            step={0.1}
@@ -351,10 +401,16 @@ export default function ExperimentModal() {
                                          text-gray-400">
                           Eve Attack
                         </span>
-                        <span className="text-xs font-mono"
-                              style={{ color: exp.color }}>
-                          {localAttack.toFixed(0)}%
-                        </span>
+                        <EditableValue
+                          value={`${localAttack.toFixed(0)}%`}
+                          numericValue={localAttack}
+                          min={0}
+                          max={100}
+                          step={1}
+                          onChange={setLocalAttack}
+                          suffix="%"
+                          color={exp.color}
+                        />
                       </div>
                       <input type="range" min={0} max={100} 
                              step={1}
@@ -392,10 +448,15 @@ export default function ExperimentModal() {
                                          text-gray-400">
                           Photons
                         </span>
-                        <span className="text-xs font-mono"
-                              style={{ color: exp.color }}>
-                          {localNBits.toLocaleString()}
-                        </span>
+                        <EditableValue
+                          value={localNBits.toLocaleString()}
+                          numericValue={localNBits}
+                          min={100}
+                          max={5000}
+                          step={100}
+                          onChange={setLocalNBits}
+                          color={exp.color}
+                        />
                       </div>
                       <input type="range" min={100} max={5000}
                              step={100}

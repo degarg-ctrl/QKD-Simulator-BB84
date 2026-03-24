@@ -1,6 +1,18 @@
 # Changelog
 Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 
+[2026-03-23 12:47] | feature/v0.3-source-model | feat |
+Ideal vs Realistic source model toggle.
+Ideal: perfect single photons, standard BB84.
+Realistic: WCP source, PNS vulnerable, decoy option.
+Exp 7 and 8 disabled in Ideal mode.
+Results page shows WCP stats and PNS/decoy analysis.
+
+[2026-03-23 11:37] | feature/v0.3-param-input | feat |
+Double-click to edit any parameter value directly.
+Applies to all ConfigPanel sliders and
+ExperimentModal sliders. Clamps to valid range.
+
 [2026-03-23 11:13] | feature/sprint-10-pns-wcp | feat |
 Animation speed reduced to 50% globally.
 Sync Mode: one-by-one photon release linked
