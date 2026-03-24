@@ -181,6 +181,20 @@ const EXPERIMENTS = [
     color: '#ef4444',
     tooltip: 'Demonstrates the quantum no-cloning theorem using Cloning Probe component.'
   },
+  {
+    id: 'exp7',
+    label: 'Exp 7',
+    description: 'PNS Attack · Realistic only',
+    color: '#ccaa00',
+    tooltip: 'Demonstrates the Photon Number Splitting attack.'
+  },
+  {
+    id: 'exp8',
+    label: 'Exp 8',
+    description: 'Decoy States · Realistic only',
+    color: '#00aacc',
+    tooltip: 'Demonstrates the Decoy State protocol.'
+  },
 ]
 
 // Single item component with tooltip
@@ -248,7 +262,7 @@ function SidebarItem({ item, collapsed, draggable = false }) {
 }
 
 // Experiment button
-function ExperimentButton({ exp, collapsed, isActive, onClick }) {
+function ExperimentButton({ exp, collapsed, isActive, onClick, disabled = false }) {
   return (
     <TooltipPortal
       content={exp.tooltip}
@@ -256,17 +270,21 @@ function ExperimentButton({ exp, collapsed, isActive, onClick }) {
       color={exp.color}
     >
       <motion.button
-        onClick={onClick}
+        onClick={disabled ? undefined : onClick}
         whileHover={{ scale: 1.02 }}
         className={`w-full flex items-center gap-2 px-2 py-1.5
                    rounded border transition-colors text-left
-                   ${isActive
+                   ${disabled
+                     ? 'opacity-30 cursor-not-allowed'
+                     : 'cursor-pointer'
+                   }
+                   ${isActive && !disabled
                      ? 'border-opacity-60 bg-opacity-20'
                      : 'border-gray-800 bg-gray-900/20 hover:border-gray-700'
                    }`}
         style={{
-          borderColor: isActive ? exp.color + '60' : undefined,
-          backgroundColor: isActive ? exp.color + '15' : undefined
+          borderColor: isActive && !disabled ? exp.color + '60' : undefined,
+          backgroundColor: isActive && !disabled ? exp.color + '15' : undefined
         }}
       >
         <div
@@ -324,7 +342,7 @@ function SectionHeader({ label, collapsed }) {
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(true)
   const [activeExp, setActiveExp] = useState(null)
-  const { setParams, openExperimentModal } = useSimulationStore()
+  const { setParams, openExperimentModal, sourceModel } = useSimulationStore()
 
   const handleExpSelect = (expId) => {
     setActiveExp(expId === activeExp ? null : expId)
@@ -394,15 +412,22 @@ export default function Sidebar() {
 
         {/* EXPERIMENTS */}
         <SectionHeader label="Experiments" collapsed={collapsed} />
-        {EXPERIMENTS.map(exp => (
-          <ExperimentButton
-            key={exp.id}
-            exp={exp}
-            collapsed={collapsed}
-            isActive={activeExp === exp.id}
-            onClick={() => handleExpSelect(exp.id)}
-          />
-        ))}
+        {EXPERIMENTS.map(exp => {
+          const requiresRealistic = 
+            exp.id === 'exp7' || exp.id === 'exp8'
+          const isDisabled = requiresRealistic && 
+            sourceModel === 'ideal'
+          return (
+            <ExperimentButton
+              key={exp.id}
+              exp={exp}
+              collapsed={collapsed}
+              isActive={activeExp === exp.id}
+              onClick={() => handleExpSelect(exp.id)}
+              disabled={isDisabled}
+            />
+          )
+        })}
       </div>
     </motion.div>
   )

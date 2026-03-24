@@ -56,6 +56,7 @@ export function useSimulation() {
     try {
       // 3. Call API — include placed gates in request
       const experimentState = useSimulationStore.getState()
+      const sourceModel = experimentState.sourceModel
       
       const paramsWithGates = {
         ...params,
@@ -67,6 +68,13 @@ export function useSimulation() {
         experiment_mode: params.experiment_mode || 'free',
         alice_bits: params.alice_bits || undefined,
         alice_bases: params.alice_bases || undefined,
+        wcp_enabled: sourceModel === 'realistic' 
+          ? (params.wcp_enabled ?? false) 
+          : false,
+        decoy_enabled: sourceModel === 'realistic'
+          ? (params.decoy_enabled ?? false)
+          : false,
+        mean_photon_number: params.mean_photon_number ?? 0.2,
       }
       const data = await apiRunSimulation(paramsWithGates)
       
