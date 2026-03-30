@@ -63,10 +63,10 @@ function DeltaBadge({ simulated, theoretical, isPercent = false,
   return (
     <span className={`font-mono text-xs px-1.5 py-0.5 rounded
                      ${Math.abs(delta) < 0.001 
-                       ? 'text-gray-400 bg-gray-800/50'
+                       ? 'text-white bg-gray-600'
                        : isGood 
-                         ? 'text-green-400 bg-green-950/40'
-                         : 'text-yellow-400 bg-yellow-950/40'
+                         ? 'text-white bg-green-600'
+                         : 'text-white bg-yellow-600'
                      }`}>
       {Math.abs(delta) < 0.0001 ? '≈ 0' : formatted}
     </span>
@@ -197,7 +197,7 @@ export default function ResultsPage() {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto 
-                    bg-canvas-bg text-white">
+                    bg-[var(--canvas-bg)] text-[var(--text-primary)]">
       <div className="max-w-6xl mx-auto w-full px-6 py-6 
                       flex flex-col gap-8">
 
@@ -211,7 +211,7 @@ export default function ResultsPage() {
             <h1 className="text-2xl font-bold font-mono">
               Most Recent Run
             </h1>
-            <div className="text-xs text-gray-500 font-mono mt-1">
+            <div className="text-xs text-[var(--text-muted)] font-mono mt-1">
               {runTimestamp}
             </div>
           </div>
@@ -229,7 +229,7 @@ export default function ResultsPage() {
         {/* Parameters used */}
         <div className="p-4 bg-panel-bg border border-border-subtle 
                         rounded-lg">
-          <div className="text-xs font-mono text-gray-500 
+          <div className="text-xs font-mono text-[var(--text-secondary)] 
                           uppercase tracking-wider mb-3">
             Parameters Used
           </div>
@@ -247,11 +247,11 @@ export default function ResultsPage() {
                   ? '⚛ Ideal' : '🔬 Realistic' },
             ].map(p => (
               <div key={p.label} className="flex flex-col gap-1">
-                <div className="text-xs text-gray-600 font-mono 
+                <div className="text-xs text-[var(--text-subtle)] font-mono 
                                 uppercase tracking-wider">
                   {p.label}
                 </div>
-                <div className="text-sm font-mono text-white">
+                <div className="text-sm font-mono text-[var(--text-primary)]">
                   {p.value}
                 </div>
               </div>
@@ -261,7 +261,7 @@ export default function ResultsPage() {
 
         {/* Comparison table */}
         <div className="flex flex-col gap-3">
-          <div className="text-xs font-mono text-gray-500 
+          <div className="text-xs font-mono text-[var(--text-secondary)] 
                           uppercase tracking-wider">
             Simulated vs Theoretical Comparison
           </div>
@@ -269,9 +269,9 @@ export default function ResultsPage() {
                           border-border-subtle">
             <table className="w-full text-sm font-mono">
               <thead>
-                <tr className="border-b border-gray-800 
+                <tr className="border-b border-[var(--border-color)] 
                                bg-panel-bg">
-                  <th className="text-left px-4 py-3 text-gray-500 
+                  <th className="text-left px-4 py-3 text-[var(--text-muted)] 
                                  text-xs uppercase tracking-wider">
                     Metric
                   </th>
@@ -296,18 +296,18 @@ export default function ResultsPage() {
               <tbody>
                 {comparisonRows.map((row, i) => (
                   <tr key={row.metric}
-                      className={`border-b border-gray-900/50
+                      className={`border-b border-[var(--border-color)]
                                  ${i % 2 === 0 
-                                   ? 'bg-gray-900/10' 
+                                   ? 'bg-[var(--panel-dark)]/10' 
                                    : 'bg-transparent'}`}>
-                    <td className="px-4 py-3 text-gray-300 
+                    <td className="px-4 py-3 text-[var(--text-muted)] 
                                    font-semibold">
                       {row.metric}
                     </td>
                     <td className="px-4 py-3 text-quantum-blue">
                       {row.simulated}
                     </td>
-                    <td className="px-4 py-3 text-gray-500">
+                    <td className="px-4 py-3 text-[var(--text-muted)]">
                       {row.theoretical}
                     </td>
                     <td className="px-4 py-3">
@@ -320,7 +320,7 @@ export default function ResultsPage() {
                         />
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-600 text-xs">
+                    <td className="px-4 py-3 text-[var(--text-subtle)] text-xs">
                       {row.note}
                     </td>
                   </tr>
@@ -328,7 +328,7 @@ export default function ResultsPage() {
               </tbody>
             </table>
           </div>
-          <div className="text-xs text-gray-600 font-mono">
+          <div className="text-xs text-[var(--text-secondary)] font-mono">
             ℹ Theoretical values computed from physics model at 
             {params.distance_km}km. Differences normal at low 
             photon counts — use n_bits ≥ 5000 for convergence.
@@ -341,11 +341,11 @@ export default function ResultsPage() {
           {/* QBER chart with simulated dot */}
           <div className="p-4 bg-panel-bg border border-border-subtle 
                           rounded-lg flex flex-col gap-3">
-            <div className="text-xs font-mono text-gray-500 
+            <div className="text-xs font-mono text-[var(--text-secondary)] 
                             uppercase tracking-wider">
               QBER vs Distance
             </div>
-            <div className="text-xs text-gray-600 font-mono">
+            <div className="text-xs text-[var(--text-subtle)] font-mono">
               <span className="text-quantum-blue">━</span> Theoretical curve
               &nbsp;&nbsp;
               <span className="text-quantum-red">●</span> Your result at {params.distance_km}km
@@ -355,23 +355,23 @@ export default function ResultsPage() {
                          margin={{ top: 5, right: 15, 
                                    left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" 
-                               stroke="#1e1e2e" />
-                <XAxis dataKey="distance" stroke="#4b5563"
-                       tick={{ fill: '#4b5563', fontSize: 10,
+                               stroke="var(--border-color)" />
+                <XAxis dataKey="distance" stroke="var(--text-subtle)"
+                       tick={{ fill: 'var(--text-subtle)', fontSize: 10,
                                fontFamily: 'monospace' }}
                        label={{ value: 'km', 
                                 position: 'insideRight',
-                                fill: '#4b5563', fontSize: 10 }}
+                                fill: 'var(--text-subtle)', fontSize: 10 }}
                 />
-                <YAxis stroke="#4b5563"
-                       tick={{ fill: '#4b5563', fontSize: 10,
+                <YAxis stroke="var(--text-subtle)"
+                       tick={{ fill: 'var(--text-subtle)', fontSize: 10,
                                fontFamily: 'monospace' }}
                        tickFormatter={v => `${v}%`}
                 />
                 <Tooltip
                   contentStyle={{ 
-                    backgroundColor: '#111',
-                    border: '1px solid #333',
+                    backgroundColor: 'var(--panel-bg)',
+                    border: '1px solid var(--border-color)',
                     borderRadius: '6px',
                     fontFamily: 'monospace',
                     fontSize: '11px'
@@ -396,7 +396,7 @@ export default function ResultsPage() {
                   y={parseFloat((results.qber * 100).toFixed(2))}
                   r={6}
                   fill="#ef4444"
-                  stroke="#fff"
+                  stroke="var(--canvas-bg)"
                   strokeWidth={2}
                   label={{ 
                     value: `${(results.qber * 100).toFixed(1)}%`,
@@ -413,11 +413,11 @@ export default function ResultsPage() {
           {/* SKR chart with simulated dot */}
           <div className="p-4 bg-panel-bg border border-border-subtle 
                           rounded-lg flex flex-col gap-3">
-            <div className="text-xs font-mono text-gray-500 
+            <div className="text-xs font-mono text-[var(--text-secondary)] 
                             uppercase tracking-wider">
               SKR vs Distance
             </div>
-            <div className="text-xs text-gray-600 font-mono">
+            <div className="text-xs text-[var(--text-subtle)] font-mono">
               <span className="text-quantum-green">━</span> Theoretical curve
               &nbsp;&nbsp;
               <span className="text-quantum-green">●</span> Your result at {params.distance_km}km
@@ -427,7 +427,7 @@ export default function ResultsPage() {
                          margin={{ top: 5, right: 15,
                                    left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3"
-                               stroke="#1e1e2e" />
+                               stroke="var(--border-color)" />
                 <XAxis dataKey="distance" stroke="#4b5563"
                        tick={{ fill: '#4b5563', fontSize: 10,
                                fontFamily: 'monospace' }}
@@ -460,7 +460,7 @@ export default function ResultsPage() {
                   y={parseFloat(results.skr.toFixed(4))}
                   r={6}
                   fill="#22c55e"
-                  stroke="#fff"
+                  stroke="var(--canvas-bg)"
                   strokeWidth={2}
                   label={{
                     value: results.skr.toFixed(3),
@@ -496,7 +496,7 @@ export default function ResultsPage() {
                   {isSecure ? '✓ SECURE' : '⚠ THRESHOLD BREACHED'}
                 </span>
               </div>
-              <div className="text-sm text-gray-400 leading-relaxed">
+              <div className="text-sm text-[var(--text-muted)] leading-relaxed">
                 {isSecure
                   ? `QBER of ${(results.qber * 100).toFixed(2)}% is below the 11% security threshold. The quantum channel is considered secure. Key extraction was successful.`
                   : `QBER of ${(results.qber * 100).toFixed(2)}% exceeds the 11% threshold. Significant eavesdropping detected. Session was aborted — no secure key extracted.`
@@ -534,7 +534,7 @@ export default function ResultsPage() {
                 <div key={item.label} 
                      className="flex justify-between 
                                 border-b border-gray-800/50 py-1">
-                  <span className="text-gray-500">{item.label}</span>
+                  <span className="text-[var(--text-muted)]">{item.label}</span>
                   <span style={{ 
                     color: item.ok ? '#22c55e' : '#ef4444' 
                   }}>
@@ -552,7 +552,7 @@ export default function ResultsPage() {
          results.wcp_stats && 
          Object.keys(results.wcp_stats).length > 0 && (
           <div className="flex flex-col gap-3">
-            <div className="text-xs font-mono text-gray-500
+            <div className="text-xs font-mono text-[var(--text-secondary)]
                             uppercase tracking-wider">
               Weak Coherent Pulse Statistics
             </div>
@@ -676,21 +676,21 @@ export default function ResultsPage() {
                 <div className="grid grid-cols-3 gap-4
                                 text-xs font-mono">
                   <div>
-                    <div className="text-gray-500">Signal gain</div>
-                    <div className="text-white font-bold">
+                    <div className="text-[var(--text-muted)]">Signal gain</div>
+                    <div className="text-[var(--text-primary)] font-bold">
                       {((results.decoy_results.signal_gain || 0)
                         * 100).toFixed(2)}%
                     </div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Decoy gain</div>
-                    <div className="text-white font-bold">
+                    <div className="text-[var(--text-muted)]">Decoy gain</div>
+                    <div className="text-[var(--text-primary)] font-bold">
                       {((results.decoy_results.decoy_gain || 0)
                         * 100).toFixed(2)}%
                     </div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Confidence</div>
+                    <div className="text-[var(--text-muted)]">Confidence</div>
                     <div className="font-bold"
                          style={{
                            color: results.decoy_results.pns_detected
@@ -719,10 +719,10 @@ export default function ResultsPage() {
             </div>
             <div>
               <div className="text-xs font-mono uppercase 
-                              tracking-wider text-gray-500 mb-0.5">
+                              tracking-wider text-[var(--text-secondary)] mb-0.5">
                 Cryptographic Application
               </div>
-              <div className="text-sm font-mono font-bold text-white">
+              <div className="text-sm font-mono font-bold text-[var(--text-primary)]">
                 One-Time Pad Encryption
               </div>
             </div>
@@ -733,10 +733,10 @@ export default function ResultsPage() {
         {/* Bit stream detail */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <div className="text-xs font-mono text-gray-500 
+            <div className="text-xs font-mono text-[var(--text-secondary)] 
                             uppercase tracking-wider">
               Bit Stream Detail
-              <span className="text-gray-700 ml-2">
+              <span className="text-[var(--text-subtle)] ml-2">
                 ({filteredBitStream.length} of {results.bit_stream.length} shown)
               </span>
             </div>
@@ -755,7 +755,7 @@ export default function ResultsPage() {
                              border transition-colors
                              ${bitStreamFilter === f.id
                                ? 'border-quantum-blue text-quantum-blue bg-indigo-950/30'
-                               : 'border-gray-800 text-gray-600 hover:text-gray-400'
+                               : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                              }`}
                 >
                   {f.label}
@@ -768,13 +768,13 @@ export default function ResultsPage() {
                           border border-border-subtle">
             <table className="w-full text-xs font-mono">
               <thead className="sticky top-0 bg-panel-bg">
-                <tr className="border-b border-gray-800">
+                <tr className="border-b border-[var(--border-color)]">
                   {['#', 'Alice Bit', 'A.Basis', 
                     'B.Basis', 'Bob Bit', 'Match', 
                     'Eve', 'Angle'].map(h => (
                     <th key={h} 
                         className="text-left px-3 py-2 
-                                   text-gray-500 uppercase 
+                                   text-[var(--text-muted)] uppercase 
                                    tracking-wider text-xs">
                       {h}
                     </th>
@@ -784,16 +784,16 @@ export default function ResultsPage() {
               <tbody>
                 {filteredBitStream.map((photon, i) => (
                   <tr key={i}
-                      className={`border-b border-gray-900/30
+                      className={`border-b border-[var(--border-color)]
                         ${photon.intercepted 
                           ? 'bg-red-950/20' : ''}
                         ${!photon.match 
                           ? 'opacity-50' : ''}
                       `}>
-                    <td className="px-3 py-1.5 text-gray-600">
+                    <td className="px-3 py-1.5 text-[var(--text-subtle)]">
                       {photon.index}
                     </td>
-                    <td className="px-3 py-1.5 text-gray-300">
+                    <td className="px-3 py-1.5 text-[var(--text-secondary)]">
                       {photon.alice_bit}
                     </td>
                     <td className="px-3 py-1.5"
@@ -810,22 +810,22 @@ export default function ResultsPage() {
                         }}>
                       {photon.bob_basis}
                     </td>
-                    <td className="px-3 py-1.5 text-gray-300">
+                    <td className="px-3 py-1.5 text-[var(--text-secondary)]">
                       {photon.bob_bit}
                     </td>
                     <td className="px-3 py-1.5">
                       <span className={photon.match 
-                        ? 'text-quantum-green' : 'text-gray-600'}>
+                        ? 'text-quantum-green' : 'text-[var(--text-muted)]'}>
                         {photon.match ? '✓' : '✗'}
                       </span>
                     </td>
                     <td className="px-3 py-1.5">
                       <span className={photon.intercepted 
-                        ? 'text-quantum-red' : 'text-gray-700'}>
+                        ? 'text-quantum-red' : 'text-[var(--text-muted)]'}>
                         {photon.intercepted ? '⚡' : '—'}
                       </span>
                     </td>
-                    <td className="px-3 py-1.5 text-gray-600">
+                    <td className="px-3 py-1.5 text-[var(--text-subtle)]">
                       {photon.polarization_angle}°
                     </td>
                   </tr>

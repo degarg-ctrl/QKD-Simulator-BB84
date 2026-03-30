@@ -1,6 +1,35 @@
 # Changelog
 Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 
+[2026-03-29 21:31] | feature/v0.3.1-sprint13 | feat(sprint-13) |
+  - Guided exercises with 5 interactive tutorials
+  - Step-by-step verification system
+  - Exercise progress tracking
+  - Hint system for each step
+  - New components: GuidedExercises, ExerciseStep
+  - Consolidated documentation into docs/sprints/
+
+[2026-03-29 21:26] | feature/v0.3.1-sprint12 | feat(sprint-12) |
+  - Save experiment configurations with name and description
+  - Load saved experiments from localStorage
+  - Export experiments as JSON files
+  - Import experiments from JSON files
+  - Delete saved experiments
+  - Display experiment list with metadata
+  - New components: SaveExperimentModal, LoadExperimentModal
+
+[2026-03-29 21:22] | feature/v0.3.1-sprint11 | feat(sprint-11) |
+  - Gate state vector display showing |ψ⟩ = α|0⟩ + β|1⟩ after each gate
+  - Right-click context menu for gates (delete, copy, view matrix)
+  - Gate properties panel in right sidebar with matrix representation
+  - Real-time quantum state visualization with complex amplitudes
+  - Probability calculations P(0) and P(1) for each gate
+  - Gate descriptions for H, X, Y, Z, S, T gates
+  - Integrated with simulationStore.js (gate state management)
+  - Ready for QuantumCanvas and SimulatorPage integration
+
+  - New components: GateStateVector, GateContextMenu, GatePropertiesPanel
+
 [2026-03-23 05:00] | feature/v0.3-source-model | feat(source-model) |
   - "Ideal vs Realistic" source model toggle
   - Realistic WCP source with Mean Photon (mu) slider

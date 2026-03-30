@@ -51,7 +51,7 @@ const useSimulationStore = create((set, get) => ({
   error: null,
 
   // ─── VIEW STATE ──────────────────────────────────────────
-  activeView: 'simulator',   // 'simulator' | 'guide' | 'results'
+  activeView: 'landing',   // 'landing' | 'simulator' | 'guide' | 'results'
 
   // ─── ANIMATION STATE ─────────────────────────────────────
   animation: {
@@ -89,6 +89,12 @@ const useSimulationStore = create((set, get) => ({
   sourceModel: 'ideal',
   // 'ideal' = perfect single photons, standard BB84
   // 'realistic' = WCP source, PNS vulnerable
+
+  theme: 'dark',  // 'dark' | 'light'
+
+  // ─── GATE STATE (Sprint 11) ──────────────────────────────
+  selectedGate: null,
+  gateStates: {},
 
   /*
   placedGate shape:
@@ -273,7 +279,33 @@ const useSimulationStore = create((set, get) => ({
     }
   }),
 
+  setTheme: (theme) => {
+    // Apply to document root
+    if (theme === 'light') {
+      document.documentElement.classList.add('light')
+    } else {
+      document.documentElement.classList.remove('light')
+    }
+    // Persist to localStorage
+    localStorage.setItem('qkd-theme', theme)
+    return set({ theme })
+  },
+
   // Derived getters
+
+  // ─── GATE ACTIONS (Sprint 11) ────────────────────────────
+  setSelectedGate: (gate) => set({ selectedGate: gate }),
+  clearSelectedGate: () => set({ selectedGate: null }),
+  updateGateState: (gateId, stateVector) => set((state) => ({
+    gateStates: { ...state.gateStates, [gateId]: stateVector }
+  })),
+  deleteGate: (gateId) => set((state) => ({
+    placedGates: state.placedGates.filter(g => g.id !== gateId),
+    selectedGate: state.selectedGate?.id === gateId ? null : state.selectedGate,
+  })),
+  copyGate: (gate) => set((state) => ({
+    placedGates: [...state.placedGates, { ...gate, id: `gate-${gate.type}-${Date.now()}`, position: gate.position + 0.1 }]
+  })),
   getHasResults: () => get().results !== null,
   getIsThresholdBreached: () => 
     get().results?.secure_threshold_breached ?? false,
@@ -281,5 +313,9 @@ const useSimulationStore = create((set, get) => ({
   getSKR: () => get().results?.skr ?? 0,
 
 }))
+
+// Initialize theme from localStorage
+const savedTheme = localStorage.getItem('qkd-theme') || 'dark'
+useSimulationStore.getState().setTheme(savedTheme)
 
 export default useSimulationStore

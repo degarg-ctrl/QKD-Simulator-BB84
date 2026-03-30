@@ -4,72 +4,113 @@
  * Simulation parameter controls panel.
  * All controls write directly to Zustand store via setParams.
  * No local state — single source of truth is the store.
- *
- * Controls:
- * 1. N Bits slider        100–10000,  step 100
- * 2. Distance slider      0–150km,    step 1
- * 3. Noise Level slider   0–10%,      step 0.1%
- * 4. Attack Probability   0–100%,     step 1%
- * 5. Attack Strategy      radio/select: intercept_resend | partial | burst
- *
- * Each control has:
- * - Label with current value displayed
- * - Slider or selector input
- * - Tooltip (?) icon that shows physics explanation on hover
  */
 
 import { useState } from 'react'
-import { QuestionTooltip } from '../ui/TooltipPortal'
+import ParameterTooltip from '../ui/ParameterTooltip'
+import SmartTooltipWrapper from '../ui/SmartTooltipWrapper'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
 import EditableValue from '../ui/EditableValue'
 
-// Tooltip content — physics explanations for each parameter
-const TOOLTIPS = {
-  n_bits: `Number of photons Alice sends. More photons = more 
-    accurate statistics but slower simulation. Minimum 100 for 
-    meaningful QBER estimation. BB84 requires enough bits to 
-    sacrifice a sample for error checking.`,
-
-  distance_km: `Fiber optic cable length between Alice and Bob. 
-    Longer distance = more photon loss (Beer-Lambert law). 
-    At 50km, only ~10% of photons survive. At 100km, only ~1%. 
-    This directly limits the Secret Key Rate.`,
-
-  noise_level: `Background noise probability per photon slot. 
-    Models thermal noise, detector imperfections, and 
-    environmental interference. Even without Eve, noise 
-    contributes to QBER. Values above 5% significantly 
-    degrade key quality.`,
-
-  attack_prob: `Probability Eve intercepts each photon. 
-    At 100%, Eve intercepts all photons introducing ~25% QBER 
-    (intercept-resend attack). At 0%, Eve is inactive. 
-    BB84 security threshold: if QBER exceeds 11%, 
-    the session is aborted.`,
-
-  attack_strategy: `How Eve attacks the channel:
-    • Intercept-Resend: Eve measures each photon randomly and 
-      re-emits — introduces 25% QBER at full interception.
-    • Partial: Eve intercepts a random fraction of photons.
-    • Burst: Eve intercepts a contiguous block of photons 
-      (simulates a targeted attack window).`
+// Structured parameter info for ParameterTooltip
+const PARAM_INFO = {
+  n_bits: {
+    title: 'Photon Count',
+    description: 'Number of photons Alice sends through the quantum channel. More photons produce more accurate QBER statistics.',
+    range: '100 — 10,000',
+    defaultValue: '1,000',
+    impact: 'Higher counts improve statistical accuracy but increase simulation time. Minimum 100 for meaningful QBER estimation.'
+  },
+  source_model: {
+    title: 'Source Model',
+    description: 'Determines the photon source type for the simulation.',
+    range: 'Ideal / Realistic',
+    defaultValue: 'Ideal',
+    impact: 'Ideal uses perfect single photons (standard BB84). Realistic uses a WCP laser source with Poisson distribution — enables PNS attack experiments.'
+  },
+  single_photon: {
+    title: 'Single Photon Mode',
+    description: 'Send exactly 1 photon to observe its full journey through the quantum channel.',
+    impact: 'Useful for step-by-step visualization and understanding individual photon behavior.'
+  },
+  sync_mode: {
+    title: 'Sync Mode',
+    description: 'Links the photon animation to the Inspector panel.',
+    impact: 'When enabled, clicking a photon in the Inspector will animate that specific photon on the canvas.'
+  },
+  distance_km: {
+    title: 'Channel Distance',
+    description: 'Fiber optic cable length between Alice and Bob. Longer distance = more photon loss via Beer-Lambert attenuation.',
+    range: '0 — 150 km',
+    defaultValue: '50 km',
+    impact: 'At 50km ~10% survive, at 100km ~1% survive. Directly limits the Secret Key Rate.'
+  },
+  noise_level: {
+    title: 'Noise Level',
+    description: 'Background noise probability per photon slot. Models thermal noise, detector dark counts, and environmental interference.',
+    range: '0% — 10%',
+    defaultValue: '2%',
+    impact: 'Even without Eve, noise contributes to QBER. Values above 5% significantly degrade key quality.'
+  },
+  attack_prob: {
+    title: 'Eve Attack Probability',
+    description: 'Probability that Eve intercepts each photon in the quantum channel.',
+    range: '0% — 100%',
+    defaultValue: '0%',
+    impact: 'At 100%, Eve intercepts all photons — introducing exactly 25% QBER. BB84 aborts if QBER exceeds 11%.'
+  },
+  attack_strategy: {
+    title: 'Attack Strategy',
+    description: 'How Eve attacks the quantum channel.',
+    impact: 'Intercept-Resend: 25% QBER at full interception. Partial: random fraction. Burst: contiguous block. PNS: splits multi-photon pulses (realistic only).'
+  },
 }
 
+// ParameterQuestion — hover-activated (?) icon with ParameterTooltip
+function ParameterQuestion({ paramKey }) {
+  const info = PARAM_INFO[paramKey]
+  if (!info) return null
 
+  return (
+    <SmartTooltipWrapper
+      tooltipContent={
+        <ParameterTooltip
+          title={info.title}
+          description={info.description}
+          range={info.range}
+          defaultValue={info.defaultValue}
+          impact={info.impact}
+        />
+      }
+      placement="bottom"
+      maxHeight={400}
+    >
+      <button
+        className="w-4 h-4 rounded-full border border-gray-600
+                   text-gray-500 hover:text-gray-300
+                   hover:border-gray-400 text-xs flex items-center
+                   justify-center transition-colors ml-1
+                   flex-shrink-0"
+      >
+        ?
+      </button>
+    </SmartTooltipWrapper>
+  )
+}
 
 function SliderControl({ label, value, min, max, step,
                          onChange, displayValue, 
-                         tooltip, suffix = '' }) {
+                         paramKey, suffix = '' }) {
   return (
     <div className="flex flex-col gap-1.5" id={`control-${label.toLowerCase().replace(' ', '-')}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-gray-400 
+          <span className="text-xs font-mono text-[var(--text-muted)] 
                            uppercase tracking-wider">
             {label}
           </span>
-          <QuestionTooltip content={tooltip} />
+          <ParameterQuestion paramKey={paramKey} />
         </div>
         <EditableValue
           value={displayValue}
@@ -90,7 +131,7 @@ function SliderControl({ label, value, min, max, step,
           step={step}
           value={value}
           onChange={e => onChange(Number(e.target.value))}
-          className="w-full h-1 bg-gray-800 rounded-full appearance-none
+          className="w-full h-1 bg-[var(--panel-dark)]/20 rounded-full appearance-none
                      cursor-pointer accent-indigo-500
                      [&::-webkit-slider-thumb]:w-3
                      [&::-webkit-slider-thumb]:h-3
@@ -118,15 +159,15 @@ export default function ConfigPanel({ className = '' }) {
   return (
     <div className={`flex flex-col gap-5 p-4 rounded-lg ${className}`}
          style={{
-           backgroundColor: '#242424',
-           border: '1px solid rgba(255,255,255,0.2)'
+           backgroundColor: 'var(--panel-bg)',
+           border: '1px solid var(--border-color)'
          }}>
       
       {/* Panel header */}
       <div className="flex items-center gap-2 pb-2 
-                      border-b border-gray-800">
+                      border-b border-[var(--border-color)]">
         <div className="w-2 h-2 rounded-full bg-indigo-500" />
-        <span className="text-xs font-mono text-gray-400 
+        <span className="text-xs font-mono text-[var(--text-muted)] 
                          uppercase tracking-widest">
           Parameters
         </span>
@@ -134,20 +175,17 @@ export default function ConfigPanel({ className = '' }) {
 
       {/* Source Model Toggle */}
       <div className="flex flex-col gap-2 pb-3
-                      border-b border-white/10">
+                      border-b border-[var(--border-color)]">
         <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-gray-400
+          <span className="text-xs font-mono text-[var(--text-muted)]
                            uppercase tracking-wider">
             Source Model
           </span>
-          <QuestionTooltip content="Ideal: perfect single
-photons, standard BB84 analysis. No WCP effects.
-Realistic: laser source with Poisson photon distribution.
-Enables PNS attack vulnerability and decoy protocol." />
+          <ParameterQuestion paramKey="source_model" />
         </div>
         <div className="flex gap-1 p-0.5 rounded"
-             style={{ backgroundColor: '#1e1e1e',
-                      border: '1px solid rgba(255,255,255,0.1)' }}>
+             style={{ backgroundColor: 'var(--panel-dark)',
+                      border: '1px solid var(--border-color)' }}>
           {['ideal', 'realistic'].map(model => (
             <button
               key={model}
@@ -160,10 +198,9 @@ Enables PNS attack vulnerability and decoy protocol." />
                   : 'transparent',
                 color: sourceModel === model
                   ? model === 'ideal' ? '#00aacc' : '#ccaa00'
-                  : '#6b7280',
+                  : 'var(--text-muted)',
                 border: sourceModel === model
-                  ? `1px solid ${model === 'ideal' 
-                      ? '#00aacc60' : '#ccaa0060'}`
+                  ? `1px solid ${model === 'ideal' ? '#00aacc60' : '#ccaa0060'}`
                   : '1px solid transparent'
               }}
             >
@@ -172,19 +209,18 @@ Enables PNS attack vulnerability and decoy protocol." />
           ))}
         </div>
         {sourceModel === 'ideal' && (
-          <div className="text-xs font-mono text-gray-600">
+          <div className="text-xs font-mono text-[var(--text-subtle)]">
             Perfect single photons · Standard BB84
           </div>
         )}
         {sourceModel === 'realistic' && (
-          <div className="text-xs font-mono text-gray-600">
+          <div className="text-xs font-mono text-[var(--text-subtle)]">
             WCP laser source · μ = {params.mean_photon_number}
-            · PNS vulnerable
           </div>
         )}
       </div>
 
-      {/* N Bits */}
+      {/* Photons */}
       <SliderControl
         label="Photons"
         value={params.n_bits}
@@ -193,30 +229,25 @@ Enables PNS attack vulnerability and decoy protocol." />
         step={100}
         onChange={val => setParams({ n_bits: val })}
         displayValue={params.n_bits.toLocaleString()}
-        tooltip={TOOLTIPS.n_bits}
+        paramKey="n_bits"
       />
 
-      {/* Single photon mode */}
+      {/* Single Photon Mode */}
       <div className="flex items-center justify-between 
-                      py-2 border-t border-gray-800">
+                      py-2 border-t border-[var(--border-color)]">
         <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-gray-400 
+          <span className="text-xs font-mono text-[var(--text-muted)] 
                            uppercase tracking-wider">
             Single Photon
           </span>
-          <QuestionTooltip content="Send exactly 1 photon to observe 
-            the complete BB84 journey step by step. QBER estimation 
-            is skipped in single photon mode." />
+          <ParameterQuestion paramKey="single_photon" />
         </div>
         <button
-          onClick={() => setParams({ 
-            n_bits: params.n_bits === 1 ? 1000 : 1 
-          })}
-          className={`px-2 py-1 rounded text-xs font-mono
-                     border transition-colors
+          onClick={() => setParams({ n_bits: params.n_bits === 1 ? 1000 : 1 })}
+          className={`px-2 py-1 rounded text-xs font-mono border transition-colors
                      ${params.n_bits === 1
                        ? 'bg-indigo-900/50 border-indigo-500 text-indigo-400'
-                       : 'border-gray-800 text-gray-500 hover:text-gray-300'
+                       : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                      }`}
         >
           {params.n_bits === 1 ? 'ON' : 'OFF'}
@@ -225,21 +256,20 @@ Enables PNS attack vulnerability and decoy protocol." />
 
       {/* Sync Mode */}
       <div className="flex items-center justify-between
-                      py-2 border-t border-white/10">
+                      py-2 border-t border-[var(--border-color)]">
         <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-gray-400
+          <span className="text-xs font-mono text-[var(--text-muted)]
                            uppercase tracking-wider">
             Sync Mode
           </span>
-          <QuestionTooltip content="Links photon animation to the Inspector. Photons launch one at a time. Each photon auto-shows in Inspector as it travels. Play: continuous auto-launch. Arrow: one photon per press." />
+          <ParameterQuestion paramKey="sync_mode" />
         </div>
         <button
           onClick={() => setSyncMode(!syncMode)}
-          className={`px-2 py-1 rounded text-xs font-mono
-                     border transition-colors
+          className={`px-2 py-1 rounded text-xs font-mono border transition-colors
                      ${syncMode
                        ? 'bg-indigo-900/50 border-quantum-blue text-quantum-blue'
-                       : 'border-gray-700 text-gray-500 hover:text-gray-300'
+                       : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                      }`}
         >
           {syncMode ? 'ON' : 'OFF'}
@@ -255,11 +285,11 @@ Enables PNS attack vulnerability and decoy protocol." />
         step={1}
         onChange={val => setParams({ distance_km: val })}
         displayValue={`${params.distance_km} km`}
-        tooltip={TOOLTIPS.distance_km}
+        paramKey="distance_km"
         suffix="km"
       />
 
-      {/* Noise Level */}
+      {/* Noise */}
       <SliderControl
         label="Noise"
         value={Math.round(params.noise_level * 1000) / 10}
@@ -268,11 +298,11 @@ Enables PNS attack vulnerability and decoy protocol." />
         step={0.1}
         onChange={val => setParams({ noise_level: val / 100 })}
         displayValue={`${(params.noise_level * 100).toFixed(1)}%`}
-        tooltip={TOOLTIPS.noise_level}
+        paramKey="noise_level"
         suffix="%"
       />
 
-      {/* Attack Probability */}
+      {/* Eve Attack */}
       <SliderControl
         label="Eve Attack"
         value={Math.round(params.attack_prob * 100)}
@@ -281,30 +311,28 @@ Enables PNS attack vulnerability and decoy protocol." />
         step={1}
         onChange={val => setParams({ attack_prob: val / 100 })}
         displayValue={`${(params.attack_prob * 100).toFixed(0)}%`}
-        tooltip={TOOLTIPS.attack_prob}
+        paramKey="attack_prob"
         suffix="%"
       />
 
-      {/* Attack Strategy */}
-      <div className="flex flex-col gap-1.5" id="control-strategy">
+      {/* Strategy */}
+      <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-gray-400 
+          <span className="text-xs font-mono text-[var(--text-muted)] 
                            uppercase tracking-wider">
             Strategy
           </span>
-          <QuestionTooltip content={TOOLTIPS.attack_strategy} />
+          <ParameterQuestion paramKey="attack_strategy" />
         </div>
         <div className="flex flex-col gap-1">
           {strategies.map(s => (
             <button
               key={s.value}
-              id={`strategy-${s.value}`}
               onClick={() => setParams({ attack_strategy: s.value })}
-              className={`px-3 py-1.5 rounded text-xs font-mono 
-                         text-left transition-colors
+              className={`px-3 py-1.5 rounded text-xs font-mono text-left transition-colors
                          ${params.attack_strategy === s.value
                            ? 'bg-indigo-900/50 border border-indigo-500/50 text-indigo-400'
-                           : 'bg-gray-900/50 border border-gray-800 text-gray-500 hover:text-gray-300'
+                           : 'bg-[var(--panel-dark)]/10 border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                          }`}
             >
               {s.label}
@@ -313,16 +341,12 @@ Enables PNS attack vulnerability and decoy protocol." />
         </div>
       </div>
 
-      {/* WCP Controls — Realistic mode only */}
+      {/* WCP Controls */}
       {sourceModel === 'realistic' && (
-        <div className="flex flex-col gap-4 pt-2
-                        border-t border-white/10">
-          <div className="text-xs font-mono text-gray-500
-                          uppercase tracking-wider">
+        <div className="flex flex-col gap-4 pt-2 border-t border-[var(--border-color)]">
+          <div className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider">
             Realistic Source Settings
           </div>
-
-          {/* Mean photon number */}
           <SliderControl
             label="Mean Photons (μ)"
             value={params.mean_photon_number}
@@ -331,34 +355,18 @@ Enables PNS attack vulnerability and decoy protocol." />
             step={0.05}
             onChange={val => setParams({ mean_photon_number: val })}
             displayValue={params.mean_photon_number.toFixed(2)}
-            tooltip="Mean photon number per pulse (μ).
-Lower = more secure but fewer detections.
-μ=0.1: very secure, μ=0.5: more detections but
-higher PNS vulnerability."
-            suffix=""
+            tooltip="Mean photon number per pulse (μ)."
           />
-
-          {/* Decoy state toggle */}
           <div className="flex items-center justify-between py-1">
-            <div className="flex items-center gap-1">
-              <span className="text-xs font-mono text-gray-400
-                               uppercase tracking-wider">
-                Decoy States
-              </span>
-              <QuestionTooltip content="Enables decoy state
-protocol to detect PNS attack. Alice sends pulses at
-3 different intensities. Gain statistics reveal PNS
-even when QBER appears normal." />
-            </div>
+            <span className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider">
+              Decoy States
+            </span>
             <button
-              onClick={() => setParams({
-                decoy_enabled: !params.decoy_enabled
-              })}
-              className={`px-2 py-1 rounded text-xs font-mono
-                         border transition-colors
+              onClick={() => setParams({ decoy_enabled: !params.decoy_enabled })}
+              className={`px-2 py-1 rounded text-xs font-mono border transition-colors
                          ${params.decoy_enabled
                            ? 'bg-indigo-900/50 border-quantum-blue text-quantum-blue'
-                           : 'border-gray-700 text-gray-500 hover:text-gray-300'
+                           : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                          }`}
             >
               {params.decoy_enabled ? 'ON' : 'OFF'}
@@ -367,16 +375,14 @@ even when QBER appears normal." />
         </div>
       )}
 
-      {/* Security threshold warning */}
+      {/* Security Warning */}
       <AnimatePresence>
         {params.attack_prob >= 0.44 && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="p-2 bg-red-950/50 border border-red-800/50 
-                       rounded text-xs text-red-400 font-mono overflow-hidden"
-            id="security-warning"
+            className="p-2 bg-red-950/50 border border-red-800/50 rounded text-xs text-red-400 font-mono overflow-hidden"
           >
             ⚠ Attack level may breach 11% QBER threshold
           </motion.div>

@@ -9,7 +9,7 @@
  * GET  /             → health check
  */
 
-const BASE_URL = 'http://127.0.0.1:8000'
+const BASE_URL = import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''
 
 /**
  * Run a complete BB84 simulation.
@@ -70,7 +70,7 @@ export async function runSimulation(params) {
  */
 export async function checkHealth() {
   try {
-    const response = await fetch(`${BASE_URL}/`)
+    const response = await fetch(`${BASE_URL}/api/health`)
     if (!response.ok) return false
     const data = await response.json()
     return data.status === 'ok'

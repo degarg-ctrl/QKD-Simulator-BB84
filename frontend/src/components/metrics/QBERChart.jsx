@@ -21,9 +21,9 @@ export default function QBERChart({ data = [], currentQBER = null }) {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload?.length) {
       return (
-        <div className="bg-gray-900 border border-gray-700 rounded 
+        <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded 
                         p-2 text-xs font-mono">
-          <p className="text-gray-400">{`${label} km`}</p>
+          <p className="text-[var(--text-muted)]">{`${label} km`}</p>
           <p className="text-indigo-400">
             {`QBER: ${payload[0]?.value?.toFixed(2)}%`}
           </p>
@@ -36,7 +36,7 @@ export default function QBERChart({ data = [], currentQBER = null }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-mono text-gray-500 
+        <span className="text-xs font-mono text-[var(--text-muted)] 
                          uppercase tracking-wider">
           QBER vs Distance (Theoretical)
         </span>
@@ -49,17 +49,17 @@ export default function QBERChart({ data = [], currentQBER = null }) {
       <ResponsiveContainer width="100%" height={160}>
         <LineChart data={chartData} 
                    margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
           <XAxis 
             dataKey="distance" 
-            stroke="#4b5563"
-            tick={{ fill: '#4b5563', fontSize: 10, fontFamily: 'monospace' }}
+            stroke="var(--text-muted)"
+            tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }}
             label={{ value: 'km', position: 'insideRight', 
-                     fill: '#4b5563', fontSize: 10 }}
+                     fill: 'var(--text-muted)', fontSize: 10 }}
           />
           <YAxis 
-            stroke="#4b5563"
-            tick={{ fill: '#4b5563', fontSize: 10, fontFamily: 'monospace' }}
+            stroke="var(--text-muted)"
+            tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }}
             tickFormatter={v => `${v}%`}
           />
           <Tooltip content={<CustomTooltip />} />

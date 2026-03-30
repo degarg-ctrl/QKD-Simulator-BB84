@@ -38,10 +38,10 @@ function DataRow({ label, value, highlight = false }) {
   return (
     <div className="flex items-center justify-between 
                     text-xs font-mono">
-      <span className="text-gray-500">{label}</span>
+      <span className="text-[var(--text-muted)]">{label}</span>
       <span className={highlight 
-        ? 'text-white font-bold' 
-        : 'text-gray-300'}>
+        ? 'text-[var(--text-primary)] font-bold' 
+        : 'text-[var(--text-muted)]'}>
         {value}
       </span>
     </div>
@@ -173,25 +173,25 @@ export default function PhotonInspector() {
     >
       {/* Panel background */}
       <div style={{ 
-        backgroundColor: '#1e1e1e',
-        border: '1px solid rgba(255,255,255,0.2)'
+        backgroundColor: 'var(--panel-bg)',
+        border: '1px solid var(--border-color)'
       }}>
 
         {/* Header */}
         <div className="flex items-center justify-between 
                         px-4 py-3"
-             style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+             style={{ borderBottom: '1px solid var(--border-color)' }}>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-quantum-blue 
                             animate-pulse" />
-            <span className="text-xs font-mono text-white 
+            <span className="text-xs font-mono text-[var(--text-primary)] 
                              uppercase tracking-wider">
               Photon Inspector
             </span>
           </div>
           <button
             onClick={closeInspector}
-            className="text-gray-500 hover:text-white 
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] 
                        transition-colors text-sm"
           >
             ✕
@@ -201,12 +201,12 @@ export default function PhotonInspector() {
         {/* Progress */}
         <div className="px-4 py-2 flex items-center 
                         justify-between"
-             style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <span className="text-xs font-mono text-gray-500">
+             style={{ borderBottom: '1px solid var(--border-color)' }}>
+          <span className="text-xs font-mono text-[var(--text-muted)]">
             Photon {inspector.currentIndex + 1} of {total}
           </span>
           {/* Progress bar */}
-          <div className="flex-1 mx-3 h-1 bg-gray-800 rounded-full">
+          <div className="flex-1 mx-3 h-1 bg-[var(--panel-dark)] rounded-full">
             <div
               className="h-full rounded-full transition-all"
               style={{
@@ -215,7 +215,7 @@ export default function PhotonInspector() {
               }}
             />
           </div>
-          <span className="text-xs font-mono text-gray-600">
+          <span className="text-xs font-mono text-[var(--text-subtle)]">
             #{current.index}
           </span>
         </div>
@@ -312,18 +312,18 @@ export default function PhotonInspector() {
         {/* Controls */}
         <div className="flex items-center justify-between 
                         px-3 py-2"
-             style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+             style={{ borderTop: '1px solid var(--border-color)' }}>
           <button onClick={goFirst}
                   disabled={inspector.currentIndex === 0}
                   className="px-2 py-1 text-xs font-mono
-                             text-gray-500 hover:text-white
+                             text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
             |◀
           </button>
           <button onClick={goPrev}
                   disabled={inspector.currentIndex === 0}
                   className="px-2 py-1 text-xs font-mono
-                             text-gray-500 hover:text-white
+                             text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
             ◀ Prev
           </button>
@@ -343,14 +343,14 @@ export default function PhotonInspector() {
           <button onClick={goNext}
                   disabled={inspector.currentIndex >= total - 1}
                   className="px-2 py-1 text-xs font-mono
-                             text-gray-500 hover:text-white
+                             text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
             Next ▶
           </button>
           <button onClick={goLast}
                   disabled={inspector.currentIndex >= total - 1}
                   className="px-2 py-1 text-xs font-mono
-                             text-gray-500 hover:text-white
+                             text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
             ▶|
           </button>

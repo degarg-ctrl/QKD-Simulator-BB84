@@ -1,7 +1,0 @@
-﻿2ec5dd0 docs(release): v0.2 release changelog
-3d0104d feat(develop): merge sprint-8 ΓÇö guide formulas, v0.2 version bump, code splitting
-8e64db9 feat(sprint-8): guide formulas section, v0.2 version bump, code splitting
-3d0104d feat(develop): merge sprint-8 ΓÇö guide formulas, v0.2 version bump, code splitting
-8e64db9 feat(sprint-8): guide formulas section, v0.2 version bump, code splitting
-73664b3 docs: sprint-7 changelog
-docs/CHANGELOG.md

@@ -15,6 +15,10 @@
 
 import { useState } from 'react'
 import { TooltipPortal } from '../ui/TooltipPortal'
+import SmartTooltipWrapper from '../ui/SmartTooltipWrapper'
+import GateTooltip from '../ui/GateTooltip'
+import EntityTooltip from '../entities/EntityTooltip'
+import ExperimentTooltip from '../experiments/ExperimentTooltip'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
 
@@ -198,140 +202,169 @@ const EXPERIMENTS = [
 ]
 
 // Single item component with tooltip
-function SidebarItem({ item, collapsed, draggable = false }) {
+function SidebarItem({ item, collapsed, draggable = false, isGate = false, isProbe = false, isExperiment = false }) {
+  // Determine tooltip content based on item type
+  let tooltipContent = null
+  if (isGate) {
+    tooltipContent = <GateTooltip gate={item} />
+  } else if (isProbe) {
+    tooltipContent = <EntityTooltip entity={item} />
+  } else if (isExperiment) {
+    tooltipContent = <ExperimentTooltip experiment={item} />
+  }
+
+  const innerContent = (
+    <motion.div
+      draggable={draggable}
+      onDragStart={draggable ? (e) => {
+        e.dataTransfer.setData('gateType', item.id)
+      } : undefined}
+      whileHover={{ scale: 1.03 }}
+      className={`flex items-center rounded border
+                 transition-colors select-none
+                 ${draggable
+                   ? 'cursor-grab active:cursor-grabbing'
+                   : 'cursor-default'}
+                 ${collapsed
+                   ? 'w-8 h-8 justify-center mx-auto'
+                   : 'gap-2 px-2 py-1.5 w-full'}
+                 bg-transparent
+                 hover:bg-white/5`}
+      style={{
+        borderColor: 'var(--border-color)',
+        border: '1px solid var(--border-color)'
+      }}
+    >
+      <div
+        className={`rounded flex items-center justify-center
+                   font-mono font-bold flex-shrink-0
+                   ${collapsed
+                     ? 'w-6 h-6 text-xs'
+                     : 'w-7 h-7 text-xs'}`}
+        style={{
+          backgroundColor: item.color + '40',
+          color: 'var(--text-primary)',
+          border: `1px solid var(--border-color)`,
+          fontWeight: 'bold'
+        }}
+      >
+        {item.symbol}
+      </div>
+      <AnimatePresence>
+        {!collapsed && (
+          <motion.span
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 'auto' }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{ duration: 0.15 }}
+            className="text-xs font-mono text-[var(--text-muted)]
+                       whitespace-nowrap overflow-hidden"
+          >
+            {item.label}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+
+  // Gates and Probes use SmartTooltipWrapper
+  if (tooltipContent) {
+    return (
+      <SmartTooltipWrapper
+        tooltipContent={tooltipContent}
+        placement="right"
+        maxHeight={500}
+      >
+        {innerContent}
+      </SmartTooltipWrapper>
+    )
+  }
+
+  // Experiments and others use the standard text TooltipPortal
   return (
     <TooltipPortal 
       content={item.tooltip} 
       width={224}
       color={item.color}
     >
-      <motion.div
-        draggable={draggable}
-        onDragStart={draggable ? (e) => {
-          e.dataTransfer.setData('gateType', item.id)
-        } : undefined}
-        whileHover={{ scale: 1.03 }}
-        className={`flex items-center rounded border
-                   transition-colors select-none
-                   ${draggable
-                     ? 'cursor-grab active:cursor-grabbing'
-                     : 'cursor-default'}
-                   ${collapsed
-                     ? 'w-8 h-8 justify-center mx-auto'
-                     : 'gap-2 px-2 py-1.5 w-full'
-                   }
-                   bg-transparent
-                   hover:bg-white/5`}
-        style={{
-          borderColor: 'rgba(255,255,255,0.15)',
-          border: '1px solid rgba(255,255,255,0.15)'
-        }}
-      >
-        <div
-          className={`rounded flex items-center justify-center
-                     font-mono font-bold flex-shrink-0
-                     ${collapsed
-                       ? 'w-6 h-6 text-xs'
-                       : 'w-7 h-7 text-xs'}`}
-          style={{
-            backgroundColor: item.color + '40',
-            color: '#ffffff',
-            border: `1px solid rgba(255,255,255,0.4)`,
-            fontWeight: 'bold'
-          }}
-        >
-          {item.symbol}
-        </div>
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.span
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 'auto' }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.15 }}
-              className="text-xs font-mono text-gray-300
-                         whitespace-nowrap overflow-hidden"
-            >
-              {item.label}
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </motion.div>
+      {innerContent}
     </TooltipPortal>
   )
 }
 
 // Experiment button
 function ExperimentButton({ exp, collapsed, isActive, onClick, disabled = false }) {
-  return (
-    <TooltipPortal
-      content={exp.tooltip}
-      width={224}
-      color={exp.color}
+  const buttonContent = (
+    <motion.button
+      onClick={disabled ? undefined : onClick}
+      whileHover={{ scale: 1.02 }}
+      className={`w-full flex items-center gap-2 px-2 py-1.5
+                 rounded border transition-colors text-left
+                 ${disabled
+                   ? 'opacity-30 cursor-not-allowed'
+                   : 'cursor-pointer'}
+                 ${isActive && !disabled
+                   ? 'border-opacity-60 bg-opacity-20'
+                   : 'border-[var(--border-color)] bg-[var(--panel-dark)]/20 hover:border-[var(--text-subtle)]'}`}
+      style={{
+        borderColor: isActive && !disabled ? exp.color + '60' : undefined,
+        backgroundColor: isActive && !disabled ? exp.color + '15' : undefined
+      }}
     >
-      <motion.button
-        onClick={disabled ? undefined : onClick}
-        whileHover={{ scale: 1.02 }}
-        className={`w-full flex items-center gap-2 px-2 py-1.5
-                   rounded border transition-colors text-left
-                   ${disabled
-                     ? 'opacity-30 cursor-not-allowed'
-                     : 'cursor-pointer'
-                   }
-                   ${isActive && !disabled
-                     ? 'border-opacity-60 bg-opacity-20'
-                     : 'border-gray-800 bg-gray-900/20 hover:border-gray-700'
-                   }`}
+      <div
+        className="w-7 h-7 rounded flex items-center 
+                   justify-center text-xs font-mono 
+                   font-bold flex-shrink-0"
         style={{
-          borderColor: isActive && !disabled ? exp.color + '60' : undefined,
-          backgroundColor: isActive && !disabled ? exp.color + '15' : undefined
+          backgroundColor: exp.color + '20',
+          color: exp.color,
+          border: `1px solid ${exp.color}30`
         }}
       >
-        <div
-          className="w-7 h-7 rounded flex items-center 
-                     justify-center text-xs font-mono 
-                     font-bold flex-shrink-0"
-          style={{
-            backgroundColor: exp.color + '20',
-            color: exp.color,
-            border: `1px solid ${exp.color}30`
-          }}
-        >
-          {exp.id.replace('exp', '')}
-        </div>
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 'auto' }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.15 }}
-              className="overflow-hidden"
-            >
-              <div className="text-xs font-mono text-gray-300
-                              whitespace-nowrap">
-                {exp.label}
-              </div>
-              <div className="text-xs text-gray-600 
-                              whitespace-nowrap">
-                {exp.description}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.button>
-    </TooltipPortal>
+        {exp.id.replace('exp', '')}
+      </div>
+      <AnimatePresence>
+        {!collapsed && (
+          <motion.div
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 'auto' }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <div className="text-xs font-mono text-[var(--text-muted)]
+                            whitespace-nowrap">
+              {exp.label}
+            </div>
+            <div className="text-xs text-[var(--text-subtle)] 
+                            whitespace-nowrap">
+              {exp.description}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  )
+
+  return (
+    <SmartTooltipWrapper
+      tooltipContent={<ExperimentTooltip experiment={exp} />}
+      placement="right"
+      maxHeight={600}
+    >
+      {buttonContent}
+    </SmartTooltipWrapper>
   )
 }
 
 // Section header
 function SectionHeader({ label, collapsed }) {
   if (collapsed) return (
-    <div className="w-full h-px bg-gray-800 my-1" />
+    <div className="w-full h-px bg-[var(--border-color)] my-1" />
   )
   return (
     <div className="px-1 pt-3 pb-1">
-      <span className="text-xs font-mono text-gray-600 
+      <span className="text-xs font-mono text-[var(--text-subtle)] 
                        uppercase tracking-widest">
         {label}
       </span>
@@ -356,8 +389,8 @@ export default function Sidebar() {
       className="flex flex-col border-r 
                  flex-shrink-0 overflow-hidden relative"
       style={{ 
-        backgroundColor: '#242424',
-        borderColor: 'rgba(255,255,255,0.2)',
+        backgroundColor: 'var(--panel-bg)',
+        borderColor: 'var(--border-color)',
         minHeight: 0
       }}
     >
@@ -366,7 +399,7 @@ export default function Sidebar() {
                       px-2 py-2 border-b border-border-subtle
                       flex-shrink-0">
         {!collapsed && (
-          <span className="text-xs font-mono text-gray-600 
+          <span className="text-xs font-mono text-[var(--text-subtle)] 
                            uppercase tracking-widest">
             Toolbox
           </span>
@@ -374,7 +407,7 @@ export default function Sidebar() {
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="w-7 h-7 rounded flex items-center justify-center
-                     text-gray-500 hover:text-white hover:bg-gray-800
+                     text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--panel-dark)]
                      transition-colors ml-auto flex-shrink-0"
         >
           <span className="text-xs font-mono">
@@ -396,6 +429,7 @@ export default function Sidebar() {
             item={item}
             collapsed={collapsed}
             draggable={true}
+            isGate={true}
           />
         ))}
 
@@ -407,6 +441,7 @@ export default function Sidebar() {
             item={item}
             collapsed={collapsed}
             draggable={true}
+            isProbe={true}
           />
         ))}
 

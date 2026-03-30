@@ -15,10 +15,11 @@
  * Canvas is responsive — scales to container width maintaining aspect ratio.
  */
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import useSimulationStore from '../../store/simulationStore'
 import { usePhotonAnimation } from '../../hooks/usePhotonAnimation'
-
+import GateStateVector from '../gates/GateStateVector'
+import GateContextMenu from '../gates/GateContextMenu'
 // ─── DESIGN CONSTANTS ────────────────────────────────────────────
 const CANVAS_WIDTH = 1200
 const CANVAS_HEIGHT = 400
@@ -30,7 +31,7 @@ const ENTITY_Y = 200
 const LANE_Y_POSITIONS = [150, 200, 250]  // 3 channel lanes
 
 const COLORS = {
-  background:      '#2a2a2a',
+  background:      '#1a1a2e',
   laneLine:        '#ffffff',
   laneGlow:        'rgba(255,255,255,0.3)',
   aliceNode:       '#00d4ff',
@@ -50,7 +51,10 @@ const NODE_RADIUS = 28
 export default function QuantumCanvas({ className = '' }) {
 
   const canvasRef = useRef(null)
-  const { results, animation, params, addGate, placedGates, removeGate } = useSimulationStore()
+  const [contextMenu, setContextMenu] = useState(null)
+  const [showStateVectors, setShowStateVectors] = useState(true)
+  const [hoveredGateId, setHoveredGateId] = useState(null)
+  const { results, animation, params, addGate, placedGates, removeGate, setSelectedGate, deleteGate, copyGate } = useSimulationStore()
 
   const GATE_COLORS = {
     H: '#6366f1', X: '#f59e0b', Y: '#ec4899',
@@ -69,6 +73,8 @@ export default function QuantumCanvas({ className = '' }) {
     ctx.strokeStyle = 'rgba(255,255,255,0.3)'
     ctx.lineWidth = 1.5
     ctx.stroke()
+      
+      ctx.shadowBlur = 0
 
     // Colored glow ring
     ctx.beginPath()
@@ -78,6 +84,8 @@ export default function QuantumCanvas({ className = '' }) {
     ctx.shadowColor = color
     ctx.shadowBlur = 12
     ctx.stroke()
+      
+      ctx.shadowBlur = 0
     ctx.shadowBlur = 0
 
     // Filled circle
@@ -88,6 +96,8 @@ export default function QuantumCanvas({ className = '' }) {
     ctx.strokeStyle = color
     ctx.lineWidth = 2
     ctx.stroke()
+      
+      ctx.shadowBlur = 0
 
     // Label
     ctx.fillStyle = '#ffffff'
@@ -112,6 +122,8 @@ export default function QuantumCanvas({ className = '' }) {
   const drawChannelLanes = useCallback((ctx) => {
     ctx.save()
 
+    const eveActive = params.attack_prob > 0
+
     LANE_Y_POSITIONS.forEach((y, laneIndex) => {
       // Glow effect
       ctx.shadowBlur = 3
@@ -120,10 +132,26 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.lineWidth = 2
       ctx.setLineDash([10, 15]) // Dashed line
 
-      ctx.beginPath()
-      ctx.moveTo(ALICE_X + NODE_RADIUS, y)
-      ctx.lineTo(BOB_X - NODE_RADIUS, y)
-      ctx.stroke()
+      if (eveActive) {
+        // Draw lane in two segments: Alice to Eve, Eve to Bob
+        ctx.beginPath()
+        ctx.moveTo(ALICE_X + NODE_RADIUS, y)
+        ctx.lineTo(EVE_X - NODE_RADIUS, y)
+        ctx.stroke()
+
+        ctx.beginPath()
+        ctx.moveTo(EVE_X + NODE_RADIUS, y)
+        ctx.lineTo(BOB_X - NODE_RADIUS, y)
+        ctx.stroke()
+      } else {
+        // Draw continuous lane (Eve can be overshadowed)
+        ctx.beginPath()
+        ctx.moveTo(ALICE_X + NODE_RADIUS, y)
+        ctx.lineTo(BOB_X - NODE_RADIUS, y)
+        ctx.stroke()
+      }
+      
+      ctx.shadowBlur = 0
 
       // Lane label on far left
       ctx.setLineDash([])
@@ -155,13 +183,15 @@ export default function QuantumCanvas({ className = '' }) {
         ctx.moveTo(probeX, y)
         ctx.lineTo(BOB_X - NODE_RADIUS, y)
         ctx.stroke()
+      
+      ctx.shadowBlur = 0
         ctx.setLineDash([])
         ctx.shadowBlur = 0
       }
     })
 
     ctx.restore()
-  }, [placedGates])
+  }, [placedGates, params.attack_prob])
 
   /**
    * Draw placed gates on channel lanes.
@@ -188,6 +218,8 @@ export default function QuantumCanvas({ className = '' }) {
                       size, size, 4)
         ctx.fill()
         ctx.stroke()
+      
+      ctx.shadowBlur = 0
         
         // Symbol
         ctx.fillStyle = '#ef4444'
@@ -208,18 +240,24 @@ export default function QuantumCanvas({ className = '' }) {
       const gateColor = gate.color || '#6366f1'
 
       // Gate background square
-      const size = 22
-      ctx.fillStyle = gateColor + '30'
+      // Shadow/glow effect
+      ctx.shadowColor = gateColor
+      ctx.shadowBlur = 8
+      
+      const size = 32
+      ctx.fillStyle = gateColor + '40'
       ctx.strokeStyle = gateColor
-      ctx.lineWidth = 1.5
+      ctx.lineWidth = 2.5
       ctx.beginPath()
-      ctx.roundRect(gateX - size/2, laneY - size/2, size, size, 4)
+      ctx.roundRect(gateX - size/2, laneY - size/2, size, size, 6)
       ctx.fill()
       ctx.stroke()
+      
+      ctx.shadowBlur = 0
 
       // Gate label
-      ctx.fillStyle = gateColor
-      ctx.font = 'bold 11px monospace'
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 14px monospace'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(gate.type, gateX, laneY)
@@ -232,16 +270,18 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.moveTo(gateX, laneY - 30)
       ctx.lineTo(gateX, laneY + 30)
       ctx.stroke()
+      
+      ctx.shadowBlur = 0
       ctx.setLineDash([])
     })
-  }, [placedGates])
+  }, [placedGates, params.attack_prob])
 
   /**
    * Draw the static background.
    */
   const drawBackground = useCallback((ctx, width, height) => {
-    // Solid charcoal base
-    ctx.fillStyle = '#2a2a2a'
+    // Solid charcoal-blue base
+    ctx.fillStyle = '#1a1a2e'
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
     // Subtle grid with white lines
@@ -253,12 +293,16 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.moveTo(x, 0)
       ctx.lineTo(x, CANVAS_HEIGHT)
       ctx.stroke()
+      
+      ctx.shadowBlur = 0
     }
     for (let y = 0; y <= CANVAS_HEIGHT; y += gridSize) {
       ctx.beginPath()
       ctx.moveTo(0, y)
       ctx.lineTo(CANVAS_WIDTH, y)
       ctx.stroke()
+      
+      ctx.shadowBlur = 0
     }
   }, [])
 
@@ -325,9 +369,20 @@ export default function QuantumCanvas({ className = '' }) {
     const channelStart = ALICE_X
     const channelEnd = BOB_X
     const channelWidth = channelEnd - channelStart
-    const position = Math.max(0.05, Math.min(0.95,
+    let position = Math.max(0.05, Math.min(0.95,
       (canvasX - channelStart) / channelWidth
     ))
+
+    // Snap to grid (15 slots) to prevent overlap
+    const slots = 15
+    position = Math.round(position * slots) / slots
+
+    // Check if slot is occupied in this lane
+    const isOccupied = placedGates.some(g => 
+      g.lane === lane && Math.abs(g.position - position) < 0.05
+    )
+    
+    if (isOccupied) return
 
     addGate({
       type: gateType,
@@ -335,7 +390,7 @@ export default function QuantumCanvas({ className = '' }) {
       position,
       color: GATE_COLORS[gateType] || '#6366f1'
     })
-  }, [addGate, GATE_COLORS])
+  }, [addGate, GATE_COLORS, placedGates])
 
   /**
    * Handle right-click to remove a gate.
@@ -405,10 +460,41 @@ export default function QuantumCanvas({ className = '' }) {
 
   return (
     <div
-      className={`relative w-full bg-[#2a2a2a] rounded-lg overflow-hidden border border-[rgba(255,255,255,0.2)] shadow-2xl ${className}`}
+      className={`relative w-full rounded-lg overflow-hidden border shadow-2xl ${className}`}
+      style={{ 
+        background: '#1a1a2e',
+        borderColor: 'rgba(255,255,255,0.08)' 
+      }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
       onContextMenu={handleContextMenu}
+      onMouseMove={(e) => {
+        const rect = canvasRef.current?.getBoundingClientRect()
+        if (!rect) return
+        const x = (e.clientX - rect.left) * (CANVAS_WIDTH / rect.width)
+        const y = (e.clientY - rect.top) * (CANVAS_HEIGHT / rect.height)
+        const channelWidth = BOB_X - ALICE_X
+        let foundGate = null
+        placedGates.forEach(gate => {
+          const gateX = ALICE_X + channelWidth * gate.position
+          const laneY = LANE_Y_POSITIONS[gate.lane]
+          const dist = Math.sqrt((x - gateX) ** 2 + (y - laneY) ** 2)
+          if (dist < 20) foundGate = gate.id
+        })
+        setHoveredGateId(foundGate)
+      }}      onClick={(e) => {
+        const rect = canvasRef.current?.getBoundingClientRect()
+        if (!rect) return
+        const x = (e.clientX - rect.left) * (CANVAS_WIDTH / rect.width)
+        const y = (e.clientY - rect.top) * (CANVAS_HEIGHT / rect.height)
+        const channelWidth = BOB_X - ALICE_X
+        placedGates.forEach(gate => {
+          const gateX = ALICE_X + channelWidth * gate.position
+          const laneY = LANE_Y_POSITIONS[gate.lane]
+          const dist = Math.sqrt((x - gateX) ** 2 + (y - laneY) ** 2)
+          if (dist < 20) setSelectedGate(gate)
+        })
+      }}
     >
       <canvas
         ref={canvasRef}
@@ -426,6 +512,26 @@ export default function QuantumCanvas({ className = '' }) {
           ⚠ SECURITY THRESHOLD BREACHED
         </div>
       )}
+      {contextMenu && (
+        <GateContextMenu
+          position={{ x: contextMenu.x, y: contextMenu.y }}
+          gate={contextMenu.gate}
+          onDelete={() => deleteGate(contextMenu.gate.id)}
+          onCopy={() => copyGate(contextMenu.gate)}
+          onViewMatrix={() => setSelectedGate(contextMenu.gate)}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+      {showStateVectors && placedGates.map((gate) => {
+        const channelWidth = BOB_X - ALICE_X
+        const gateX = ALICE_X + channelWidth * gate.position
+        const laneY = LANE_Y_POSITIONS[gate.lane]
+        return (
+          <div key={gate.id} className="absolute pointer-events-none">
+            <GateStateVector gate={gate} position={{ x: gateX, y: laneY }} isHovered={hoveredGateId === gate.id} />
+          </div>
+        )
+      })}
     </div>
   )
 }
