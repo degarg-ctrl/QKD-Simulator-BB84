@@ -139,5 +139,5 @@ Include these verified values:
 
 ## Version
 
-Current: v0.3-final
+Current: v0.4.0-final
 See CHANGELOG.md for full history.
