@@ -1,98 +1,143 @@
 # Changelog
-Format: [YYYY-MM-DD HH:MM] | Branch | Type | Description
+Format: [YYYY-MM-DD HH:MM] | Branch | Action | filepath
 
-[2026-03-29 21:31] | feature/v0.3.1-sprint13 | feat(sprint-13) |
-  - Guided exercises with 5 interactive tutorials
-  - Step-by-step verification system
-  - Exercise progress tracking
-  - Hint system for each step
-  - New components: GuidedExercises, ExerciseStep
-  - Consolidated documentation into docs/sprints/
+[2026-05-24 00:00] | main | modified | README.md
+[2026-05-04 05:22] | main | modified | docs/ERROR_LOG.md
+[2026-05-04 05:22] | main | modified | docs/CHANGELOG.md
+[2026-05-04 05:22] | main | modified | docs/TEST_LOG.md
+[2026-05-04 05:22] | main | modified | backend/pytest.ini
+[2026-05-04 05:22] | main | modified | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_frontend_sync.py
+[2026-05-04 05:22] | main | modified | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_noise.py
+[2026-05-04 05:22] | main | modified | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_single_photon.py
+[2026-05-04 05:07] | main | modified | docs/CHANGELOG.md
+[2026-05-04 05:07] | main | modified | backend/pytest.ini
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/README.md
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/specs/requirements.md
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/specs/design.md
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/specs/tasks.md
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/conftest.py
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_photon_count.py
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_distance.py
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_noise.py
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_eve_attacks.py
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_realistic_mode.py
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_gates.py
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_single_photon.py
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/test_frontend_sync.py
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/collect_measured_values.py
+[2026-05-04 05:07] | main | created  | backend/tests/runs/2026-05-04_comprehensive-validation/suite/generate_reports.py
+[2026-05-04 04:19] | main | modified | docs/ERROR_LOG.md
+[2026-05-04 04:18] | main | modified | docs/CHANGELOG.md
+[2026-05-04 04:18] | main | modified | frontend/src/components/layout/SimulatorControls.jsx
+[2026-05-04 04:13] | main | modified | frontend/src/components/controls/ConfigPanel.jsx
+[2026-05-04 04:13] | main | modified | frontend/src/api/simulatorAPI.js
+[2026-05-04 04:10] | main | modified | frontend/src/components/canvas/QuantumCanvas.jsx
+[2026-05-04 04:10] | main | modified | frontend/src/store/simulationStore.js
+[2026-05-04 04:02] | main | modified | docs/CHANGELOG.md
+[2026-05-04 04:02] | main | modified | frontend/src/components/canvas/QuantumCanvas.jsx
+[2026-05-04 02:13] | main | modified | docs/CHANGELOG.md
+[2026-05-04 02:12] | main | modified | frontend/src/index.css
+[2026-05-04 02:12] | main | modified | frontend/src/components/layout/Sidebar.jsx
+[2026-05-04 02:12] | main | modified | frontend/src/components/ui/SmartTooltipWrapper.jsx
+[2026-05-04 02:07] | main | modified | docs/CHANGELOG.md
+[2026-05-04 02:06] | main | modified | frontend/src/components/ui/SmartTooltipWrapper.jsx
+[2026-05-04 02:06] | main | modified | frontend/src/components/ui/TooltipPortal.jsx
+[2026-05-04 02:06] | main | modified | frontend/src/components/layout/Sidebar.jsx
+[2026-05-04 02:06] | main | modified | frontend/src/index.css
+[2026-05-03 04:43] | main | modified | docs/CHANGELOG.md
+[2026-05-03 04:43] | main | modified | launch.py
+[2026-05-03 04:39] | main | modified | docs/CHANGELOG.md
+[2026-05-03 04:39] | main | modified | frontend/src/pages/ResultsPage.jsx
+[2026-05-03 04:39] | main | modified | frontend/src/pages/GuidePage.jsx
+[2026-05-03 04:37] | main | modified | docs/CHANGELOG.md
+[2026-05-03 04:37] | main | modified | backend/routers/simulation.py
+[2026-05-03 04:33] | main | modified | docs/CHANGELOG.md
+[2026-05-03 04:33] | main | modified | frontend/index.html
+[2026-05-03 04:33] | main | created  | frontend/public/favicon.svg
+[2026-05-03 04:27] | main | modified | docs/CHANGELOG.md
+[2026-05-03 04:22] | main | modified | CODEBASE_RULES.md
+[2026-05-03 04:15] | main | modified | backend/tests/runs/2026-05-02_physics-accuracy/suite/conftest.py
+[2026-05-03 04:15] | main | modified | backend/tests/runs/2026-05-02_physics-accuracy/suite/generate_reports.py
+[2026-05-03 04:15] | main | modified | backend/tests/runs/2026-05-02_physics-accuracy/suite/collect_measured_values.py
+[2026-05-03 04:25] | main | modified | docs/CHANGELOG.md
+[2026-05-03 04:24] | main | modified | docs/CHANGELOG.md
+[2026-05-03 04:15] | main | deleted  | qkd-simulator/.vscode/settings.json
+[2026-05-03 04:15] | main | deleted  | qkd-simulator/backend/.vscode/settings.json
+[2026-05-03 04:15] | main | moved    | backend/tests/suite/* -> tests/runs/2026-05-02_physics-accuracy/suite/
+[2026-05-03 04:15] | main | modified | backend/pytest.ini
+[2026-05-03 04:15] | main | modified | CODEBASE_RULES.md
+[2026-05-03 04:15] | main | modified | qkd-simulator/.gitignore
+[2026-05-03 04:10] | main | moved    | docs/CODEBASE_RULES.md -> CODEBASE_RULES.md (workspace root)
+[2026-05-03 04:05] | main | created  | docs/CODEBASE_RULES.md
+[2026-05-03 04:05] | main | created  | docs/TEST_LOG.md
+[2026-05-03 04:05] | main | created  | backend/tests/runs/2026-03-29_sprint-11-13/README.md
+[2026-05-03 04:05] | main | deleted  | qkd-simulator/CHANGELOG.md
+[2026-05-03 04:05] | main | deleted  | docs/PROJECT_OVERVIEW.md
+[2026-05-03 04:05] | main | deleted  | frontend/public/vite.svg
+[2026-05-03 04:05] | main | deleted  | frontend/src/assets/react.svg
+[2026-05-03 04:05] | main | deleted  | frontend/src/components/canvas/QuantumCanvas.jsx.bak
+[2026-05-03 04:05] | main | moved    | docs/FINAL_TESTING_SUMMARY.md -> backend/tests/runs/2026-03-29_sprint-11-13/
+[2026-05-03 04:05] | main | moved    | docs/sprints/* -> docs/archive/sprints/
+[2026-05-03 03:30] | main | created  | .vscode/settings.json
+[2026-05-03 03:25] | main | deleted  | backend/__init__.py
+[2026-05-03 03:00] | main | modified | qkd-simulator/.vscode/settings.json
+[2026-05-02 00:29] | main | modified | backend/tests/suite/conftest.py
+[2026-05-02 00:29] | main | modified | backend/tests/suite/generate_reports.py
+[2026-05-02 00:29] | main | modified | backend/tests/suite/collect_measured_values.py
+[2026-05-02 00:29] | main | modified | backend/tests/suite/test_gates.py
+[2026-05-02 00:29] | main | modified | backend/tests/suite/test_parameter_sweep.py
+[2026-05-02 00:29] | main | modified | backend/tests/suite/test_physics_benchmarks.py
+[2026-05-02 00:29] | main | modified | backend/tests/suite/test_property_based.py
+[2026-05-02 00:29] | main | modified | backend/tests/suite/test_wcp_pns_decoy.py
+[2026-05-02 00:29] | main | modified | backend/pytest.ini
+[2026-05-02 00:28] | main | created  | backend/tests/runs/2026-05-02_physics-accuracy/README.md
+[2026-05-02 00:28] | main | moved    | backend/tests/TEST_RESULTS.md -> runs/2026-05-02_physics-accuracy/
+[2026-05-02 00:28] | main | moved    | backend/tests/TEST_FINDINGS.md -> runs/2026-05-02_physics-accuracy/
+[2026-05-02 00:28] | main | moved    | backend/tests/.results_cache.json -> runs/2026-05-02_physics-accuracy/
+[2026-05-02 00:28] | main | moved    | .kiro/specs/* -> runs/2026-05-02_physics-accuracy/specs/
+[2026-05-02 00:25] | main | created  | backend/tests/suite/conftest.py
+[2026-05-02 00:25] | main | created  | backend/tests/suite/generate_reports.py
+[2026-05-02 00:25] | main | created  | backend/tests/suite/collect_measured_values.py
+[2026-05-02 00:25] | main | created  | backend/tests/suite/test_gates.py
+[2026-05-02 00:25] | main | created  | backend/tests/suite/test_parameter_sweep.py
+[2026-05-02 00:25] | main | created  | backend/tests/suite/test_physics_benchmarks.py
+[2026-05-02 00:25] | main | created  | backend/tests/suite/test_property_based.py
+[2026-05-02 00:25] | main | created  | backend/tests/suite/test_wcp_pns_decoy.py
+[2026-05-02 00:20] | main | deleted  | venv/ (orphaned root venv)
+[2026-05-02 00:20] | main | deleted  | .venv/ (orphaned root venv)
+[2026-05-02 00:20] | main | deleted  | docs/PHYSICS_CONTRACT.md (duplicate - canonical in docs/)
+[2026-05-02 00:20] | main | deleted  | backend/core/PHYSICS_CONTRACT.md (duplicate)
+[2026-05-02 00:20] | main | moved    | backend/tests/test_physics.py -> tests/_archive/legacy/
+[2026-05-02 00:20] | main | moved    | backend/tests/test_comprehensive.py -> tests/_archive/legacy/
+[2026-05-02 00:20] | main | moved    | backend/tests/test_api.py -> tests/_archive/legacy/
+[2026-05-02 00:20] | main | moved    | backend/gen_benchmarks_encode.py -> tests/_archive/generators/
+[2026-05-02 00:20] | main | moved    | backend/gen_benchmarks_runner.py -> tests/_archive/generators/
+[2026-05-02 00:20] | main | moved    | backend/gen_full.py -> tests/_archive/generators/
+[2026-05-02 00:20] | main | moved    | backend/gen_full_test.py -> tests/_archive/generators/
+[2026-05-02 00:20] | main | moved    | backend/gen_header.py -> tests/_archive/generators/
+[2026-05-02 00:20] | main | moved    | backend/gen_test.py -> tests/_archive/generators/
+[2026-05-02 00:20] | main | moved    | backend/gen_test2.py -> tests/_archive/generators/
+[2026-05-02 00:20] | main | moved    | backend/verify_imports.py -> tests/_archive/generators/
+[2026-05-02 00:10] | main | modified | backend/tests/collect_measured_values.py
+[2026-05-02 00:10] | main | modified | backend/tests/TEST_RESULTS.md
+[2026-05-02 00:10] | main | modified | backend/tests/TEST_FINDINGS.md
 
-[2026-03-29 21:26] | feature/v0.3.1-sprint12 | feat(sprint-12) |
-  - Save experiment configurations with name and description
-  - Load saved experiments from localStorage
-  - Export experiments as JSON files
-  - Import experiments from JSON files
-  - Delete saved experiments
-  - Display experiment list with metadata
-  - New components: SaveExperimentModal, LoadExperimentModal
+--- Historical entries (pre-cleanup, older format) ---
+Format was: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 
-[2026-03-29 21:22] | feature/v0.3.1-sprint11 | feat(sprint-11) |
-  - Gate state vector display showing |ψ⟩ = α|0⟩ + β|1⟩ after each gate
-  - Right-click context menu for gates (delete, copy, view matrix)
-  - Gate properties panel in right sidebar with matrix representation
-  - Real-time quantum state visualization with complex amplitudes
-  - Probability calculations P(0) and P(1) for each gate
-  - Gate descriptions for H, X, Y, Z, S, T gates
-  - Integrated with simulationStore.js (gate state management)
-  - Ready for QuantumCanvas and SimulatorPage integration
-
-  - New components: GateStateVector, GateContextMenu, GatePropertiesPanel
-
-[2026-03-23 05:00] | feature/v0.3-source-model | feat(source-model) |
-  - "Ideal vs Realistic" source model toggle
-  - Realistic WCP source with Mean Photon (mu) slider
-  - PNS attack analysis & security verdict
-  - Decoy State protocol & detection results
-  - Experiments 7 & 8 active
-
-[2026-03-22 18:15] | feature/sprint-5-animation-ui | feat(sprint-5) |
-  - A1: Enhanced Bob arrival — 3 rings, match/mismatch colors.
-  - A2: Pause/Resume animation control added to TopBar.
-  - A3: Single photon mode toggle in ConfigPanel.
-  - A4: QBER/SKR chart labels clarified — Theoretical vs Simulated.
-
-[2026-03-21 19:00] | fix/v0.1-final-audit | chore |
-  Final audit complete. Dead code removed, magic numbers
-  verified, physics regression passed, frontend build clean.
-
-[2026-03-21 18:45] | main | RELEASE v0.1 | 
-  BB84 QKD Simulator v0.1 released to main.
-
-  Features shipped:
-  - Physics-accurate BB84 simulation engine
-  - POST /api/simulate endpoint
-  - Photon animation with real-time polarization visualization  
-  - Eve interception with red pulse effect
-  - ConfigPanel with physics tooltips
-  - QBER/SKR metric cards and charts with threshold line
-  - TopBar, Sidebar, BottomPanel IDE layout
-  - Complete BB84 teaching guide — 5 sections
-  - QBER exactly 25% at full Eve interception (verified)
-  - Security threshold abort at QBER ≥ 11% (verified)
-
-[2026-03-21 18:15] | release/v0.1 | release | v0.1 release candidate cut from develop.
-
-[2026-03-21 16:55] | develop | merge | guide-page merged — comprehensive beginner's guide with interactive BB84 protocol steps, security analysis, tutorial, and glossary. All verified on port 5174.
-
-[2026-03-12 23:55] | feature/frontend-canvas | feat(frontend-canvas) | PhotonParticle.js complete — travel lifecycle, polarization encoding, Eve effect, arrival flash verified
-[2026-03-13 00:05] | feature/frontend-canvas | feat(frontend-canvas) | usePhotonAnimation.js hook complete — full animation loop verified, photons travelling Alice→Bob with polarization visualization
-[2026-03-13 00:10] | develop              | merge | frontend-canvas merged — PhotonParticle, usePhotonAnimation, QuantumCanvas all verified. Full photon animation running at 60fps with polarization encoding.
-[2026-03-21 14:50] | feature/frontend-ui | feat(frontend-ui) | ConfigPanel complete — 5 parameter controls with physics tooltips, security threshold warning, Zustand integration
-[2026-03-21 15:45] | feature/frontend-ui | feat(frontend-ui) | MetricCard, QBERChart, SKRChart complete — metrics panel verified with color coding and threshold visualization
-[2026-03-21 16:30] | feature/frontend-ui | feat(frontend-ui) | TopBar, Sidebar, BottomPanel complete — full simulator layout assembled and verified
-[2026-03-21 16:45] | develop              | merge | frontend-ui merged — complete simulator UI assembled. TopBar, Sidebar, BottomPanel, ConfigPanel, MetricCards, Charts all verified.
-
-[2026-03-12 23:45] | feature/frontend-canvas | feat(frontend-canvas) | QuantumCanvas.jsx complete — static scene renders with lanes, Alice/Bob/Eve nodes, responsive scaling
-[2026-03-12 23:35] | develop              | merge | frontend-scaffold merged — data layer complete. Store, API client, hook verified end to end.
-[2026-03-12 23:30] | feature/frontend-scaffold | feat(frontend-scaffold) | useSimulation.js hook complete — API orchestration, loading states, error handling verified
-[2026-03-12 23:25] | feature/frontend-scaffold | feat(frontend-scaffold) | simulatorAPI.js complete — runSimulation, checkHealth, validateParams verified with live backend call
-[2026-03-12 23:10] | feature/frontend-scaffold | feat(frontend-scaffold) | simulationStore.js complete — Zustand store with params, results, animation state, 10 actions, 4 derived getters
-[2026-03-12 23:05] | develop              | merge | Backend complete. All 6 core modules and API router verified. QBER=0.25 on full Eve confirmed. Ready for frontend Sprint 3.
-[2026-03-12 22:35] | develop              | merge | feature/backend-api merged. Full backend API live and verified.
-[2026-03-12 22:30] | feature/backend-api | feat(backend-api) | simulation router complete — full BB84 pipeline wired to POST /api/simulate, all 3 HTTP tests verified
-[2026-03-12 21:15] | feature/backend-core | feat(backend-core) | metrics.py complete — binary entropy, SKR, efficiency, chart data verified
-[2026-03-12 21:00] | feature/backend-core | feat(backend-core) | protocol.py complete — sifting, QBER estimation, key extraction verified. Refactored Alice/Eve for bit preservation.
-[2026-03-12 20:45] | feature/backend-core | feat(backend-core) | bob.py complete — measurement rules verified, 100% accuracy on basis match confirmed
-[2026-03-12 20:30] | feature/backend-core | feat(backend-core) | eve.py complete — intercept-resend, partial, burst verified. 25% QBER physics confirmed.
-[2026-03-12 20:18] | feature/backend-core | feat(backend-core) | channel.py complete — attenuation, detector efficiency, dark counts verified at 0km/50km/100km
-[2026-03-12 20:05] | feature/backend-core | feat(backend-core) | alice.py complete — generate_bits, choose_bases, encode_states verified
-[2026-03-12 19:57] | feature/backend-core | docs | mirrored PHYSICS_CONTRACT.md into backend/core/
-[2026-03-12 19:55] | feature/backend-api | feat | constants.py, schemas.py, main.py, simulation router created. Health check verified at localhost:8000.
-[2026-03-12 19:50] | feature/frontend-scaffold | feat | All frontend component files scaffolded. Dev server verified at localhost:5173.
-[2026-03-12 19:42] | feature/frontend-scaffold | chore(deps) | Frontend scaffolded with Vite React. All dependencies installed and verified. Versions saved in npm-versions.txt.
-[2026-03-12 19:35] | feature/backend-core | chore(deps) | Backend venv created with Python 3.14. All dependencies installed and verified (FastAPI 0.135.1, Pydantic 2.12.5, Uvicorn 0.41.0). Versions frozen in requirements.lock.
-[2026-03-12 19:17] | docs              | docs  | Documentation folder created with 7 files
-[2026-03-12 19:16] | main              | chore | Branching strategy created
-[2026-03-12 19:15] | main              | chore | Repository initialized
+[2026-03-30] | main | release | v0.4.0 — 3D Bloch sphere tooltips, smart tooltip positioning, navigation redesign (UniversalTopBar, SimulatorControls), enhanced guide page (Gates, PNS Attack, Experiments sections)
+[2026-03-29] | feature/v0.3.1-sprint13 | feat | GuidedExercises.jsx, ExerciseStep.jsx — 5 interactive tutorials with step verification and hint system
+[2026-03-29] | feature/v0.3.1-sprint12 | feat | SaveExperimentModal.jsx, LoadExperimentModal.jsx — save/load/export/import experiment configs via localStorage
+[2026-03-29] | feature/v0.3.1-sprint11 | feat | GateStateVector.jsx, GateContextMenu.jsx, GatePropertiesPanel.jsx — real-time quantum state visualization
+[2026-03-23] | feature/v0.3-source-model | feat | Ideal vs Realistic source model toggle, WCP mu slider, PNS attack analysis, decoy state detection, Experiments 7 & 8
+[2026-03-22] | feature/sprint-5-animation-ui | feat | Enhanced Bob arrival animation, pause/resume control, single photon mode, QBER/SKR chart label improvements
+[2026-03-21] | main | release | v0.1 — BB84 QKD Simulator initial release. Physics-accurate simulation, photon animation, ConfigPanel, metrics, guide page
+[2026-03-21] | release/v0.1 | release | v0.1 release candidate cut
+[2026-03-21] | develop | merge | guide-page merged — comprehensive BB84 beginner guide
+[2026-03-21] | feature/frontend-ui | feat | ConfigPanel, MetricCard, QBERChart, SKRChart, TopBar, Sidebar, BottomPanel
+[2026-03-13] | feature/frontend-canvas | feat | PhotonParticle.js, usePhotonAnimation.js, QuantumCanvas.jsx
+[2026-03-12] | feature/frontend-scaffold | feat | simulationStore.js, simulatorAPI.js, useSimulation.js
+[2026-03-12] | feature/backend-api | feat | simulation router, POST /api/simulate endpoint
+[2026-03-12] | feature/backend-core | feat | alice.py, bob.py, channel.py, eve.py, protocol.py, metrics.py, constants.py
+[2026-03-12] | docs | docs | Documentation folder initialized — PHYSICS_CONTRACT.md, DECISIONS.md, PRD.md, HIGH_LEVEL_DESIGN.md, ERROR_LOG.md, CHANGELOG.md, PROJECT_OVERVIEW.md
+[2026-03-12] | main | chore | Repository initialized, branching strategy created
