@@ -55,17 +55,27 @@
   }
 }
 
-/* Custom scrollbar for tooltips and overflow panels */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+/* Global expanding scrollbar without layout shift */
+::-webkit-scrollbar {
+  width: 14px; /* Physical track width (provides enough space for expansion) */
+  height: 14px;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: transparent;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 5px solid transparent; /* 14 - 10 = 4px visible width */
+  background-clip: padding-box;
+  border-radius: 14px;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+/* When hovering the scrollable container, thicken the thumb */
+:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-width: 3px; /* 14 - 6 = 8px visible width */
+}
+/* When hovering the scrollbar thumb itself */
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+  border-width: 3px;
 }

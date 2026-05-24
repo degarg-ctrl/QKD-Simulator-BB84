@@ -15,7 +15,7 @@ export default function SimulatorControls() {
   const [saveModalOpen, setSaveModalOpen] = useState(false)
   const [loadModalOpen, setLoadModalOpen] = useState(false)
   const { runSimulation, isLoading } = useSimulation()
-  const { results, reset, placedGates, clearGates, openInspector, inspector, activeView, setActiveView } = useSimulationStore()
+  const { results, reset, placedGates, clearGates, openInspector, inspector, activeView, setActiveView, animation, togglePause } = useSimulationStore()
 
   const isBreached = results?.secure_threshold_breached ?? false
   const hasResults = results !== null
@@ -133,6 +133,16 @@ export default function SimulatorControls() {
               }}
             >
               🔍 INSPECT
+            </button>
+          )}
+
+          {/* Pause Button */}
+          {results && (
+            <button
+              onClick={togglePause}
+              className="px-3 py-1 text-xs font-mono border rounded transition-colors border-[var(--border-color)] hover:border-[var(--text-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            >
+              {animation.isPaused ? '▶ RESUME' : '⏸ PAUSE'}
             </button>
           )}
 

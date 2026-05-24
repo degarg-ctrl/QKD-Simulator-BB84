@@ -174,7 +174,7 @@ const useSimulationStore = create((set, get) => ({
 
   setActiveView: (view) => set({ activeView: view }),
 
-  reset: () => set({
+  reset: () => set((state) => ({
     results: null,
     isRunning: false,
     isLoading: false,
@@ -196,7 +196,8 @@ const useSimulationStore = create((set, get) => ({
     bottomPanelCollapsed: false,
     syncMode: false,
     sourceModel: 'ideal',
-  }),
+    viewResetSignal: (state.viewResetSignal || 0) + 1,
+  })),
 
   addGate: (gate) => set((state) => ({
     placedGates: [...state.placedGates, {

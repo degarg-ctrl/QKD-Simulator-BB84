@@ -30,7 +30,7 @@ def main():
     print("[1/2] Starting FastAPI Backend on port 8000...")
     os.environ["PYTHONPATH"] = backend_dir
     backend_p = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"],
+        [sys.executable, "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"],
         cwd=backend_dir
     )
     processes.append(backend_p)

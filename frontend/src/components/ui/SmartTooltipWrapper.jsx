@@ -28,16 +28,21 @@ export default function SmartTooltipWrapper({
   const triggerRef = useRef(null)
   const tooltipRef = useRef(null)
   const hideTimeout = useRef(null)
+  const showTimeout = useRef(null)
 
-  const clearHideTimeout = () => {
+  const clearTimeouts = () => {
     if (hideTimeout.current) {
       clearTimeout(hideTimeout.current)
       hideTimeout.current = null
     }
+    if (showTimeout.current) {
+      clearTimeout(showTimeout.current)
+      showTimeout.current = null
+    }
   }
 
   const scheduleHide = useCallback(() => {
-    clearHideTimeout()
+    clearTimeouts()
     hideTimeout.current = setTimeout(() => {
       setVisible(false)
     }, 200)
@@ -116,13 +121,14 @@ export default function SmartTooltipWrapper({
   }, [placement, offset, maxHeight])
 
   const handleTriggerEnter = () => {
-    clearHideTimeout()
-    setVisible(true)
-    calculatePosition()
-    // Recalculate after tooltip renders (so we have real dimensions)
-    requestAnimationFrame(() => {
+    clearTimeouts()
+    showTimeout.current = setTimeout(() => {
+      setVisible(true)
       calculatePosition()
-    })
+      requestAnimationFrame(() => {
+        calculatePosition()
+      })
+    }, 400) // 400ms delay to prevent accidental hovers
   }
 
   const handleTriggerLeave = () => {
@@ -130,7 +136,7 @@ export default function SmartTooltipWrapper({
   }
 
   const handleTooltipEnter = () => {
-    clearHideTimeout()
+    clearTimeouts()
   }
 
   const handleTooltipLeave = () => {
@@ -144,7 +150,7 @@ export default function SmartTooltipWrapper({
     }
     window.addEventListener('resize', handleResize)
     return () => {
-      clearHideTimeout()
+      clearTimeouts()
       window.removeEventListener('resize', handleResize)
     }
   }, [visible, calculatePosition])
@@ -169,7 +175,7 @@ export default function SmartTooltipWrapper({
             maxWidth: `calc(100vw - 40px)`,
             pointerEvents: 'auto',
           }}
-          className="overflow-y-auto overflow-x-hidden custom-scrollbar"
+          className="overflow-y-auto overflow-x-hidden"
         >
           {tooltipContent}
         </motion.div>

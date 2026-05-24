@@ -149,8 +149,8 @@ export default function ConfigPanel({ className = '' }) {
 
   const strategies = [
     { value: 'intercept_resend', label: 'Intercept-Resend' },
-    { value: 'partial_intercept', label: 'Partial Intercept' },
-    { value: 'burst_attack', label: 'Burst Attack' },
+    { value: 'partial', label: 'Partial Intercept' },
+    { value: 'burst', label: 'Burst Attack' },
     ...(sourceModel === 'realistic' ? [
       { value: 'pns', label: 'PNS Attack' }
     ] : []),

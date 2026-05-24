@@ -1041,9 +1041,9 @@ export default function GuidePage() {
               </div>
               <div className="font-mono text-sm text-gray-300 
                               leading-relaxed">
-                <div>1000 raw bits, 50km distance, 0% Eve:</div>
+                <div>1000 raw bits, 50km distance, 0% Eve, <span className="text-yellow-400">realistic mode (η=0.85)</span>:</div>
                 <div className="mt-1 text-gray-400">
-                  Detected: ~85 photons (85% efficiency × 10% survival)
+                  Detected: ~85 photons (η=0.85 × 10% fiber survival)
                 </div>
                 <div className="mt-1 text-gray-400">
                   Sifted: ~42 bits (50% basis match)
@@ -1056,6 +1056,9 @@ export default function GuidePage() {
                 </div>
                 <div className="mt-2 text-quantum-green font-bold">
                   R = 0.042 × (1 - 2×0) = 0.042 bits/bit
+                </div>
+                <div className="mt-2 text-xs text-gray-500">
+                  💡 <span className="text-quantum-blue">Ideal mode (η=1.0)</span>: ~100 photons detected → ~50 sifted bits → S ≈ 0.050
                 </div>
                 <div className="mt-2">Same run with 25% QBER (full Eve):</div>
                 <div className="mt-1 text-gray-400">
@@ -1194,7 +1197,7 @@ export default function GuidePage() {
               <div className="font-mono text-sm text-gray-300 
                               leading-relaxed">
                 {[
-                  { d: 0,   p: 100,  det: 85   },
+                  { d: 0,   p: 100,  det: 85   },  // realistic (η=0.85); ideal: det=100
                   { d: 10,  p: 63.1, det: 53.6 },
                   { d: 25,  p: 31.6, det: 26.9 },
                   { d: 50,  p: 10.0, det: 8.5  },
@@ -1273,7 +1276,8 @@ export default function GuidePage() {
                    style={{ color: 'var(--text-muted)' }}>
                 <span className="text-purple-400">━</span> Photon survival (fiber only)
                 &nbsp;&nbsp;
-                <span className="text-quantum-blue">╌</span> Detected (after η=0.85)
+                <span className="text-quantum-blue">╌</span> Detected (after η=0.85, realistic mode)
+                — ideal mode (η=1.0) overlaps the survival curve
               </div>
             </div>
           </div>

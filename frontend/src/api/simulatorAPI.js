@@ -107,7 +107,7 @@ export function validateParams(params) {
     return 'attack_prob must be between 0 and 1'
   }
 
-  const validStrategies = ['intercept_resend', 'partial', 'burst']
+  const validStrategies = ['intercept_resend', 'partial', 'burst', 'pns']
   if (!validStrategies.includes(attack_strategy)) {
     return `attack_strategy must be one of: ${validStrategies.join(', ')}`
   }

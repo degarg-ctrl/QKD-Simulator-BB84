@@ -51,10 +51,26 @@ const NODE_RADIUS = 28
 export default function QuantumCanvas({ className = '' }) {
 
   const canvasRef = useRef(null)
+  const scrollContainerRef = useRef(null)
+  const wrapperRef = useRef(null)
   const [contextMenu, setContextMenu] = useState(null)
   const [showStateVectors, setShowStateVectors] = useState(true)
   const [hoveredGateId, setHoveredGateId] = useState(null)
-  const { results, animation, params, addGate, placedGates, removeGate, setSelectedGate, deleteGate, copyGate } = useSimulationStore()
+  
+  const { results, animation, params, addGate, placedGates, removeGate, setSelectedGate, deleteGate, copyGate, viewResetSignal } = useSimulationStore()
+
+  // Viewport & Pan states
+  const [scale, setScale] = useState(1)
+  const [toolMode, setToolMode] = useState('cursor') // 'cursor' | 'hand'
+  const [baseWidth, setBaseWidth] = useState(1200)
+  
+  const isDragging = useRef(false)
+  const lastMouse = useRef({ x: 0, y: 0 })
+
+  // Mathematical Size Calculation
+  const zoomedWidth = baseWidth * scale
+  const aspectRatio = CANVAS_HEIGHT / CANVAS_WIDTH
+  const zoomedHeight = zoomedWidth * aspectRatio
 
   const GATE_COLORS = {
     H: '#6366f1', X: '#f59e0b', Y: '#ec4899',
@@ -314,16 +330,19 @@ export default function QuantumCanvas({ className = '' }) {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
-    const { width, height } = canvas
+    const { width, height } = canvas // These are the physical pixel sizes (zoomedWidth * dpr)
 
     const dpr = window.devicePixelRatio || 1
     ctx.save()
-    ctx.scale(dpr, dpr)
-    const logicalWidth = width / dpr
-    const logicalHeight = height / dpr
-    const scaleX = logicalWidth / CANVAS_WIDTH
-    const scaleY = logicalHeight / CANVAS_HEIGHT
-    ctx.scale(scaleX, scaleY)
+    // Reset transform completely before redrawing
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.clearRect(0, 0, width, height)
+    
+    // Scale everything by dpr and then by the dynamic scaling factor (zoomedWidth / 1200)
+    // This maps the 1200x400 internal coordinate system perfectly to the canvas pixels!
+    const scaleFactorX = (zoomedWidth / CANVAS_WIDTH) * dpr
+    const scaleFactorY = (zoomedHeight / CANVAS_HEIGHT) * dpr
+    ctx.scale(scaleFactorX, scaleFactorY)
 
     drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT)
     drawChannelLanes(ctx)
@@ -341,13 +360,14 @@ export default function QuantumCanvas({ className = '' }) {
     drawEntityNode(ctx, EVE_X, ENTITY_Y, 'EVE', eveColor, eveSublabel)
 
     ctx.restore()
-  }, [drawBackground, drawChannelLanes, drawEntityNode, drawGates, params.attack_prob])
+  }, [drawBackground, drawChannelLanes, drawEntityNode, drawGates, params.attack_prob, zoomedWidth, zoomedHeight])
 
   /**
    * Handle gate drop from sidebar drag.
    */
   const handleDrop = useCallback((e) => {
     e.preventDefault()
+    if (toolMode !== 'cursor') return
     const gateType = e.dataTransfer.getData('gateType')
     if (!gateType) return
 
@@ -390,13 +410,14 @@ export default function QuantumCanvas({ className = '' }) {
       position,
       color: GATE_COLORS[gateType] || '#6366f1'
     })
-  }, [addGate, GATE_COLORS, placedGates])
+  }, [addGate, GATE_COLORS, placedGates, toolMode])
 
   /**
    * Handle right-click to remove a gate.
    */
   const handleContextMenu = useCallback((e) => {
     e.preventDefault()
+    if (toolMode !== 'cursor') return
     const canvas = canvasRef.current
     if (!canvas) return
     const rect = canvas.getBoundingClientRect()
@@ -417,121 +438,245 @@ export default function QuantumCanvas({ className = '' }) {
     })
 
     if (clickedGate) removeGate(clickedGate.id)
-  }, [placedGates, removeGate])
+  }, [placedGates, removeGate, toolMode])
 
   // Attach animation loop
   usePhotonAnimation(canvasRef, drawStaticScene)
 
-  // Configure canvas on mount and resize
+  // Canvas Layout Resize Observer
   useEffect(() => {
     const handleResize = () => {
-      const canvas = canvasRef.current
-      if (!canvas) return
-      const dpr = window.devicePixelRatio || 1
-      const container = canvas.parentElement
-      if (!container) return
-      const containerWidth = container.clientWidth
-      const aspectRatio = CANVAS_HEIGHT / CANVAS_WIDTH
-      const logicalHeight = containerWidth * aspectRatio
-      canvas.width = containerWidth * dpr
-      canvas.height = logicalHeight * dpr
-      canvas.style.width = `${containerWidth}px`
-      canvas.style.height = `${logicalHeight}px`
-      drawStaticScene()
+      const wrapper = wrapperRef.current
+      if (!wrapper) return
+      let w = wrapper.clientWidth
+      if (w === 0) return
+      // We enforce a minimum base width so the channel doesn't get completely squished
+      w = Math.max(w, 800)
+      setBaseWidth(w)
     }
 
-    // Watch window resize
-    window.addEventListener('resize', handleResize)
-
-    // Watch container size changes (sidebar expand/collapse)
-    const canvas = canvasRef.current
-    const container = canvas?.parentElement
+    const wrapper = wrapperRef.current
     let resizeObserver = null
-    if (container && window.ResizeObserver) {
+    if (wrapper && window.ResizeObserver) {
       resizeObserver = new ResizeObserver(handleResize)
-      resizeObserver.observe(container)
+      resizeObserver.observe(wrapper)
     }
+    
+    // Initial calculation
+    handleResize()
 
     return () => {
-      window.removeEventListener('resize', handleResize)
       if (resizeObserver) resizeObserver.disconnect()
     }
-  }, [drawStaticScene])
+  }, [])
+
+  // Sync canvas DOM element size to zoomed logic
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const dpr = window.devicePixelRatio || 1
+    canvas.width = zoomedWidth * dpr
+    canvas.height = zoomedHeight * dpr
+    canvas.style.width = `${zoomedWidth}px`
+    canvas.style.height = `${zoomedHeight}px`
+    drawStaticScene()
+  }, [zoomedWidth, zoomedHeight, drawStaticScene])
+
+  // Mouse wheel zoom logic
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    const wheelHandler = (e) => {
+      // Zoom if NOT holding alt. (Vertical scroll if holding alt).
+      if (!e.altKey) {
+        e.preventDefault()
+        const zoomFactor = -e.deltaY * 0.001
+        setScale(s => Math.min(Math.max(0.5, s + zoomFactor), 3))
+      }
+    }
+    
+    if (container) {
+      container.addEventListener('wheel', wheelHandler, { passive: false })
+    }
+    return () => {
+      if (container) container.removeEventListener('wheel', wheelHandler)
+    }
+  }, [])
+
+  // Panning interactions
+  const handleMouseDown = useCallback((e) => {
+    if (toolMode === 'hand') {
+      isDragging.current = true
+      lastMouse.current = { x: e.clientX, y: e.clientY }
+    }
+  }, [toolMode])
+
+  const handleMouseUp = useCallback(() => {
+    isDragging.current = false
+  }, [])
+
+  // Listen to global reset
+  useEffect(() => {
+    if (viewResetSignal > 0) {
+      setScale(1)
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollLeft = 0
+        scrollContainerRef.current.scrollTop = 0
+      }
+    }
+  }, [viewResetSignal])
 
   return (
     <div
-      className={`relative w-full rounded-lg overflow-hidden border shadow-2xl ${className}`}
+      ref={wrapperRef}
+      className={`relative w-full h-full rounded-lg overflow-hidden border shadow-2xl ${className}`}
       style={{ 
         background: '#1a1a2e',
         borderColor: 'rgba(255,255,255,0.08)' 
       }}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={handleDrop}
-      onContextMenu={handleContextMenu}
-      onMouseMove={(e) => {
-        const rect = canvasRef.current?.getBoundingClientRect()
-        if (!rect) return
-        const x = (e.clientX - rect.left) * (CANVAS_WIDTH / rect.width)
-        const y = (e.clientY - rect.top) * (CANVAS_HEIGHT / rect.height)
-        const channelWidth = BOB_X - ALICE_X
-        let foundGate = null
-        placedGates.forEach(gate => {
-          const gateX = ALICE_X + channelWidth * gate.position
-          const laneY = LANE_Y_POSITIONS[gate.lane]
-          const dist = Math.sqrt((x - gateX) ** 2 + (y - laneY) ** 2)
-          if (dist < 20) foundGate = gate.id
-        })
-        setHoveredGateId(foundGate)
-      }}      onClick={(e) => {
-        const rect = canvasRef.current?.getBoundingClientRect()
-        if (!rect) return
-        const x = (e.clientX - rect.left) * (CANVAS_WIDTH / rect.width)
-        const y = (e.clientY - rect.top) * (CANVAS_HEIGHT / rect.height)
-        const channelWidth = BOB_X - ALICE_X
-        placedGates.forEach(gate => {
-          const gateX = ALICE_X + channelWidth * gate.position
-          const laneY = LANE_Y_POSITIONS[gate.lane]
-          const dist = Math.sqrt((x - gateX) ** 2 + (y - laneY) ** 2)
-          if (dist < 20) setSelectedGate(gate)
-        })
-      }}
     >
-      <canvas
-        ref={canvasRef}
-        className="w-full"
-        style={{ display: 'block' }}
-      />
-      <div className="absolute top-4 left-4 text-[10px] text-gray-500 
-                      font-mono tracking-[0.2em] uppercase pointer-events-none">
+      {/* Scrollable Area */}
+      <div 
+        ref={scrollContainerRef}
+        className="absolute inset-0 w-full h-full overflow-auto flex"
+      >
+        <div 
+          className="relative m-auto"
+          style={{
+            width: `${zoomedWidth}px`,
+            height: `${zoomedHeight}px`,
+            cursor: toolMode === 'hand' ? (isDragging.current ? 'grabbing' : 'grab') : 'default'
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => toolMode === 'cursor' && handleDrop(e)}
+          onContextMenu={(e) => toolMode === 'cursor' && handleContextMenu(e)}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onMouseMove={(e) => {
+            if (toolMode === 'hand' && isDragging.current && scrollContainerRef.current) {
+              const dx = e.clientX - lastMouse.current.x
+              const dy = e.clientY - lastMouse.current.y
+              lastMouse.current = { x: e.clientX, y: e.clientY }
+              scrollContainerRef.current.scrollLeft -= dx
+              scrollContainerRef.current.scrollTop -= dy
+              return
+            }
+
+            if (toolMode === 'cursor') {
+              const rect = canvasRef.current?.getBoundingClientRect()
+              if (!rect) return
+              const x = (e.clientX - rect.left) * (CANVAS_WIDTH / rect.width)
+              const y = (e.clientY - rect.top) * (CANVAS_HEIGHT / rect.height)
+              const channelWidth = BOB_X - ALICE_X
+              let foundGate = null
+              placedGates.forEach(gate => {
+                const gateX = ALICE_X + channelWidth * gate.position
+                const laneY = LANE_Y_POSITIONS[gate.lane]
+                const dist = Math.sqrt((x - gateX) ** 2 + (y - laneY) ** 2)
+                if (dist < 20) foundGate = gate.id
+              })
+              setHoveredGateId(foundGate)
+            }
+          }}
+          onClick={(e) => {
+            if (toolMode !== 'cursor') return
+            const rect = canvasRef.current?.getBoundingClientRect()
+            if (!rect) return
+            const x = (e.clientX - rect.left) * (CANVAS_WIDTH / rect.width)
+            const y = (e.clientY - rect.top) * (CANVAS_HEIGHT / rect.height)
+            const channelWidth = BOB_X - ALICE_X
+            placedGates.forEach(gate => {
+              const gateX = ALICE_X + channelWidth * gate.position
+              const laneY = LANE_Y_POSITIONS[gate.lane]
+              const dist = Math.sqrt((x - gateX) ** 2 + (y - laneY) ** 2)
+              if (dist < 20) setSelectedGate(gate)
+            })
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            style={{ display: 'block' }}
+          />
+          
+          {contextMenu && (
+            <GateContextMenu
+              position={{ 
+                x: contextMenu.x * (zoomedWidth / CANVAS_WIDTH), 
+                y: contextMenu.y * (zoomedHeight / CANVAS_HEIGHT) 
+              }}
+              gate={contextMenu.gate}
+              onDelete={() => deleteGate(contextMenu.gate.id)}
+              onCopy={() => copyGate(contextMenu.gate)}
+              onViewMatrix={() => setSelectedGate(contextMenu.gate)}
+              onClose={() => setContextMenu(null)}
+            />
+          )}
+
+          {showStateVectors && placedGates.map((gate) => {
+            const channelWidth = BOB_X - ALICE_X
+            const gateX = ALICE_X + channelWidth * gate.position
+            const laneY = LANE_Y_POSITIONS[gate.lane]
+            
+            const scaleX = zoomedWidth / CANVAS_WIDTH
+            const scaleY = zoomedHeight / CANVAS_HEIGHT
+            
+            return (
+              <div key={gate.id} className="absolute pointer-events-none">
+                <GateStateVector 
+                  gate={gate} 
+                  position={{ x: gateX * scaleX, y: laneY * scaleY }} 
+                  isHovered={hoveredGateId === gate.id} 
+                />
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Floating UI Overlays */}
+      <div className="absolute top-4 left-4 text-[10px] text-gray-500 font-mono tracking-[0.2em] uppercase pointer-events-none">
         Quantum Key Distribution Channel
       </div>
+
+      <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
+        <div className="flex bg-gray-900/80 border border-gray-700 rounded-lg overflow-hidden backdrop-blur-sm shadow-xl">
+          <button 
+            onClick={() => setToolMode('cursor')}
+            className={`px-3 py-1.5 text-sm transition-colors ${toolMode === 'cursor' ? 'bg-cyan-500/20 text-cyan-400' : 'text-gray-400 hover:bg-gray-800'}`}
+            title="Select Mode"
+          >
+            👆
+          </button>
+          <button 
+            onClick={() => setToolMode('hand')}
+            className={`px-3 py-1.5 text-sm transition-colors ${toolMode === 'hand' ? 'bg-cyan-500/20 text-cyan-400' : 'text-gray-400 hover:bg-gray-800'}`}
+            title="Pan Mode"
+          >
+            ✋
+          </button>
+        </div>
+        <button 
+          onClick={() => {
+            setScale(1)
+            if (scrollContainerRef.current) {
+              scrollContainerRef.current.scrollLeft = 0
+              scrollContainerRef.current.scrollTop = 0
+            }
+          }}
+          className="px-3 py-1.5 bg-gray-900/80 border border-gray-700 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-800 backdrop-blur-sm shadow-xl transition-colors font-mono"
+          title="Reset View"
+        >
+          RESET
+        </button>
+      </div>
+
       {results?.secure_threshold_breached && (
-        <div className="absolute top-4 right-4 px-3 py-1 bg-red-950/40 
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-red-950/40 
                         border border-red-500/50 rounded text-red-400 
-                        text-[10px] font-mono tracking-wider animate-pulse">
+                        text-[10px] font-mono tracking-wider animate-pulse pointer-events-none">
           ⚠ SECURITY THRESHOLD BREACHED
         </div>
       )}
-      {contextMenu && (
-        <GateContextMenu
-          position={{ x: contextMenu.x, y: contextMenu.y }}
-          gate={contextMenu.gate}
-          onDelete={() => deleteGate(contextMenu.gate.id)}
-          onCopy={() => copyGate(contextMenu.gate)}
-          onViewMatrix={() => setSelectedGate(contextMenu.gate)}
-          onClose={() => setContextMenu(null)}
-        />
-      )}
-      {showStateVectors && placedGates.map((gate) => {
-        const channelWidth = BOB_X - ALICE_X
-        const gateX = ALICE_X + channelWidth * gate.position
-        const laneY = LANE_Y_POSITIONS[gate.lane]
-        return (
-          <div key={gate.id} className="absolute pointer-events-none">
-            <GateStateVector gate={gate} position={{ x: gateX, y: laneY }} isHovered={hoveredGateId === gate.id} />
-          </div>
-        )
-      })}
     </div>
   )
 }

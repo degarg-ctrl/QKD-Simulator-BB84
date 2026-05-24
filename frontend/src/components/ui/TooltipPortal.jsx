@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -11,6 +11,14 @@ export function TooltipPortal({
   const [visible, setVisible] = useState(false)
   const [coords, setCoords] = useState({ top: 0, left: 0 })
   const triggerRef = useRef(null)
+  const showTimeout = useRef(null)
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (showTimeout.current) clearTimeout(showTimeout.current)
+    }
+  }, [])
 
   const calculatePosition = useCallback(() => {
     if (!triggerRef.current) return
@@ -44,8 +52,16 @@ export function TooltipPortal({
   }, [width])
 
   const handleMouseEnter = () => {
-    calculatePosition()
-    setVisible(true)
+    if (showTimeout.current) clearTimeout(showTimeout.current)
+    showTimeout.current = setTimeout(() => {
+      calculatePosition()
+      setVisible(true)
+    }, 400)
+  }
+
+  const handleMouseLeave = () => {
+    if (showTimeout.current) clearTimeout(showTimeout.current)
+    setVisible(false)
   }
 
   const tooltip = (
@@ -85,7 +101,7 @@ export function TooltipPortal({
     <div
       ref={triggerRef}
       onMouseEnter={handleMouseEnter}
-      onMouseLeave={() => setVisible(false)}
+      onMouseLeave={handleMouseLeave}
       className="inline-flex"
     >
       {children}

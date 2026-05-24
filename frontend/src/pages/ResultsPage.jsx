@@ -45,9 +45,10 @@ function getTheoreticalAtDistance(results, distanceKm) {
 }
 
 // ─── HELPER: compute theoretical survival at distance ─────
-function theoreticalSurvival(distanceKm) {
+// detectorEfficiency: 1.0 for ideal mode, 0.85 for realistic mode
+function theoreticalSurvival(distanceKm, detectorEfficiency = 0.85) {
   const lossdB = 0.2 * distanceKm
-  return Math.pow(10, -lossdB / 10) * 0.85  // * detector efficiency
+  return Math.pow(10, -lossdB / 10) * detectorEfficiency
 }
 
 // ─── HELPER: format delta with sign and color ─────────────
@@ -112,8 +113,11 @@ export default function ResultsPage() {
   const theoretical = getTheoreticalAtDistance(
     results, params.distance_km
   )
+  // Detector efficiency depends on mode:
+  // Ideal = perfect detectors (η=1.0), Realistic = Si-APD (η=0.85)
+  const detectorEta = sourceModel === 'ideal' ? 1.0 : 0.85
   const theoreticalSurvivalRate = theoreticalSurvival(
-    params.distance_km
+    params.distance_km, detectorEta
   )
   const actualSurvivalRate = results.sifted_key_length / 
     params.n_bits * 2  // approximate
