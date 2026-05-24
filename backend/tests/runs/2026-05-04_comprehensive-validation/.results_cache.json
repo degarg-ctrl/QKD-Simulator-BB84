@@ -1,0 +1,63 @@
+[
+  {
+    "section": 8,
+    "test": "qber_valid_range",
+    "reported_qber": 0.15,
+    "threshold_breached": true
+  },
+  {
+    "section": 8,
+    "test": "sifted_key_length_valid",
+    "reported_sifted": 998,
+    "raw_key_length": 2000,
+    "visible_in_bit_stream": 243
+  },
+  {
+    "section": 8,
+    "test": "threshold_breach_consistency",
+    "attack_prob": 0.0,
+    "qber": 0.010101,
+    "reported_breached": false,
+    "expected_breached": false
+  },
+  {
+    "section": 8,
+    "test": "threshold_breach_consistency",
+    "attack_prob": 1.0,
+    "qber": 0.27451,
+    "reported_breached": true,
+    "expected_breached": true
+  },
+  {
+    "section": 8,
+    "test": "skr_zero_when_breached",
+    "skr": 0.0,
+    "breached": true
+  },
+  {
+    "section": 8,
+    "test": "wcp_enabled_mirrored",
+    "requested": false,
+    "reported": false
+  },
+  {
+    "section": 8,
+    "test": "wcp_enabled_mirrored",
+    "requested": true,
+    "reported": true
+  },
+  {
+    "section": 8,
+    "test": "pns_stats_presence",
+    "attack_strategy": "intercept_resend",
+    "pns_stats_non_empty": false,
+    "expected": false
+  },
+  {
+    "section": 8,
+    "test": "pns_stats_presence",
+    "attack_strategy": "pns",
+    "pns_stats_non_empty": true,
+    "expected": true
+  }
+]

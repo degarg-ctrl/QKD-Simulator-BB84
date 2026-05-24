@@ -1,0 +1,28 @@
+﻿# gen_full_test.py - generates tests/test_physics_benchmarks.py
+lines = []
+def L(s): lines.append(s)
+
+L('import sys')
+L('from pathlib import Path')
+L('import numpy as np')
+L('import pytest')
+L('')
+L('_BACKEND_DIR = Path(__file__).parent.parent')
+L('if str(_BACKEND_DIR) not in sys.path:')
+L('    sys.path.insert(0, str(_BACKEND_DIR))')
+L('')
+L('from tests.conftest import run_pipeline, run_pipeline_trials, PipelineResult, TrialResult')
+L('from core.metrics import binary_entropy, compute_skr, compute_efficiency')
+L('from core.channel import QuantumChannel')
+L('from core.constants import DETECTOR_EFFICIENCY, ATTENUATION_COEFF_DB_PER_KM')
+L('from core.alice import Alice')
+L('from core.bob import Bob')
+L('from core.eve import Eve')
+L('from core.protocol import BB84Protocol')
+L('from core.wcp import poisson_photon_counts, classify_pulses')
+L('from core.decoy import assign_decoy_intensities')
+L('from core.pns import PNSAttack')
+L('')
+with open('tests/test_physics_benchmarks.py', 'w', encoding='utf-8') as f:
+    f.write('\n'.join(lines) + '\n')
+print('imports written')

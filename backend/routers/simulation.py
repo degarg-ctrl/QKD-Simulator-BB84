@@ -22,6 +22,7 @@ from core.eve import Eve
 from core.bob import Bob
 from core.protocol import BB84Protocol
 from core.metrics import compute_skr, compute_efficiency, generate_chart_data
+from core.constants import DETECTOR_EFFICIENCY, DARK_COUNT_PROB
 from core.wcp import (poisson_photon_counts, 
                       classify_pulses, 
                       apply_wcp_to_states)
@@ -73,9 +74,14 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             states = alice.encode_states(bits, bases)
 
         # Step 2: Channel
+        # Ideal mode (wcp_enabled=False): perfect detectors — eta=1.0, no dark counts.
+        # This gives the textbook BB84 result: 100% detection at 0km, ~50% sifted key.
+        # Realistic mode (wcp_enabled=True): physical detector — eta=0.85, dark counts active.
         channel = QuantumChannel(
             distance_km=request.distance_km,
-            noise_level=request.noise_level
+            noise_level=request.noise_level,
+            detector_efficiency=DETECTOR_EFFICIENCY if request.wcp_enabled else 1.0,
+            dark_count_prob=DARK_COUNT_PROB if request.wcp_enabled else 0.0
         )
 
         # Step 1.5: WCP model — apply Poisson photon distribution
