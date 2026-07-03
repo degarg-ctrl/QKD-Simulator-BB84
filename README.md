@@ -2,7 +2,7 @@
 
 > **A physics-accurate, interactive web application that simulates the BB84 quantum cryptography protocol — the world's first and most widely deployed method for generating provably secure encryption keys using the laws of quantum mechanics.**
 
-Built for [QtHack04](https://qthack.org) · SRM Institute of Science & Technology · v0.4.0
+v0.4.0
 
 ---
 
