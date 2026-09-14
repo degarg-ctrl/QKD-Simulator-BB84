@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/components/layout/BottomPanel.jsx
  *
  * Bottom results panel: Performance / Transmission / Bit Stream tabs.
@@ -26,9 +26,9 @@ const MAX_FRACTION = 0.45
 
 export default function BottomPanel({ className = '' }) {
   const { results, bottomPanelCollapsed,
-    toggleBottomPanel } = useSimulationStore()
+    toggleBottomPanel, liveArrivals } = useSimulationStore()
   const [activeTab, setActiveTab] = useState('metrics')
-  const [height, setHeight] = useState(240)   // ~26% of a 900px workspace
+  const [height, setHeight] = useState(270)   // comfortable height for charts + disclaimer
   const [isResizing, setIsResizing] = useState(false)
   const panelRef = useRef(null)
   const resizeStart = useRef(null)
@@ -193,15 +193,14 @@ export default function BottomPanel({ className = '' }) {
                 value={results.efficiency.toFixed(1)} unit="%"
                 status={results.efficiency < 5 ? 'warning' : 'normal'} />
             </div>
-            <div className="flex-1 flex flex-col min-w-0 h-full">
+            <div className="flex-1 flex flex-col justify-between min-w-0 h-full">
               <div className="flex-1 grid grid-cols-2 gap-6 min-h-0">
                 <QBERChart data={results.qber_vs_distance}
                   currentQBER={results.qber} />
                 <SKRChart data={results.skr_vs_distance}
                   currentSKR={results.skr} />
               </div>
-              <div className="mt-2 flex items-start gap-2 text-xs
-                              text-[var(--text-subtle)]">
+              <div className="pt-2 mt-1 flex items-center gap-2 text-xs text-[var(--text-subtle)] border-t border-[var(--border-color)]/30 flex-shrink-0">
                 <span className="text-[var(--text-muted)]">ℹ</span>
                 <span>
                   Graph shows the theoretical model across distances.
@@ -218,70 +217,93 @@ export default function BottomPanel({ className = '' }) {
           <TransmissionPanel results={results} />
         )}
 
-        {activeTab === 'bitstream' && (
-          <div className="overflow-auto h-full">
-            <table className="w-full text-xs font-mono">
-              <thead>
-                <tr className="text-[var(--text-muted)]
-                               border-b border-[var(--border-color)] text-left">
-                  <th className="py-2 pr-4">#</th>
-                  <th className="py-2 pr-4">Alice Bit</th>
-                  <th className="py-2 pr-4">A. Basis</th>
-                  <th className="py-2 pr-4">B. Basis</th>
-                  <th className="py-2 pr-4">Bob Bit</th>
-                  <th className="py-2 pr-4">Match</th>
-                  <th className="py-2 pr-4">Intercepted</th>
-                  <th className="py-2">Angle</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.bit_stream.map((photon, i) => (
-                  <tr key={i}
-                    className={`border-b border-[var(--border-color)]
-                        ${photon.intercepted ? 'bg-red-950/20' : ''}
-                        ${photon.match ? '' : 'opacity-40'}`}>
-                    <td className="py-1 pr-4 text-[var(--text-muted)]">
-                      {photon.index}
-                    </td>
-                    <td className="py-1 pr-4 text-[var(--text-muted)]">
-                      {photon.alice_bit}
-                    </td>
-                    <td className="py-1 pr-4" style={{
-                      color: photon.alice_basis === '+'
-                        ? '#00B8E6' : '#c084fc'
-                    }}>
-                      {photon.alice_basis}
-                    </td>
-                    <td className="py-1 pr-4" style={{
-                      color: photon.bob_basis === '+'
-                        ? '#00B8E6' : '#c084fc'
-                    }}>
-                      {photon.bob_basis}
-                    </td>
-                    <td className="py-1 pr-4 text-[var(--text-muted)]">
-                      {photon.bob_bit}
-                    </td>
-                    <td className="py-1 pr-4">
-                      <span className={photon.match
-                        ? 'text-[#22C55E]' : 'text-gray-600'}>
-                        {photon.match ? '✓' : '✕'}
-                      </span>
-                    </td>
-                    <td className="py-1 pr-4">
-                      <span className={photon.intercepted
-                        ? 'text-[#EF4444]' : 'text-gray-600'}>
-                        {photon.intercepted ? '⚡' : '—'}
-                      </span>
-                    </td>
-                    <td className="py-1 text-[var(--text-subtle)]">
-                      {photon.polarization_angle}°
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        {activeTab === 'bitstream' && (() => {
+          const isLive = liveArrivals && liveArrivals.length > 0 && liveArrivals.length < (results.bit_stream?.length || 0)
+          const displayList = (liveArrivals && liveArrivals.length > 0)
+            ? [...liveArrivals].sort((a, b) => a.index - b.index)
+            : (results.bit_stream || [])
+
+          return (
+            <div className="overflow-auto h-full flex flex-col">
+              <div className="px-1 py-1.5 flex items-center justify-between text-xs font-mono text-[var(--text-muted)] border-b border-[var(--border-color)] flex-shrink-0 bg-[var(--panel-bg)]">
+                <div className="flex items-center gap-2">
+                  {isLive ? (
+                    <>
+                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-emerald-400 font-medium">LIVE STREAM:</span>
+                      <span>{displayList.length} / {results.bit_stream?.length} detected photons received</span>
+                    </>
+                  ) : (
+                    <span>Total Detected Photons: {displayList.length}</span>
+                  )}
+                </div>
+                <span className="text-[10px] text-[var(--text-subtle)]">Entries appear as photons are received by Bob</span>
+              </div>
+              <div className="overflow-auto flex-1">
+                <table className="w-full text-xs font-mono">
+                  <thead>
+                    <tr className="text-[var(--text-muted)]
+                                   border-b border-[var(--border-color)] text-left sticky top-0 bg-[var(--panel-bg)]">
+                      <th className="py-2 pr-4">#</th>
+                      <th className="py-2 pr-4">Alice Bit</th>
+                      <th className="py-2 pr-4">A. Basis</th>
+                      <th className="py-2 pr-4">B. Basis</th>
+                      <th className="py-2 pr-4">Bob Bit</th>
+                      <th className="py-2 pr-4">Match</th>
+                      <th className="py-2 pr-4">Intercepted</th>
+                      <th className="py-2">Angle</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayList.map((photon, i) => (
+                      <tr key={`${photon.index}-${i}`}
+                        className={`border-b border-[var(--border-color)]
+                            ${photon.intercepted ? 'bg-red-950/20' : ''}
+                            ${photon.match ? '' : 'opacity-40'}`}>
+                        <td className="py-1 pr-4 text-[var(--text-muted)]">
+                          {photon.index}
+                        </td>
+                        <td className="py-1 pr-4 text-[var(--text-muted)]">
+                          {photon.alice_bit}
+                        </td>
+                        <td className="py-1 pr-4" style={{
+                          color: photon.alice_basis === '+'
+                            ? '#00B8E6' : '#c084fc'
+                        }}>
+                          {photon.alice_basis}
+                        </td>
+                        <td className="py-1 pr-4" style={{
+                          color: photon.bob_basis === '+'
+                            ? '#00B8E6' : '#c084fc'
+                        }}>
+                          {photon.bob_basis}
+                        </td>
+                        <td className="py-1 pr-4 text-[var(--text-muted)]">
+                          {photon.bob_bit}
+                        </td>
+                        <td className="py-1 pr-4">
+                          <span className={photon.match
+                            ? 'text-[#22C55E]' : 'text-gray-600'}>
+                            {photon.match ? '✓' : '✕'}
+                          </span>
+                        </td>
+                        <td className="py-1 pr-4">
+                          <span className={photon.intercepted
+                            ? 'text-[#EF4444]' : 'text-gray-600'}>
+                            {photon.intercepted ? '⚡' : '—'}
+                          </span>
+                        </td>
+                        <td className="py-1 text-[var(--text-subtle)]">
+                          {photon.polarization_angle}°
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )
+        })()}
       </div>
     </div>
   )
