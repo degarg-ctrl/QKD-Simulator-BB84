@@ -19,7 +19,9 @@ Physics reference: PHYSICS_CONTRACT.md Section 10
 """
 
 import numpy as np
-from core.constants import POLARIZATION_ANGLES, STATE_LABELS, BASES
+from typing import Optional
+from core.constants import POLARIZATION_ANGLES, STATE_LABELS
+from core.rng import resolve_rng
 
 # Gate transformation lookup table
 # Maps (gate_type, current_basis, current_bit)
@@ -160,80 +162,98 @@ def apply_gates_to_lane(
 def apply_cloning_probe(
   states: list[dict],
   lane_index: int,
-  probe_position: float
+  probe_position: float,
+  rng: Optional[np.random.Generator] = None,
 ) -> list[dict]:
   """
   Apply No-Cloning Theorem probe to photons on a lane.
-  
-  Simulates Eve's CNOT-based cloning attempt.
-  Per PHYSICS_CONTRACT.md Section 11:
-  - Input: |psi>|0> — original photon + blank probe
-  - Output: entangled state — neither copy equals |psi>
-  - Effect: original photon polarization_angle randomized
-  - QBER impact: adds ~25% error above baseline
-  - Visual signal: sets 'cloning_probe_applied': True
-                   sets 'lane_corrupted': True
-  
-  Only affects photons on lane_index that have been
-  detected (not lost).
-  
+
+  Simulates Eve's CNOT-based cloning attempt at the level of the
+  BB84 states actually in flight. Per PHYSICS_CONTRACT.md Section 11:
+
+  - Input:  |psi>|0>  (original photon + blank probe qubit)
+  - Output: entangled state  (neither copy equals |psi>)
+
+  CNOT mechanics (control = photon, target = probe |0>):
+
+  * Computational (rectilinear '+') states are eigenstates of the
+    CNOT control operation and are left INVARIANT:
+        |0>|0>  ->  |0>|0>
+        |1>|0>  ->  |1>|1>
+    so a '+' photon carries no added error.
+
+  * Diagonal ('x') states become entangled with the probe:
+        |+>|0>  ->  (|00> + |11>)/sqrt(2)
+        |->|0>  ->  (|00> - |11>)/sqrt(2)
+    The photon's reduced state is maximally mixed, so Bob's outcome
+    for such a photon is a uniformly random bit in the diagonal basis
+    (50% error on the sifted key).
+
+  Net QBER contribution: P(x basis)=1/2 times 50% error = ~25% above
+  the channel baseline, exactly as required by the contract. The
+  previous implementation instead randomized every affected photon
+  over all four BB84 states, which produced ~50% disturbance and
+  contradicted the documented ~25% model (audit fix H3).
+
+  NOTE: this is a simplified two-state CNOT demonstration of the
+  no-cloning theorem, not an optimal universal (1->2) cloner and not
+  a claim of a standard cryptographic attack.
+
+  Visual signal: sets 'cloning_probe_applied': True and
+                 'lane_corrupted': True on affected photons.
+  Applies to every photon on lane_index whose slot reached the
+  detector region (detected, including dark-count slots); pulses lost
+  before/at the detector are passed through unchanged.
+
   Args:
       states: photon state list from eve.intercept()
       lane_index: which lane has the cloning probe
-      probe_position: position of probe (0.0-1.0)
+      probe_position: schematic placement of the probe along the lane
+          (0.0-1.0). Accepted for call/UI compatibility but currently
+          has NO physical effect: the CNOT model is applied uniformly
+          to the whole intercepted segment.
+      rng: run-level numpy random generator (optional)
   Returns:
       state list with cloning probe effects applied
-  
+
   Physics reference: PHYSICS_CONTRACT.md Section 11
   """
-  import numpy as np
-  
+  rng = resolve_rng(rng)
+
   result = []
   for state in states:
     photon_lane = state.get('index', 0) % 3
     if photon_lane != lane_index:
       result.append(state)
       continue
-    
+
     # Skip lost photons
     if not state.get('detected', True) and \
        not state.get('dark_count', False):
       result.append(state)
       continue
-    
+
     new_state = state.copy()
-    
-    # CNOT entanglement collapses the original state
-    # Neither original nor clone retains |psi>
-    # Effect: randomize the physical bit and angle
-    # alice_bit and alice_basis are NEVER modified
-    new_state['bit'] = int(np.random.randint(0, 2))
-    
-    # Randomize polarization angle to any of the 4 values
-    new_state['polarization_angle'] = float(
-      np.random.choice([0.0, 45.0, 90.0, 135.0])
-    )
-    
-    # Update basis and state label to match new angle
-    angle_to_state = {
-        0.0:   ('+', 0, '|0>'),
-        90.0:  ('+', 1, '|1>'),
-        45.0:  ('x', 0, '|+>'),
-        135.0: ('x', 1, '|->'),
-    }
-    new_basis, new_bit, new_label = angle_to_state[
-      new_state['polarization_angle']
-    ]
-    new_state['basis'] = new_basis
-    new_state['bit'] = new_bit
-    new_state['state_label'] = new_label
-    
+
+    # alice_bit and alice_basis are NEVER modified.
+    if new_state.get('basis', '+') == 'x':
+      # Diagonal state -> maximally mixed reduced state after CNOT.
+      # Represent the collapsed outcome as a uniform diagonal-basis bit.
+      new_bit = int(rng.integers(0, 2))
+      state_key = ('x', new_bit)
+      new_state['bit'] = new_bit
+      new_state['state_label'] = STATE_LABELS[state_key]
+      new_state['polarization_angle'] = float(
+        POLARIZATION_ANGLES[state_key]
+      )
+    # else: '+' state is CNOT-invariant — polarization unchanged.
+
     # Mark for frontend visualization
     new_state['cloning_probe_applied'] = True
     new_state['lane_corrupted'] = True
-    
+
     result.append(new_state)
-  
+
   return result
 
 
