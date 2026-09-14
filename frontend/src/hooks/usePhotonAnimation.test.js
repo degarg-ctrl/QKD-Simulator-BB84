@@ -40,7 +40,9 @@ vi.hoisted(() => {
 import {
     usePhotonAnimation, createCounters,
     countSkipped, countCompletion, countRelease,
+    formatAliceReadout, formatBobReadout,
 } from './usePhotonAnimation'
+import useSimulationStore from '../store/simulationStore'
 import { PhotonParticle } from '../components/canvas/PhotonParticle'
 import {
     laneForIndex, classifyOutcome, EVENT_OUTCOMES,
@@ -189,19 +191,19 @@ describe('Particle lifecycle invariants', () => {
 
     it('detector-loss photon stays on its lane and dies at Bob', () => {
         const rec = OUTCOME_SAMPLES.detector_loss
-        const p = new PhotonParticle(rec, 1, 1)
+        const p = new PhotonParticle(rec, 0, 1)
         let frames = 0
         while (p.update() && frames < 1500) frames++
         expect(p.outcome).toBe('detector_loss')
         expect(p.x).toBe(1080)
-        expect(p.y).toBe([150, 200, 250][p.laneIndex])
+        expect(p.y).toBe(200)
     })
 
     it('a particle not advanced between frames keeps its position', () => {
         // The scheduler draws without calling update() while paused; a
         // particle is a pure function of its last update, so its state
         // cannot change from drawing/zooming alone.
-        const p = new PhotonParticle(record(), 1, 1)
+        const p = new PhotonParticle(record(), 0, 1)
         for (let i = 0; i < 30; i++) p.update()
         const frozenX = p.x
         const frozenState = p.state
@@ -210,10 +212,82 @@ describe('Particle lifecycle invariants', () => {
     })
 })
 
-describe('Lane mapping is deterministic (backend convention)', () => {
-    it('laneForIndex(i) === i % 3', () => {
+describe('Lane mapping is deterministic (single transmission lane)', () => {
+    it('laneForIndex(i) === 0', () => {
         for (let i = 0; i < 12; i++) {
-            expect(laneForIndex(i)).toBe(i % 3)
+            expect(laneForIndex(i)).toBe(0)
         }
+    })
+})
+
+describe('Alice and Bob dynamic readouts formatting', () => {
+    it('formats Alice readout for rectilinear 0 (0 degrees, |0>)', () => {
+        const rec = record({ alice_bit: 0, alice_basis: '+', alice_polarization_angle: 0 })
+        const alice = formatAliceReadout(rec)
+        expect(alice.bit).toBe(0)
+        expect(alice.basis).toBe('+')
+        expect(alice.angle).toBe(0)
+        expect(alice.label).toBe('|0⟩')
+    })
+
+    it('formats Alice readout for rectilinear 1 (90 degrees, |1>)', () => {
+        const rec = record({ alice_bit: 1, alice_basis: '+', alice_polarization_angle: 90 })
+        const alice = formatAliceReadout(rec)
+        expect(alice.bit).toBe(1)
+        expect(alice.basis).toBe('+')
+        expect(alice.angle).toBe(90)
+        expect(alice.label).toBe('|1⟩')
+    })
+
+    it('formats Alice readout for diagonal 0 (45 degrees, |+>)', () => {
+        const rec = record({ alice_bit: 0, alice_basis: 'x', alice_polarization_angle: 45 })
+        const alice = formatAliceReadout(rec)
+        expect(alice.bit).toBe(0)
+        expect(alice.basis).toBe('x')
+        expect(alice.angle).toBe(45)
+        expect(alice.label).toBe('|+⟩')
+    })
+
+    it('formats Bob readout with match status', () => {
+        const rec = record({ bob_basis: '+', match: true })
+        const bob = formatBobReadout(rec, 'detected')
+        expect(bob.basis).toBe('+')
+        expect(bob.match).toBe(true)
+        expect(bob.status).toBe('detected')
+    })
+})
+
+describe('Dual-mode playback slider in simulationStore', () => {
+    it('sets waves mode on sliderPos <= 50 with proportional speed', () => {
+        const store = useSimulationStore.getState()
+        store.setPlaybackSlider(25) // baseline 1.0x
+        expect(useSimulationStore.getState().animation.mode).toBe('waves')
+        expect(useSimulationStore.getState().animation.speed).toBe(1.0)
+
+        store.setPlaybackSlider(0)
+        expect(useSimulationStore.getState().animation.speed).toBeCloseTo(0.2, 1)
+
+        store.setPlaybackSlider(50)
+        expect(useSimulationStore.getState().animation.speed).toBeCloseTo(3.0, 1)
+    })
+
+    it('sets beam mode on sliderPos > 50 with continuous rate', () => {
+        const store = useSimulationStore.getState()
+        store.setPlaybackSlider(75)
+        const anim = useSimulationStore.getState().animation
+        expect(anim.mode).toBe('beam')
+        expect(anim.beamRate).toBeGreaterThanOrEqual(35)
+        expect(anim.beamRate).toBeLessThanOrEqual(75)
+    })
+
+    it('setSimulationMode snaps sliderPos appropriately', () => {
+        const store = useSimulationStore.getState()
+        store.setSimulationMode('beam')
+        expect(useSimulationStore.getState().animation.mode).toBe('beam')
+        expect(useSimulationStore.getState().animation.sliderPos).toBe(70)
+
+        store.setSimulationMode('waves')
+        expect(useSimulationStore.getState().animation.mode).toBe('waves')
+        expect(useSimulationStore.getState().animation.sliderPos).toBe(25)
     })
 })
