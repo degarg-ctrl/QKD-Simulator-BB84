@@ -32,7 +32,6 @@ import pytest
 # File location: backend/tests/suite/conftest.py
 # Path depth:    suite/ -> tests/ -> backend/  (3 levels up)
 # ---------------------------------------------------------------------------
-_TESTS_DIR   = Path(__file__).parent.parent.parent.parent  # backend/tests/
 _BACKEND_DIR = Path(__file__).parent.parent.parent.parent.parent  # backend/
 if str(_BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(_BACKEND_DIR))
@@ -56,7 +55,8 @@ from core.decoy import assign_decoy_intensities, compute_gains, detect_pns_attac
 @dataclasses.dataclass
 class PipelineResult:
     """Structured output from a single run_pipeline() call."""
-    qber: float
+    qber: float | None        # None when QBER could not be estimated (C1)
+    qber_estimated: bool      # True only when qber is a real estimate
     skr: float
     sifted_key_length: int
     raw_key_length: int
@@ -72,8 +72,8 @@ class PipelineResult:
 @dataclasses.dataclass
 class TrialResult:
     """Averaged output from run_pipeline_trials()."""
-    mean_qber: float
-    std_qber: float
+    mean_qber: float          # NaN if no trial produced an estimable QBER
+    std_qber: float           # NaN if no trial produced an estimable QBER
     mean_skr: float
     mean_sifted_key_length: float
     mean_efficiency: float
@@ -217,8 +217,12 @@ def run_pipeline(
             distance_km=distance_km,
         )
 
+    # C1 fix (2026-09-14): QBER may be None when the sample is too small to
+    # estimate (was silently 0.0). Carry None faithfully; never coerce to 0.
+    qber_value = qber_result['qber']
     return PipelineResult(
-        qber=float(qber_result['qber']),
+        qber=(float(qber_value) if qber_value is not None else None),
+        qber_estimated=bool(qber_result.get('qber_estimated', False)),
         skr=float(skr),
         sifted_key_length=int(sift_result['sifted_count']),
         raw_key_length=int(n_bits),
@@ -258,14 +262,15 @@ def run_pipeline_trials(
         result = run_pipeline(seed=trial_seed, **pipeline_kwargs)
         results.append(result)
 
-    qbers = [r.qber for r in results]
+    # Average only trials with an estimated QBER; do NOT treat None as 0.0.
+    effective_qbers = [r.qber for r in results if r.qber is not None]
     skrs = [r.skr for r in results]
     sifted_lengths = [r.sifted_key_length for r in results]
     efficiencies = [r.efficiency for r in results]
 
     return TrialResult(
-        mean_qber=float(np.mean(qbers)),
-        std_qber=float(np.std(qbers)),
+        mean_qber=float(np.mean(effective_qbers)) if effective_qbers else float('nan'),
+        std_qber=float(np.std(effective_qbers)) if effective_qbers else float('nan'),
         mean_skr=float(np.mean(skrs)),
         mean_sifted_key_length=float(np.mean(sifted_lengths)),
         mean_efficiency=float(np.mean(efficiencies)),
@@ -327,31 +332,27 @@ def results_collector():
 # Session finish hook — serialize results_collector to JSON cache
 # ---------------------------------------------------------------------------
 
+# This conftest lives in its OWN dated run folder
+# (tests/runs/2026-05-02_physics-accuracy/suite/). Its cache must be
+# written there and ONLY there, so running this historical suite can
+# never overwrite another run's evidence (audit M10). The previous
+# implementation picked runs/<most-recently-modified>/ and could write
+# into the 2026-05-04 folder's .results_cache.json.
+_RUN_DIR = Path(__file__).parent.parent  # tests/runs/2026-05-02_physics-accuracy/
+
+
 def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     """
-    Serialize the results_collector list to tests/runs/<latest>/.results_cache.json
-    at the end of the test session. Uses module-level _SESSION_RESULTS.
+    Serialize the results_collector list to THIS run's own
+    .results_cache.json at the end of the session. Uses module-level
+    _SESSION_RESULTS.
 
-    File location: backend/tests/suite/conftest.py
-    Output:        backend/tests/runs/<latest-run-folder>/.results_cache.json
+    Output: tests/runs/2026-05-02_physics-accuracy/.results_cache.json
     """
     if not _SESSION_RESULTS:
         return
 
-    # Write cache into the most recently modified runs/ subfolder,
-    # or fall back to tests/ itself if no runs/ folder exists yet.
-    runs_dir = _TESTS_DIR / 'runs'
-    if runs_dir.exists():
-        run_folders = sorted(
-            [d for d in runs_dir.iterdir() if d.is_dir()],
-            key=lambda d: d.stat().st_mtime,
-            reverse=True,
-        )
-        cache_dir = run_folders[0] if run_folders else _TESTS_DIR
-    else:
-        cache_dir = _TESTS_DIR
-
-    cache_path = cache_dir / '.results_cache.json'
+    cache_path = _RUN_DIR / '.results_cache.json'
     try:
         with open(cache_path, 'w', encoding='utf-8') as f:
             json.dump(_SESSION_RESULTS, f, indent=2, default=str)

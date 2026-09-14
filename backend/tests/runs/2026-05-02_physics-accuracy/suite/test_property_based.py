@@ -259,7 +259,12 @@ def test_sifted_leq_raw_property(params):
 @given(params=pipeline_param_strategy)
 @pipeline_settings
 def test_qber_bounds_property(params):
-    """QBER >= 0.0 for all valid simulation runs.
+    """Estimated QBER >= 0.0 for all valid simulation runs.
+
+    C1 (2026-09-14): QBER may be None when the sifted-key sample is too
+    small to estimate. The non-negativity property applies only to an
+    actually-estimated QBER; None means "not estimated", which is neither
+    zero nor negative and must not be compared numerically.
 
     NOTE: QBER > 0.5 is physically possible for 'burst' strategy when
     noise_level + channel loss compound with concentrated burst errors
@@ -275,6 +280,10 @@ def test_qber_bounds_property(params):
         attack_strategy=params['attack_strategy'],
         seed=42,
     )
+    if not result.qber_estimated:
+        # Not estimated -> nothing numeric to bound.
+        assert result.qber is None
+        return
     assert result.qber >= 0.0, (
         f"QBER non-negativity violated: qber={result.qber:.4f} < 0.0 "
         f"params=({params})"
