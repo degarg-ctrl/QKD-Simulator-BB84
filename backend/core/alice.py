@@ -9,11 +9,13 @@ Physics reference: PHYSICS_CONTRACT.md Sections 1, 2, 3
 """
 
 import numpy as np
+from typing import Optional
 from core.constants import (
     BASES,
     STATE_LABELS,
     POLARIZATION_ANGLES
 )
+from core.rng import resolve_rng
 
 class Alice:
     """
@@ -22,7 +24,14 @@ class Alice:
     All encoding follows BB84 rules:
     - Rectilinear basis (+): |0> at 0deg, |1> at 90deg
     - Diagonal basis (x):    |+> at 45deg, |-> at 135deg
+
+    Randomness is drawn from an injected ``rng`` (the run-level RNG
+    threaded by the router). When omitted, a private generator is
+    created so Alice remains usable standalone (audit fix H7).
     """
+
+    def __init__(self, rng: Optional[np.random.Generator] = None):
+        self.rng = resolve_rng(rng)
 
     def generate_bits(self, n: int) -> np.ndarray:
         """
@@ -35,7 +44,7 @@ class Alice:
         Returns:
             numpy array of n integers, each 0 or 1
         """
-        return np.random.randint(0, 2, n)
+        return self.rng.integers(0, 2, n)
 
     def choose_bases(self, n: int) -> np.ndarray:
         """
@@ -48,7 +57,7 @@ class Alice:
         Returns:
             numpy array of n strings, each '+' or 'x'
         """
-        return np.random.choice(BASES, n)
+        return self.rng.choice(BASES, n)
 
     def encode_states(
         self, 
@@ -75,15 +84,23 @@ class Alice:
               'bit': int,
               'basis': str,
               'state_label': str,
-              'polarization_angle': float
+              'polarization_angle': float,
+              'alice_state_label': str,          # frozen copy
+              'alice_polarization_angle': float  # frozen copy
             }
+
+        The alice_* frozen copies record Alice's ORIGINAL encoding.
+        Downstream stages (Eve re-emission, quantum gates) may mutate
+        'bit'/'basis'/'state_label'/'polarization_angle' to model the
+        physical state in flight, but Alice's original choice must stay
+        available for event records and visualization.
         """
         states = []
         for i in range(len(bits)):
             bit = int(bits[i])
             basis = str(bases[i])
             key = (basis, bit)
-            
+
             states.append({
                 'index': i,
                 'bit': bit,
@@ -91,7 +108,9 @@ class Alice:
                 'alice_bit': bit,
                 'alice_basis': basis,
                 'state_label': STATE_LABELS[key],
-                'polarization_angle': float(POLARIZATION_ANGLES[key])
+                'polarization_angle': float(POLARIZATION_ANGLES[key]),
+                'alice_state_label': STATE_LABELS[key],
+                'alice_polarization_angle': float(POLARIZATION_ANGLES[key])
             })
         return states
 
@@ -110,8 +129,8 @@ class Alice:
         but uses user-provided values instead of random generation.
         
         Args:
-            bits:  list of ints, each 0 or 1 (max 20)
-            bases: list of str, each '+' or 'x' (max 20)
+            bits:  list of ints, each 0 or 1 (max 300)
+            bases: list of str, each '+' or 'x' (max 300)
         Returns:
             list of state dicts identical in structure to
             encode_states() output — fully compatible with
