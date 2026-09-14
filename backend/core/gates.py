@@ -119,6 +119,9 @@ def apply_gates_to_lane(
 
     Gates sorted by position (left to right) and applied in order.
     Only photons where (state['index'] % 3 == lane_index) affected.
+    "Lane" is the deterministic visualization partition (index % 3),
+    not a physical per-lane channel — see PHYSICS_CONTRACT.md Section 10
+    lane identity (audit M14).
     Only detected photons are affected — lost photons pass through.
 
     Args:
@@ -139,8 +142,8 @@ def apply_gates_to_lane(
 
     result = []
     for state in states:
-        # Check if this photon is on the target lane
-        photon_lane = state.get('index', 0) % 3
+        # Check if this photon is on the target lane (default single lane 0)
+        photon_lane = state.get('lane', 0)
         if photon_lane != lane_index:
             result.append(state)
             continue
@@ -222,7 +225,7 @@ def apply_cloning_probe(
 
   result = []
   for state in states:
-    photon_lane = state.get('index', 0) % 3
+    photon_lane = state.get('lane', 0)
     if photon_lane != lane_index:
       result.append(state)
       continue
