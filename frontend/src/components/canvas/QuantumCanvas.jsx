@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/components/canvas/QuantumCanvas.jsx
  *
  * Main quantum channel visualization canvas.
@@ -228,86 +228,74 @@ export default function QuantumCanvas({ className = '' }) {
     const channelLeft = ALICE_X + NODE_RADIUS
     const channelRight = BOB_X - NODE_RADIUS
     const channelWidth = channelRight - channelLeft
-    const envelopeTop = LANE_Y_POSITIONS[0] - 26
-    const envelopeBottom = LANE_Y_POSITIONS[2] + 26
+    const envelopeTop = ENTITY_Y - 26
+    const envelopeBottom = ENTITY_Y + 26
 
-    // ── Fiber envelope: one channel boundary ──────────────────
+    // ── Fiber envelope: single channel beam tube ─────────────
     const grad = ctx.createLinearGradient(channelLeft, 0, channelRight, 0)
-    grad.addColorStop(0, 'rgba(148, 163, 184, 0.10)')
-    grad.addColorStop(1, 'rgba(148, 163, 184, 0.03)')
+    grad.addColorStop(0, 'rgba(148, 163, 184, 0.12)')
+    grad.addColorStop(1, 'rgba(148, 163, 184, 0.04)')
     ctx.fillStyle = grad
     ctx.beginPath()
     ctx.roundRect(channelLeft, envelopeTop, channelWidth,
       envelopeBottom - envelopeTop, 14)
     ctx.fill()
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.22)'
-    ctx.lineWidth = 1
-    ctx.stroke()
-
-    // ── Central optical path (faint guide through all lanes) ──
-    ctx.setLineDash([2, 6])
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)'
     ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(channelLeft, ENTITY_Y)
-    ctx.lineTo(channelRight, ENTITY_Y)
     ctx.stroke()
+
+    // ── Single BB84 transmission path (dashed, fading with distance) ──
+    const laneGrad = ctx.createLinearGradient(channelLeft, 0, channelRight, 0)
+    laneGrad.addColorStop(0, 'rgba(255,255,255,0.65)')
+    laneGrad.addColorStop(1, 'rgba(255,255,255,0.22)')
+    ctx.strokeStyle = laneGrad
+    ctx.lineWidth = 2.5
+    ctx.setLineDash([10, 14])
+
+    if (eveActive) {
+      // Channel segments leading into and out of Eve
+      ctx.beginPath()
+      ctx.moveTo(channelLeft, ENTITY_Y)
+      ctx.lineTo(EVE_X - NODE_RADIUS, ENTITY_Y)
+      ctx.stroke()
+
+      ctx.beginPath()
+      ctx.moveTo(EVE_X + NODE_RADIUS, ENTITY_Y)
+      ctx.lineTo(channelRight, ENTITY_Y)
+      ctx.stroke()
+    } else {
+      // Direct Alice -> Bob uninterrupted channel
+      ctx.beginPath()
+      ctx.moveTo(channelLeft, ENTITY_Y)
+      ctx.lineTo(channelRight, ENTITY_Y)
+      ctx.stroke()
+    }
+
+    // Cloning probe corruption segment on the single lane
     ctx.setLineDash([])
-
-    // ── Visual lanes (dashed, fading with distance) ───────────
-    LANE_Y_POSITIONS.forEach((y, laneIndex) => {
-      const laneGrad = ctx.createLinearGradient(
-        channelLeft, 0, channelRight, 0)
-      laneGrad.addColorStop(0, 'rgba(255,255,255,0.55)')
-      laneGrad.addColorStop(1, 'rgba(255,255,255,0.18)')
-      ctx.strokeStyle = laneGrad
+    const cloningProbes = placedGates.filter(
+      g => g.type === 'clone' || g.type === 'cnot'
+    )
+    if (cloningProbes.length > 0) {
+      const probe = cloningProbes[0]
+      const probeX = ALICE_X + (BOB_X - ALICE_X) * probe.position
+      ctx.beginPath()
+      ctx.setLineDash([4, 4])
+      ctx.strokeStyle = '#ef444470'
       ctx.lineWidth = 2
-      ctx.setLineDash([10, 15])
-
-      if (eveActive) {
-        ctx.beginPath()
-        ctx.moveTo(channelLeft, y)
-        ctx.lineTo(EVE_X - NODE_RADIUS, y)
-        ctx.stroke()
-
-        ctx.beginPath()
-        ctx.moveTo(EVE_X + NODE_RADIUS, y)
-        ctx.lineTo(channelRight, y)
-        ctx.stroke()
-      } else {
-        ctx.beginPath()
-        ctx.moveTo(channelLeft, y)
-        ctx.lineTo(channelRight, y)
-        ctx.stroke()
-      }
-
-      // Cloning probe corruption segment (existing behavior)
+      ctx.moveTo(probeX, ENTITY_Y)
+      ctx.lineTo(channelRight, ENTITY_Y)
+      ctx.stroke()
       ctx.setLineDash([])
-      const cloningProbes = placedGates.filter(
-        g => (g.type === 'clone' || g.type === 'cnot') &&
-          g.lane === laneIndex
-      )
-      if (cloningProbes.length > 0) {
-        const probe = cloningProbes[0]
-        const probeX = ALICE_X + (BOB_X - ALICE_X) * probe.position
-        ctx.beginPath()
-        ctx.setLineDash([4, 4])
-        ctx.strokeStyle = '#ef444460'
-        ctx.lineWidth = 1.5
-        ctx.moveTo(probeX, y)
-        ctx.lineTo(channelRight, y)
-        ctx.stroke()
-        ctx.setLineDash([])
-      }
-    })
+    }
 
     // ── Distance label (top center of the envelope) ───────────
-    ctx.fillStyle = 'rgba(148, 163, 184, 0.75)'
+    ctx.fillStyle = 'rgba(148, 163, 184, 0.85)'
     ctx.font = '10px JetBrains Mono, monospace'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'bottom'
     ctx.fillText(
-      `fiber · ${params.distance_km} km · α = 0.2 dB/km`,
+      `optical fiber · ${params.distance_km} km · α = 0.2 dB/km`,
       (channelLeft + channelRight) / 2, envelopeTop - 6
     )
     ctx.textBaseline = 'alphabetic'
@@ -325,7 +313,7 @@ export default function QuantumCanvas({ className = '' }) {
       // Calculate pixel position
       const channelWidth = BOB_X - ALICE_X
       const gateX = ALICE_X + channelWidth * gate.position
-      const laneY = LANE_Y_POSITIONS[gate.lane]
+      const laneY = LANE_Y_POSITIONS[gate.lane] ?? ENTITY_Y
 
       if (gate.type === 'clone' || gate.type === 'cnot') {
         // Cloning probe — render as red danger symbol
@@ -418,6 +406,227 @@ export default function QuantumCanvas({ className = '' }) {
   }, [])
 
   /**
+   * Draw continuous laser beam when animation mode is 'beam'
+   */
+  const drawContinuousBeam = useCallback((ctx) => {
+    const storeState = useSimulationStore.getState()
+    const isBeam = storeState.animation?.mode === 'beam'
+    const hasResults = storeState.results !== null
+    if (!isBeam || !hasResults) return
+
+    ctx.save()
+    const channelLeft = ALICE_X + NODE_RADIUS
+    const channelRight = BOB_X - NODE_RADIUS
+    const eveActive = params.attack_prob > 0
+    const paused = storeState.animation.isPaused
+    const t = paused ? 0 : (Date.now() / 1000)
+
+    // Attenuation gradient: beam gets slightly dimmer with distance
+    const beamGrad = ctx.createLinearGradient(channelLeft, 0, channelRight, 0)
+    beamGrad.addColorStop(0, 'rgba(0, 229, 255, 0.85)')
+    beamGrad.addColorStop(0.5, 'rgba(0, 204, 255, 0.75)')
+    beamGrad.addColorStop(1, 'rgba(0, 180, 240, 0.60)')
+
+    // 1. Wide outer aura / halo
+    ctx.lineWidth = 14
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.12)'
+    ctx.beginPath()
+    ctx.moveTo(channelLeft, ENTITY_Y)
+    ctx.lineTo(channelRight, ENTITY_Y)
+    ctx.stroke()
+
+    // 2. Focused mid beam
+    ctx.lineWidth = 6
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)'
+    ctx.stroke()
+
+    // 3. High intensity core laser line
+    ctx.lineWidth = 2.5
+    ctx.strokeStyle = beamGrad
+    ctx.stroke()
+
+    // 4. Flowing optical wave ripples (interference fringes)
+    ctx.lineWidth = 2
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)'
+    ctx.setLineDash([14, 16])
+    ctx.lineDashOffset = -t * 80
+    ctx.beginPath()
+    ctx.moveTo(channelLeft, ENTITY_Y)
+    ctx.lineTo(channelRight, ENTITY_Y)
+    ctx.stroke()
+    ctx.setLineDash([])
+
+    // 5. Eve tap refraction if active
+    if (eveActive) {
+      ctx.lineWidth = 8
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.35)'
+      ctx.beginPath()
+      ctx.moveTo(EVE_X, ENTITY_Y)
+      ctx.lineTo(channelRight, ENTITY_Y)
+      ctx.stroke()
+    }
+
+    // 6. Aperture flare at Alice & Collector glow at Bob
+    const aliceGlow = ctx.createRadialGradient(channelLeft, ENTITY_Y, 0, channelLeft, ENTITY_Y, 16)
+    aliceGlow.addColorStop(0, 'rgba(0, 229, 255, 0.8)')
+    aliceGlow.addColorStop(1, 'rgba(0, 229, 255, 0.0)')
+    ctx.fillStyle = aliceGlow
+    ctx.beginPath()
+    ctx.arc(channelLeft, ENTITY_Y, 16, 0, Math.PI * 2)
+    ctx.fill()
+
+    const bobGlow = ctx.createRadialGradient(channelRight, ENTITY_Y, 0, channelRight, ENTITY_Y, 16)
+    bobGlow.addColorStop(0, 'rgba(168, 85, 247, 0.7)')
+    bobGlow.addColorStop(1, 'rgba(168, 85, 247, 0.0)')
+    ctx.fillStyle = bobGlow
+    ctx.beginPath()
+    ctx.arc(channelRight, ENTITY_Y, 16, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.restore()
+  }, [params.attack_prob])
+
+  /**
+   * Draw dynamic live Bit & Basis readout badges above Alice and Bob
+   */
+  const drawAliceAndBobReadouts = useCallback((ctx) => {
+    const storeState = useSimulationStore.getState()
+    const readout = storeState.animation?.activeReadout
+    const alice = readout?.alice
+    const bob = readout?.bob
+    const hasResults = storeState.results !== null
+
+    ctx.save()
+
+    // Helper to draw a badge card
+    const drawBadge = (x, y, w, h, title, titleColor, borderColor, childrenFn) => {
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.90)'
+      ctx.strokeStyle = borderColor
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.roundRect(x - w / 2, y - h / 2, w, h, 6)
+      ctx.fill()
+      ctx.stroke()
+
+      // Header
+      ctx.font = 'bold 8px monospace'
+      ctx.fillStyle = titleColor
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'top'
+      ctx.fillText(title, x, y - h / 2 + 5)
+
+      // Divider line
+      ctx.strokeStyle = borderColor + '40'
+      ctx.lineWidth = 0.75
+      ctx.beginPath()
+      ctx.moveTo(x - w / 2 + 6, y - h / 2 + 16)
+      ctx.lineTo(x + w / 2 - 6, y - h / 2 + 16)
+      ctx.stroke()
+
+      childrenFn(x, y - h / 2 + 18, w, h)
+    }
+
+    // ── Alice Card (above Alice at X=ALICE_X, Y=ENTITY_Y - 90) ──
+    const cardW = 120
+    const cardH = 58
+    const aliceY = ENTITY_Y - 90
+    const isAliceActive = hasResults && alice?.basis
+
+    drawBadge(
+      ALICE_X, aliceY, cardW, cardH,
+      'ALICE ENCODING',
+      '#00e5ff',
+      isAliceActive ? 'rgba(0, 229, 255, 0.6)' : 'rgba(148, 163, 184, 0.25)',
+      (cx, topY) => {
+        if (!hasResults || !alice?.basis) {
+          ctx.font = '9px monospace'
+          ctx.fillStyle = '#64748b'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText('AWAITING PULSE', cx, topY + 14)
+          return
+        }
+
+        const isRect = alice.basis === '+'
+        const basisColor = isRect ? '#00e5ff' : '#d946ef'
+        const basisSymbol = isRect ? '+' : '×'
+
+        // Row 1: Bit & Basis
+        ctx.font = 'bold 11px monospace'
+        ctx.textAlign = 'left'
+        ctx.fillStyle = '#ffffff'
+        ctx.fillText(`Bit:`, cx - cardW / 2 + 10, topY + 6)
+        ctx.fillStyle = '#38bdf8'
+        ctx.fillText(`${alice.bit}`, cx - cardW / 2 + 38, topY + 6)
+
+        ctx.fillStyle = '#ffffff'
+        ctx.fillText(`Basis:`, cx + 6, topY + 6)
+        ctx.fillStyle = basisColor
+        ctx.fillText(`[ ${basisSymbol} ]`, cx + 50, topY + 6)
+
+        // Row 2: State label and rotation angle
+        ctx.font = '10px monospace'
+        ctx.fillStyle = basisColor
+        ctx.fillText(`${alice.label || ''}`, cx - cardW / 2 + 10, topY + 22)
+        ctx.fillStyle = '#94a3b8'
+        ctx.fillText(`Rot:`, cx + 6, topY + 22)
+        ctx.fillStyle = '#f1f5f9'
+        ctx.fillText(`${alice.angle}°`, cx + 38, topY + 22)
+      }
+    )
+
+    // ── Bob Card (above Bob at X=BOB_X, Y=ENTITY_Y - 90) ──
+    const bobY = ENTITY_Y - 90
+    const isBobActive = hasResults && bob?.basis
+
+    drawBadge(
+      BOB_X, bobY, cardW, cardH,
+      'BOB MEASUREMENT',
+      '#c084fc',
+      isBobActive ? 'rgba(192, 132, 252, 0.6)' : 'rgba(148, 163, 184, 0.25)',
+      (cx, topY) => {
+        if (!hasResults || !bob?.basis) {
+          ctx.font = '9px monospace'
+          ctx.fillStyle = '#64748b'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText('AWAITING PHOTON', cx, topY + 14)
+          return
+        }
+
+        const isRect = bob.basis === '+'
+        const basisColor = isRect ? '#00e5ff' : '#d946ef'
+        const basisSymbol = isRect ? '+' : '×'
+
+        // Row 1: Selected Basis
+        ctx.font = 'bold 11px monospace'
+        ctx.textAlign = 'left'
+        ctx.fillStyle = '#ffffff'
+        ctx.fillText(`Basis:`, cx - cardW / 2 + 10, topY + 6)
+        ctx.fillStyle = basisColor
+        ctx.fillText(`[ ${basisSymbol} ]`, cx - cardW / 2 + 54, topY + 6)
+
+        // Row 2: Match / Status
+        ctx.font = 'bold 9px monospace'
+        if (bob.status === 'detected') {
+          if (bob.match) {
+            ctx.fillStyle = '#22c55e'
+            ctx.fillText('MATCH ✓ (SIFTED)', cx - cardW / 2 + 10, topY + 22)
+          } else {
+            ctx.fillStyle = '#f59e0b'
+            ctx.fillText('MISMATCH ✗', cx - cardW / 2 + 10, topY + 22)
+          }
+        } else {
+          ctx.fillStyle = '#38bdf8'
+          ctx.fillText('IN FLIGHT...', cx - cardW / 2 + 10, topY + 22)
+        }
+      }
+    )
+
+    ctx.restore()
+  }, [])
+
+  /**
    * Main render function for static elements.
    * Called by usePhotonAnimation every frame.
    */
@@ -444,6 +653,7 @@ export default function QuantumCanvas({ className = '' }) {
     const canvasBg = computedStyle.getPropertyValue('--canvas-bg').trim() || '#1a1a2e'
     drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT, canvasBg)
     drawChannelLanes(ctx)
+    drawContinuousBeam(ctx)
     drawGates(ctx)
 
     const sourceModel = params.wcp_enabled ? 'WCP source' : 'Single-photon'
@@ -465,8 +675,11 @@ export default function QuantumCanvas({ className = '' }) {
       : 'Inactive'
     drawEntityNode(ctx, EVE_X, ENTITY_Y, 'EVE', eveColor, eveSublabel, 'eve')
 
+    // Live Alice & Bob state readouts
+    drawAliceAndBobReadouts(ctx)
+
     ctx.restore()
-  }, [drawBackground, drawChannelLanes, drawEntityNode, drawGates,
+  }, [drawBackground, drawChannelLanes, drawContinuousBeam, drawAliceAndBobReadouts, drawEntityNode, drawGates,
     params.attack_prob, params.attack_strategy, params.wcp_enabled,
     zoomedWidth, zoomedHeight])
 
@@ -550,7 +763,7 @@ export default function QuantumCanvas({ className = '' }) {
     const clickedGate = placedGates.find(gate => {
       const channelWidth = BOB_X - ALICE_X
       const gateX = ALICE_X + channelWidth * gate.position
-      const laneY = LANE_Y_POSITIONS[gate.lane]
+      const laneY = LANE_Y_POSITIONS[gate.lane] ?? ENTITY_Y
       const dist = Math.sqrt((canvasX - gateX) ** 2 + (canvasY - laneY) ** 2)
       return dist < 20
     })
