@@ -33,7 +33,8 @@ const useSimulationStore = create((set, get) => ({
   /*
   results shape when populated (mirrors SimulationResponse):
   {
-    qber: float,
+    qber: float | null,   // null when not estimated (insufficient sample)
+    qber_estimated: bool, // false when qber is null; do NOT read null as 0
     skr: float,
     sifted_key_length: int,
     raw_key_length: int,
@@ -70,7 +71,7 @@ const useSimulationStore = create((set, get) => ({
   // ─── EXPERIMENT STATE ────────────────────────────────────
   activeExperiment: null,
   // null = free mode, 'exp1'-'exp6' = experiment mode
-  
+
   experimentModalOpen: false,
   experimentModalId: null,
 
@@ -227,14 +228,18 @@ const useSimulationStore = create((set, get) => ({
   }),
 
   openInspector: () => set((state) => ({
-    inspector: { ...state.inspector, isOpen: true, 
-                 currentIndex: 0, isPlaying: false },
+    inspector: {
+      ...state.inspector, isOpen: true,
+      currentIndex: 0, isPlaying: false
+    },
     bottomPanelCollapsed: true
   })),
 
   closeInspector: () => set((state) => ({
-    inspector: { ...state.inspector, isOpen: false, 
-                 isPlaying: false },
+    inspector: {
+      ...state.inspector, isOpen: false,
+      isPlaying: false
+    },
     bottomPanelCollapsed: false
   })),
 
@@ -246,8 +251,8 @@ const useSimulationStore = create((set, get) => ({
     inspector: { ...state.inspector, isPlaying }
   })),
 
-  setBottomPanelCollapsed: (collapsed) => set({ 
-    bottomPanelCollapsed: collapsed 
+  setBottomPanelCollapsed: (collapsed) => set({
+    bottomPanelCollapsed: collapsed
   }),
 
   toggleBottomPanel: () => set((state) => ({
@@ -308,9 +313,12 @@ const useSimulationStore = create((set, get) => ({
     placedGates: [...state.placedGates, { ...gate, id: `gate-${gate.type}-${Date.now()}`, position: gate.position + 0.1 }]
   })),
   getHasResults: () => get().results !== null,
-  getIsThresholdBreached: () => 
+  getIsThresholdBreached: () =>
     get().results?.secure_threshold_breached ?? false,
-  getQBER: () => get().results?.qber ?? 0,
+  // Returns null (not 0) when QBER was not estimated, so callers can
+  // distinguish "unestimated" from a measured QBER=0. (Audit fix C1.)
+  getQBER: () => get().results?.qber ?? null,
+  getQberEstimated: () => get().results?.qber_estimated ?? false,
   getSKR: () => get().results?.skr ?? 0,
 
 }))

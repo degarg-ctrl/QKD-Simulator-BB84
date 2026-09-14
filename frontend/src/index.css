@@ -14,27 +14,33 @@
 @layer base {
   :root {
     color-scheme: dark;
+    /* Semantic accents — solid colors, no glow styling */
+    --accent: #00B8E6;
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --neutral: #94A3B8;
     --bg-primary: #2a2a2a;
     --bg-secondary: #333338;
     --bg-panel: #242424;
     --bg-dark: #1e1e1e;
-    --border-white: rgba(255,255,255,0.15);
-    
+    --border-white: rgba(255, 255, 255, 0.15);
+
     --canvas-bg: #2a2a2a;
     --panel-bg: #242424;
     --panel-dark: #1e1e1e;
-    --border-color: rgba(255,255,255,0.2);
+    --border-color: rgba(255, 255, 255, 0.2);
     --text-primary: #ffffff;
     --text-secondary: #d1d5db;
     --text-muted: #9ca3af;
     --text-subtle: #6b7280;
 
     --card-bg: #2f2f35;
-    --card-border: rgba(255,255,255,0.1);
+    --card-border: rgba(255, 255, 255, 0.1);
     --code-bg: #1a1a2e;
     --input-bg: #333338;
-    --input-border: rgba(255,255,255,0.15);
-    --panel-border: rgba(255,255,255,0.1);
+    --input-border: rgba(255, 255, 255, 0.15);
+    --panel-border: rgba(255, 255, 255, 0.1);
     --tooltip-bg: #1a1a22;
     --scrollbar-thumb: rgba(255, 255, 255, 0.15);
     --scrollbar-thumb-hover: rgba(255, 255, 255, 0.25);
@@ -47,29 +53,29 @@
     --bg-secondary: #e4e4ea;
     --bg-panel: #e4e4ea;
     --bg-dark: #d8d8e0;
-    --border-white: rgba(0,0,0,0.1);
+    --border-white: rgba(0, 0, 0, 0.1);
 
     --canvas-bg: #f4f4f5;
     --panel-bg: #e8e8ee;
     --panel-dark: #dcdce4;
-    --panel-border: rgba(0,0,0,0.12);
-    --border-color: rgba(0,0,0,0.15);
+    --panel-border: rgba(0, 0, 0, 0.12);
+    --border-color: rgba(0, 0, 0, 0.15);
     --text-primary: #1a1a2e;
     --text-secondary: #3a3a4a;
     --text-muted: #5a5a6e;
     --text-subtle: #7a7a8e;
 
     --card-bg: #e0e0e8;
-    --card-border: rgba(0,0,0,0.1);
+    --card-border: rgba(0, 0, 0, 0.1);
     --code-bg: #d8d8e2;
     --input-bg: #d4d4dc;
-    --input-border: rgba(0,0,0,0.18);
+    --input-border: rgba(0, 0, 0, 0.18);
     --tooltip-bg: #e0e0e8;
     --scrollbar-thumb: rgba(0, 0, 0, 0.2);
     --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
     --scrollbar-thumb-active: rgba(0, 0, 0, 0.45);
   }
-  
+
   body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
@@ -82,19 +88,23 @@
   width: 14px;
   height: 14px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb);
   border: 5px solid transparent;
   background-clip: padding-box;
   border-radius: 14px;
 }
+
 :hover::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb-hover);
   border-width: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--scrollbar-thumb-active);
   border-width: 3px;

@@ -21,7 +21,7 @@ const BASE_URL = import.meta.env.DEV
  * @param {number} params.distance_km     - Fiber distance in km (0-150)
  * @param {number} params.noise_level     - Background noise (0-1)
  * @param {number} params.attack_prob     - Eve interception probability (0-1)
- * @param {string} params.attack_strategy - 'intercept_resend'|'partial'|'burst'
+ * @param {string} params.attack_strategy - 'intercept_resend'|'partial'|'burst'|'pns'
  *
  * @returns {Promise<SimulationResponse>} Full simulation results
  * @throws {Error} If network fails or backend returns non-200
