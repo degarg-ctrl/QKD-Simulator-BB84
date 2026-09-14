@@ -22,12 +22,11 @@ export const ALICE_X = 120
 export const BOB_X = 1080
 export const EVE_X = 600
 export const ENTITY_Y = 200
-export const LANE_Y_POSITIONS = [150, 200, 250]  // 3 VISUAL lanes
+export const LANE_Y_POSITIONS = [200]  // Single BB84 transmission path (Alice -> Eve -> Bob)
 export const NODE_RADIUS = 28
 
-// The three lanes are ONE physical channel, split only for visual
-// readability (see PHYSICS_CONTRACT "Visual lanes").
-export const LANE_COUNT = LANE_Y_POSITIONS.length
+// Single BB84 optical channel transmission path
+export const LANE_COUNT = 1
 
 // ─── Palette ──────────────────────────────────────────────────────
 // Polished scientific palette. Basis colors are the primary state
@@ -157,15 +156,12 @@ export function stateLabel(basis, bit) {
 // ─── Deterministic layout helpers ─────────────────────────────────
 
 /**
- * Visual lane for a pulse: index % 3.
+ * Visual lane for a pulse.
  *
- * DETERMINISTIC and consistent with the backend gate-lane mapping
- * (core/gates.py applies gates to photons with index % 3 == lane),
- * so gate visuals and particle lanes always agree.
- * The lanes are purely visual — one physical channel.
+ * Single transmission lane: all pulses travel on the single BB84 channel (lane 0).
  */
 export function laneForIndex(index) {
-    return ((index % LANE_COUNT) + LANE_COUNT) % LANE_COUNT
+    return 0
 }
 
 // Golden ratio — produces a well-distributed, deterministic sequence
@@ -206,23 +202,23 @@ export const BASE_VELOCITY_PX = 3.2
 // no visible overlap.
 export const MIN_SPACING_PX = 26
 
+// Baseline frames between consecutive photon releases in waves mode (~1.5s at 60 FPS)
+export const BASE_RELEASE_INTERVAL_FRAMES = 90
+
 /**
  * Minimum frames between two launches on the SAME lane so that the
  * second particle can never catch the first (same velocity) —
- * guarantees MIN_SPACING_PX separation for same-speed travel.
+ * guarantees ~288 px visual separation for same-speed travel.
  */
 export function minLaneGapFrames(speed = 1) {
-    const velocity = BASE_VELOCITY_PX * Math.max(0.05, speed)
-    return Math.max(1, Math.ceil(MIN_SPACING_PX / velocity))
+    return Math.max(8, Math.round(BASE_RELEASE_INTERVAL_FRAMES / Math.max(0.1, speed)))
 }
 
 /**
- * Global release interval (frames between consecutive launches,
- * across all lanes). With 3 lanes served round-robin (index % 3),
- * this keeps the stream dense but staggered. Never below the
- * per-lane constraint implied by minLaneGapFrames / LANE_COUNT.
+ * Global release interval in waves mode.
+ * At 1.0x speed, launches a photon every ~1.5s (90 frames).
+ * Scales dynamically with speed while keeping spatial separation constant.
  */
 export function releaseIntervalFrames(speed = 1) {
-    const perLane = minLaneGapFrames(speed)
-    return Math.max(2, Math.ceil(perLane / LANE_COUNT))
+    return Math.max(8, Math.round(BASE_RELEASE_INTERVAL_FRAMES / Math.max(0.1, speed)))
 }

@@ -105,10 +105,9 @@ export class PhotonParticle {
     this.fiberLossX = ALICE_X + (BOB_X - ALICE_X) *
       fiberLossFraction(record.index)
     this.detached = false
-    // Deterministic diagonal drift direction (visual-only): lanes
-    // above center drift up, lanes below drift down, center lane
-    // drifts down. Keeps lost photons clear of the surviving stream.
-    this.driftDir = laneIndex <= 1 ? -1 : 1
+    // Deterministic diagonal drift direction (visual-only): alternates
+    // upwards (-1) and downwards (+1) away from the central single lane.
+    this.driftDir = (Math.abs(record.index) % 2 === 0) ? -1 : 1
 
     // ── Lifecycle ──────────────────────────────────────────────
     // 'emitting' | 'travelling' | 'evePause' | 'fading' | 'arrived'
@@ -117,6 +116,14 @@ export class PhotonParticle {
     this.opacity = 1.0
     this.radius = 7
     this.glowRadius = 14
+
+    // ── Live event reporting flags ─────────────────────────────
+    this.justLostInFiber = false
+    this.justArrivedAtBob = false
+    this.justEveIntercepted = false
+    this._fiberLossReported = false
+    this._arrivalReported = false
+    this._eveReported = false
 
     // Effect timers (frames remaining)
     this.evePauseTimer = 0
@@ -160,6 +167,7 @@ export class PhotonParticle {
     // ── Eve interaction ────────────────────────────────────────
     if (this.intercepted && !this.hasPassedEve && this.x >= EVE_X) {
       this.hasPassedEve = true
+      this.justEveIntercepted = true
       this.state = 'evePause'
       this.evePauseTimer = EVE_PAUSE_FRAMES
       this.eveEffectTimer = EVE_EFFECT_FRAMES
@@ -211,6 +219,7 @@ export class PhotonParticle {
       this.x = this.fiberLossX
       this.state = 'fading'
       this.detached = true
+      this.justLostInFiber = true
       this.lossFadeTimer = LOSS_FADE_FRAMES
     }
 
@@ -223,6 +232,7 @@ export class PhotonParticle {
     // ── Arrival at Bob ─────────────────────────────────────────
     if (this.state === 'travelling' && this.x >= BOB_X) {
       this.x = BOB_X
+      this.justArrivedAtBob = true
       if (this.outcome === 'detected') {
         this.state = 'arrived'
         this.arrivalFlashTimer = ARRIVAL_FLASH_FRAMES

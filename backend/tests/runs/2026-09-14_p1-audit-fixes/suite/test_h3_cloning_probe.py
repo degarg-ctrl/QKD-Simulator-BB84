@@ -39,7 +39,7 @@ class TestCNOTUnit:
     def test_rectilinear_states_invariant(self):
         """CNOT leaves |0> and |1> unchanged (no added error)."""
         out = apply_cloning_probe(_four_states(), 0, 0.5)
-        # indices 0 and 3 are lane 0; only index 0 is rectilinear
+        # indices 0 and 1 are rectilinear (+ basis)
         assert out[0]['basis'] == '+'
         assert out[0]['bit'] == 0
         assert out[0]['state_label'] == '|0>'
@@ -48,8 +48,8 @@ class TestCNOTUnit:
 
     def test_diagonal_state_becomes_mixed_diagonal(self):
         """A disturbed 'x' photon stays a valid diagonal BB84 state."""
-        out = apply_cloning_probe(_four_states(), 2, 0.5)
-        # index 2 (lane 2) is the diagonal 'x' photon
+        out = apply_cloning_probe(_four_states(), 0, 0.5)
+        # index 2 is the diagonal 'x' photon
         assert out[2]['basis'] == 'x'
         assert out[2]['bit'] in (0, 1)
         key = (out[2]['basis'], out[2]['bit'])
@@ -69,15 +69,16 @@ class TestCNOTUnit:
             assert s['alice_basis'] in ('+', 'x')
 
     def test_other_lanes_untouched(self):
-        out = apply_cloning_probe(_four_states(), 0, 0.5)
+        states = _four_states()
+        states[1]['lane'] = 1  # photon marked on other lane
+        out = apply_cloning_probe(states, 0, 0.5)
         assert 'cloning_probe_applied' not in out[1]
-        assert 'cloning_probe_applied' not in out[2]
 
 
 class TestCNOTStatistics:
     def test_all_lanes_probe_gives_25_percent(self, pipeline):
         """
-        Probes on all three lanes disturb the whole stream: overall
+        Probes on the channel disturb the whole stream: overall
         sifted QBER ~25% (not ~50%).
         """
         res = pipeline(
@@ -96,8 +97,8 @@ class TestCNOTStatistics:
             f"(n_sifted={n_sifted})"
         )
 
-    def test_single_lane_probe_scales_by_one_third(self, pipeline):
-        """One lane carries 1/3 of photons -> ~25%/3 ~ 8.3% QBER."""
+    def test_single_lane_probe_gives_25_percent(self, pipeline):
+        """Single transmission lane carries 100% of photons -> ~25% QBER."""
         res = pipeline(
             n_bits=6000, distance_km=0.0, noise_level=0.0,
             attack_prob=0.0, seed=2025,
@@ -105,8 +106,8 @@ class TestCNOTStatistics:
         )
         qber, n_sifted = sifted_qber(res['measured_states'])
         assert n_sifted > 500
-        assert 0.04 <= qber <= 0.13, (
-            f"single-lane cloning QBER {qber:.3f} not ~1/3 of 25%"
+        assert 0.20 <= qber <= 0.30, (
+            f"single-lane cloning QBER {qber:.3f} not ~25%"
         )
 
     def test_old_full_randomisation_would_exceed_bound(self, pipeline):

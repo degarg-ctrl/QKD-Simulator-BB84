@@ -48,7 +48,6 @@ export default function SimulatorPage() {
   if (activeView === 'results') {
     return (
       <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--canvas-bg)' }}>
-        <UniversalTopBar />
         <SimulatorControls />
         <div className="flex-1 overflow-hidden">
           <ResultsPage />
@@ -61,7 +60,6 @@ export default function SimulatorPage() {
   // Simulator Page
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--canvas-bg)' }}>
-      <UniversalTopBar />
       <SimulatorControls />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

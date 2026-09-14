@@ -58,11 +58,19 @@ const useSimulationStore = create((set, get) => ({
   animation: {
     isPlaying: false,
     currentPhotonIndex: 0,
-    speed: 0.5,          // multiplier: 0.5 = slow, 1.0 = normal, 2.0 = fast
+    mode: 'waves',        // 'waves' (discrete photons with ~1.5s delay) | 'beam' (continuous laser)
+    speed: 1.0,           // multiplier for waves (0.2x to 3.0x, baseline 1.0x)
+    beamRate: 35,         // photons / sec in beam mode (10 to 120 photons/s)
+    sliderPos: 25,        // normalized 0-100 position (0-50 = waves, 50-100 = beam)
     completedPhotons: [], // photons that have finished traveling
-    activePhotons: [],     // photons currently in flight on canvas
-    isPaused: false
+    activePhotons: [],    // photons currently in flight on canvas
+    isPaused: false,
+    activeReadout: {
+      alice: { bit: null, basis: null, angle: null, label: null, photonIndex: null },
+      bob: { basis: null, match: null, photonIndex: null, status: 'idle' }
+    }
   },
+  liveArrivals: [],        // photons that have arrived at Bob in real time
 
   // ─── GATES ───────────────────────────────────────────────
   // Gates placed on canvas lanes by user drag-drop
@@ -138,6 +146,80 @@ const useSimulationStore = create((set, get) => ({
     animation: { ...state.animation, speed }
   })),
 
+  setSimulationMode: (mode) => set((state) => {
+    const sliderPos = mode === 'beam' ? 70 : 25
+    return {
+      animation: {
+        ...state.animation,
+        mode,
+        sliderPos,
+      }
+    }
+  }),
+
+  setPlaybackSlider: (sliderPos) => set((state) => {
+    const clamped = Math.max(0, Math.min(100, sliderPos))
+    if (clamped <= 50) {
+      // 0 to 50: Waves mode (0.2x to 3.0x; 25 is 1.0x baseline)
+      let speed
+      if (clamped <= 25) {
+        speed = 0.2 + (clamped / 25) * (1.0 - 0.2)
+      } else {
+        speed = 1.0 + ((clamped - 25) / 25) * (3.0 - 1.0)
+      }
+      return {
+        animation: {
+          ...state.animation,
+          mode: 'waves',
+          speed: parseFloat(speed.toFixed(2)),
+          sliderPos: clamped,
+        }
+      }
+    } else {
+      // 50 to 100: Beam mode (10 to 120 photons/s; 75 is 40 photons/s)
+      const frac = (clamped - 50) / 50
+      const beamRate = Math.round(10 + frac * 110)
+      return {
+        animation: {
+          ...state.animation,
+          mode: 'beam',
+          beamRate,
+          sliderPos: clamped,
+        }
+      }
+    }
+  }),
+
+  updateAliceReadout: (aliceData) => set((state) => ({
+    animation: {
+      ...state.animation,
+      activeReadout: {
+        ...state.animation.activeReadout,
+        alice: { ...state.animation.activeReadout.alice, ...aliceData }
+      }
+    }
+  })),
+
+  updateBobReadout: (bobData) => set((state) => ({
+    animation: {
+      ...state.animation,
+      activeReadout: {
+        ...state.animation.activeReadout,
+        bob: { ...state.animation.activeReadout.bob, ...bobData }
+      }
+    }
+  })),
+
+  resetReadouts: () => set((state) => ({
+    animation: {
+      ...state.animation,
+      activeReadout: {
+        alice: { bit: null, basis: null, angle: null, label: null, photonIndex: null },
+        bob: { basis: null, match: null, photonIndex: null, status: 'idle' }
+      }
+    }
+  })),
+
   pauseAnimation: () => set((state) => ({
     animation: { ...state.animation, isPaused: true }
   })),
@@ -182,11 +264,16 @@ const useSimulationStore = create((set, get) => ({
     error: null,
     placedGates: [],
     animation: {
+      ...state.animation,
       isPlaying: false,
       currentPhotonIndex: 0,
-      speed: 0.5,
       completedPhotons: [],
-      activePhotons: []
+      activePhotons: [],
+      isPaused: false,
+      activeReadout: {
+        alice: { bit: null, basis: null, angle: null, label: null, photonIndex: null },
+        bob: { basis: null, match: null, photonIndex: null, status: 'idle' }
+      }
     },
     inspector: {
       isOpen: false,
@@ -197,8 +284,17 @@ const useSimulationStore = create((set, get) => ({
     bottomPanelCollapsed: false,
     syncMode: false,
     sourceModel: 'ideal',
+    liveArrivals: [],
     viewResetSignal: (state.viewResetSignal || 0) + 1,
   })),
+
+  appendLiveArrivals: (newArrivals) => set((state) => ({
+    liveArrivals: [...state.liveArrivals, ...newArrivals]
+  })),
+
+  setLiveArrivals: (arrivals) => set({ liveArrivals: arrivals }),
+
+  resetLiveArrivals: () => set({ liveArrivals: [] }),
 
   addGate: (gate) => set((state) => ({
     placedGates: [...state.placedGates, {

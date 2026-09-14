@@ -282,7 +282,8 @@ All physics values below are enforced by [PHYSICS_CONTRACT.md](docs/PHYSICS_CONT
 |:--------|:---------|
 | **Channel attenuation** | `P_survive = 10^(−0.2 × d_km / 10)` |
 | **Detection probability** | `P_detect = P_survive × η + P_dark × (1 − P_survive × η)` |
-| **Eve QBER contribution** | `QBER_eve = 0.25 × attack_prob` |
+| **Sifted-bit QBER (authoritative)** | `Q_signal = pn + p/4 − (p/2)·pn`, then `Q = Q_signal·(1 − dark_fraction) + 0.5·dark_fraction` (see `PHYSICS_CONTRACT.md` §6.1) |
+| **Eve QBER contribution** | `QBER_eve = 0.25 × attack_prob` (contribution to `pn` only; combined multiplicatively as above, never added to total QBER) |
 | **Binary entropy** | `H(Q) = −Q·log₂(Q) − (1−Q)·log₂(1−Q)` |
 | **Secret Key Rate** | `SKR = S × (1 − 2·H(Q))`, 0 if QBER ≥ 0.11 |
 | **WCP photon distribution** | `P(n\|μ) = e^(−μ) × μⁿ / n!` (Poisson) |

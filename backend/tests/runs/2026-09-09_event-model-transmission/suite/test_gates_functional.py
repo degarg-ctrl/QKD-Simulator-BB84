@@ -95,26 +95,37 @@ class TestIndividualGates:
 
 
 class TestLaneMapping:
-    """Gates apply ONLY to photons on the matching lane (index%3)."""
+    """Gates apply to photons on the transmission lane."""
 
-    def test_gate_on_lane_0_leaves_other_lanes(self):
+    def test_gate_on_channel_transforms_photons(self):
         states = _make_states()
-        # Lane 0 = indices 0,3; lane 1 = 1; lane 2 = 2
+        # Single transmission lane (lane 0)
+        gated = apply_gates_to_lane(states, 0,
+                                    [{'type': 'H', 'lane': 0,
+                                      'position': 0.5}])
+        # index 0 (|0> -> |+>)
+        assert gated[0]['basis'] == 'x'
+        assert gated[0]['polarization_angle'] == 45.0
+        # index 1 (|1> -> |->)
+        assert gated[1]['basis'] == 'x'
+        assert gated[1]['polarization_angle'] == 135.0
+        # index 2 (|+> -> |0>)
+        assert gated[2]['basis'] == '+'
+        assert gated[2]['polarization_angle'] == 0.0
+        # index 3 (|-> -> |1>)
+        assert gated[3]['basis'] == '+'
+        assert gated[3]['polarization_angle'] == 90.0
+
+    def test_gate_on_lane_respects_lane_assignment(self):
+        states = _make_states()
+        states[1]['lane'] = 1  # photon marked on other lane
         gated = apply_gates_to_lane(states, 0,
                                     [{'type': 'H', 'lane': 0,
                                       'position': 0.5}])
         # index 0 (lane 0): transformed (|0> -> |+>)
         assert gated[0]['basis'] == 'x'
-        assert gated[0]['polarization_angle'] == 45.0
-        # index 1 (lane 1): untouched
+        # index 1 (lane 1): untouched (|1>)
         assert gated[1]['basis'] == '+'
-        assert gated[1]['polarization_angle'] == 90.0
-        # index 2 (lane 2): untouched
-        assert gated[2]['basis'] == 'x'
-        assert gated[2]['polarization_angle'] == 45.0
-        # index 3 (lane 0): transformed (|-> -> |1>)
-        assert gated[3]['basis'] == '+'
-        assert gated[3]['polarization_angle'] == 90.0
 
     def test_multiple_gates_apply_in_position_order(self):
         states = _make_states()
@@ -140,8 +151,8 @@ class TestProbes:
         # alice fields never modified
         assert result[0]['alice_bit'] == 0
         assert result[0]['alice_basis'] == '+'
-        # lane 1/2 untouched
-        assert 'cloning_probe_applied' not in result[1]
+        # All detected channel photons affected
+        assert result[1]['cloning_probe_applied'] is True
 
     def test_lost_photons_not_gated(self):
         states = _make_states()

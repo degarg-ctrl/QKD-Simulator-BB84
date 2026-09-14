@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/components/controls/ConfigPanel.jsx
  *
  * Simulation parameter controls panel.
@@ -17,10 +17,10 @@ import EditableValue from '../ui/EditableValue'
 const PARAM_INFO = {
   n_bits: {
     title: 'Photon Count',
-    description: 'Number of photons Alice sends through the quantum channel. More photons produce more accurate QBER statistics.',
-    range: '100 — 10,000',
+    description: 'Number of photons Alice sends through the quantum channel. Select 1 for single-photon observation, 1-10 for step-by-step tracing, 10-100 for small sample tests, or 100-10,000 for statistical convergence.',
+    range: '1 — 10,000 (3 Modes: 1–10, 10–100, 100–10k)',
     defaultValue: '1,000',
-    impact: 'Higher counts improve statistical accuracy but increase simulation time. Minimum 100 for meaningful QBER estimation.'
+    impact: 'Higher counts produce accurate QBER statistics. Lower counts enable step-by-step observation.'
   },
   source_model: {
     title: 'Source Model',
@@ -136,13 +136,104 @@ function SliderControl({ label, value, min, max, step,
                      [&::-webkit-slider-thumb]:w-3
                      [&::-webkit-slider-thumb]:h-3
                      [&::-webkit-slider-thumb]:rounded-full
-                     [&::-webkit-slider-thumb]:bg-indigo-400
                      [&::-webkit-slider-thumb]:appearance-none"
         />
       </div>
     </div>
   )
 }
+
+function PhotonCountControl({ value, onChange, paramKey }) {
+  // Map value to index [0 - 117] across 3 tiers:
+  // Tier 1: 1-10 (step 1, indices 0-9)
+  // Tier 2: 10-100 (step 10, indices 9-18)
+  // Tier 3: 100-10000 (step 100, indices 18-117)
+  const photonsToIndex = (n) => {
+    if (n <= 10) return Math.max(0, Math.min(9, Math.round(n) - 1))
+    if (n <= 100) return Math.min(18, 9 + Math.round((n - 10) / 10))
+    return Math.min(117, 18 + Math.round((n - 100) / 100))
+  }
+
+  const indexToPhotons = (idx) => {
+    if (idx <= 9) return idx + 1
+    if (idx <= 18) return 10 + (idx - 9) * 10
+    return 100 + (idx - 18) * 100
+  }
+
+  const currentIdx = photonsToIndex(value)
+  const currentTier = value <= 10 ? '1-10' : value <= 100 ? '10-100' : '100-10k'
+
+  return (
+    <div className="flex flex-col gap-1.5" id="control-photons">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <span className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider">
+            Photons
+          </span>
+          <ParameterQuestion paramKey={paramKey} />
+        </div>
+        <EditableValue
+          value={value.toLocaleString()}
+          numericValue={value}
+          min={1}
+          max={10000}
+          step={value <= 10 ? 1 : value <= 100 ? 10 : 100}
+          onChange={onChange}
+          color="#00e5ff"
+        />
+      </div>
+
+      {/* 3-Tier Mode Selector Pills */}
+      <div className="flex items-center gap-1 my-0.5">
+        {[
+          { id: '1-10', label: '1–10 (×1)', defaultVal: 1, title: 'Fine grain mode: 1 to 10 photons (step 1)' },
+          { id: '10-100', label: '10–100 (×10)', defaultVal: 50, title: 'Small batch mode: 10 to 100 photons (step 10)' },
+          { id: '100-10k', label: '100–10k (×100)', defaultVal: 1000, title: 'Statistical mode: 100 to 10,000 photons (step 100)' },
+        ].map(tier => (
+          <button
+            key={tier.id}
+            type="button"
+            onClick={() => onChange(tier.defaultVal)}
+            title={tier.title}
+            className={`flex-1 py-0.5 text-[10px] font-mono rounded border transition-colors ${
+              currentTier === tier.id
+                ? 'bg-cyan-950/60 border-cyan-500 text-cyan-300 font-bold'
+                : 'border-[var(--border-color)] text-[var(--text-subtle)] hover:text-[var(--text-primary)] hover:bg-white/5'
+            }`}
+          >
+            {tier.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Range Slider */}
+      <div className="relative">
+        <input
+          type="range"
+          min={0}
+          max={117}
+          step={1}
+          value={currentIdx}
+          onChange={e => onChange(indexToPhotons(Number(e.target.value)))}
+          className="w-full h-1.5 bg-[var(--panel-dark)]/30 rounded-full appearance-none
+                     cursor-pointer accent-cyan-400
+                     [&::-webkit-slider-thumb]:w-3.5
+                     [&::-webkit-slider-thumb]:h-3.5
+                     [&::-webkit-slider-thumb]:rounded-full
+                     [&::-webkit-slider-thumb]:bg-cyan-400
+                     [&::-webkit-slider-thumb]:appearance-none"
+        />
+      </div>
+      <div className="flex justify-between text-[9px] font-mono text-[var(--text-subtle)] px-0.5">
+        <span>1 (single)</span>
+        <span>10</span>
+        <span>100</span>
+        <span>10,000</span>
+      </div>
+    </div>
+  )
+}
+
 
 export default function ConfigPanel({ className = '' }) {
   const { params, setParams, syncMode, setSyncMode, sourceModel, setSourceModel } = useSimulationStore()
@@ -220,39 +311,12 @@ export default function ConfigPanel({ className = '' }) {
         )}
       </div>
 
-      {/* Photons */}
-      <SliderControl
-        label="Photons"
+      {/* Photons (Unified 3-Tier Mode: 1-10, 10-100, 100-10,000) */}
+      <PhotonCountControl
         value={params.n_bits}
-        min={100}
-        max={10000}
-        step={100}
         onChange={val => setParams({ n_bits: val })}
-        displayValue={params.n_bits.toLocaleString()}
         paramKey="n_bits"
       />
-
-      {/* Single Photon Mode */}
-      <div className="flex items-center justify-between 
-                      py-2 border-t border-[var(--border-color)]">
-        <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-[var(--text-muted)] 
-                           uppercase tracking-wider">
-            Single Photon
-          </span>
-          <ParameterQuestion paramKey="single_photon" />
-        </div>
-        <button
-          onClick={() => setParams({ n_bits: params.n_bits === 1 ? 1000 : 1 })}
-          className={`px-2 py-1 rounded text-xs font-mono border transition-colors
-                     ${params.n_bits === 1
-                       ? 'bg-indigo-900/50 border-indigo-500 text-indigo-400'
-                       : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                     }`}
-        >
-          {params.n_bits === 1 ? 'ON' : 'OFF'}
-        </button>
-      </div>
 
       {/* Sync Mode */}
       <div className="flex items-center justify-between

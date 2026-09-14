@@ -130,7 +130,7 @@ export default function GatePropertiesPanel() {
                     </div>
                     <div>
                       <div className="font-mono text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{gate.type} Gate</div>
-                      <div className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>Lane {gate.lane + 1} • Pos {(gate.position * 100).toFixed(0)}%</div>
+                      <div className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>Channel • Pos {(gate.position * 100).toFixed(0)}%</div>
                     </div>
                   </div>
                 </div>
