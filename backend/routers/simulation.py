@@ -4,18 +4,35 @@ backend/routers/simulation.py
 FastAPI router for BB84 QKD Simulator.
 Single endpoint: POST /api/simulate
 
-Pipeline order (must follow exactly):
-1. Alice generates bits, bases, encodes states
-2. QuantumChannel transmits states (applies attenuation, noise, dark counts)
-3. Eve intercepts (applies attack strategy)
-4. Bob measures received states
-5. BB84Protocol sifts, estimates QBER, extracts key
-6. Metrics computes SKR, efficiency, chart data
-7. Assemble and return SimulationResponse
+Pipeline order (actual, as implemented by run_simulation):
+1. Alice generates bits/bases and encodes states (or user input for
+   exp2/exp4)
+2. WCP model (optional): Poisson photon numbers / decoy intensities
+   are attached to the states BEFORE the channel
+3. QuantumChannel transmits states. Fiber attenuation, detector
+   efficiency and dark counts are all applied HERE, i.e. BEFORE Eve,
+   PNS and gates. Vacuum pulses are forced lost at this stage.
+4. Eve intercepts (intercept_resend / partial / burst). She only
+   interacts with pulses that physically reached her
+   (fiber_survived=True).
+5. PNS attack (optional): operates POST-channel on the already
+   channel-processed pulses, blocking single photons and splitting
+   multi-photon pulses (see core/pns.py and PHYSICS_CONTRACT Section 15).
+6. Quantum gates + cloning probes (optional) are applied per lane
+   AFTER Eve/PNS, BEFORE Bob.
+7. Bob measures the surviving states.
+8. BB84Protocol sifts, estimates QBER, extracts key.
+9. Metrics computes SKR, efficiency, chart data.
+10. Assemble and return SimulationResponse (including the event model).
 """
 
 from fastapi import APIRouter, HTTPException
-from models.schemas import SimulationRequest, SimulationResponse, PhotonRecord
+from models.schemas import (
+    SimulationRequest,
+    SimulationResponse,
+    PhotonRecord,
+    TransmissionAccounting,
+)
 from core.alice import Alice
 from core.channel import QuantumChannel
 from core.eve import Eve
@@ -29,6 +46,7 @@ from core.wcp import (poisson_photon_counts,
 from core.pns import PNSAttack, compute_pns_security
 from core.decoy import (assign_decoy_intensities,
                         compute_gains, detect_pns_attack)
+from core.rng import create_rng
 import numpy as np
 
 router = APIRouter()
@@ -37,10 +55,15 @@ router = APIRouter()
 def run_simulation(request: SimulationRequest) -> SimulationResponse:
     """
     Run complete BB84 QKD simulation and return results.
-    
+
     Executes the full pipeline:
-    Alice → Channel → Eve → Bob → Protocol → Metrics
-    
+    Alice → WCP → Channel → Eve → PNS → Gates/Probes → Bob
+          → Protocol → Metrics → Response
+
+    Detector efficiency and dark counts are part of Channel transmission
+    (step 3), so they occur before Eve/PNS/gates; gates therefore act on
+    already channel-processed states.
+
     All physics conform to PHYSICS_CONTRACT.md.
     All parameters validated by Pydantic before reaching this function.
     
@@ -52,8 +75,13 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
         HTTPException 500: if simulation fails unexpectedly
     """
     try:
+        # Single controlled RNG for the whole run (audit fix H7).
+        # Seeded when request.seed is set -> deterministic replay;
+        # otherwise a fresh stochastic generator.
+        rng = create_rng(request.seed)
+
         # Step 1: Alice — random or user-defined
-        alice = Alice()
+        alice = Alice(rng=rng)
         if request.experiment_mode in ('exp2', 'exp4') \
             and request.alice_bits is not None \
             and request.alice_bases is not None:
@@ -81,15 +109,14 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             distance_km=request.distance_km,
             noise_level=request.noise_level,
             detector_efficiency=DETECTOR_EFFICIENCY if request.wcp_enabled else 1.0,
-            dark_count_prob=DARK_COUNT_PROB if request.wcp_enabled else 0.0
+            dark_count_prob=DARK_COUNT_PROB if request.wcp_enabled else 0.0,
+            rng=rng,
         )
 
         # Step 1.5: WCP model — apply Poisson photon distribution
         wcp_stats = {}
         decoy_intensities = None
         if request.wcp_enabled:
-          rng = np.random.default_rng()
-          
           if request.decoy_enabled:
             # Assign varying intensities for decoy protocol
             decoy_intensities = assign_decoy_intensities(
@@ -116,7 +143,8 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
         # Step 3: Eve
         eve = Eve(
             attack_strategy=request.attack_strategy if request.attack_strategy != 'pns' else 'intercept_resend',
-            attack_prob=request.attack_prob if request.attack_strategy != 'pns' else 0.0
+            attack_prob=request.attack_prob if request.attack_strategy != 'pns' else 0.0,
+            rng=rng,
         )
         eve_states = eve.intercept(channel_states)
 
@@ -125,13 +153,12 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
         pns_security = {}
         if (request.wcp_enabled and 
             request.attack_strategy == 'pns'):
-          pns_rng = np.random.default_rng()
           pns = PNSAttack(
             p_block=request.attack_prob * 0.5,
             p_split=request.attack_prob
           )
           eve_states, pns_stats = pns.attack(
-            eve_states, pns_rng
+            eve_states, rng
           )
 
         # Step 3.5: Apply quantum gates and probes per lane
@@ -160,15 +187,16 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             eve_states = apply_cloning_probe(
               eve_states,
               probe.get('lane', 0),
-              probe.get('position', 0.5)
+              probe.get('position', 0.5),
+              rng=rng,
             )
 
         # Step 4: Bob
-        bob = Bob()
+        bob = Bob(rng=rng)
         measured_states = bob.measure(eve_states)
 
         # Step 5: Protocol
-        protocol = BB84Protocol()
+        protocol = BB84Protocol(rng=rng)
         sift_result = protocol.sift(measured_states)
         qber_result = protocol.estimate_qber(sift_result)
         key_result = protocol.extract_key(qber_result)
@@ -186,7 +214,15 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
         chart_data = generate_chart_data(
             noise_level=request.noise_level,
             attack_prob=request.attack_prob,
-            attack_strategy=request.attack_strategy
+            attack_strategy=request.attack_strategy,
+            # Chart uses the same detector mode as the simulation so the
+            # theoretical curve and the measured QBER share one model.
+            detector_efficiency=(
+                DETECTOR_EFFICIENCY if request.wcp_enabled else 1.0
+            ),
+            dark_count_prob=(
+                DARK_COUNT_PROB if request.wcp_enabled else 0.0
+            ),
         )
 
         # PNS security assessment
@@ -211,25 +247,49 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             dark_count_prob=DARK_COUNT_PROB if request.wcp_enabled else 0.0,
           )
 
-        # Step 7: Assemble bit_stream for frontend
-        # Include only detected photons, capped at 500 for response size
-        bit_stream = []
-        detected_states = [p for p in measured_states if p.get('measured')]
-        for p in detected_states[:500]:
-            bit_stream.append(PhotonRecord(
-                index=p['index'],
-                alice_bit=p['alice_bit'],
-                alice_basis=p['alice_basis'],
-                bob_basis=p['bob_basis'] or '',
-                bob_bit=p['bob_bit'] if p['bob_bit'] is not None else 0,
-                match=p['bob_basis'] == p['alice_basis'],
-                intercepted=p.get('intercepted', False),
-                lost=p.get('lost', False),
-                polarization_angle=float(p.get('polarization_angle', 0.0))
-            ))
+        # Step 7: Assemble event model for the frontend.
+        #
+        # bit_stream  — detected-only view (backward compatible, cap 500).
+        #               Its length must NOT be interpreted as N.
+        # event_stream — representative sample of ALL pulse outcomes
+        #               (detected, fiber-lost, vacuum, PNS-blocked, dark
+        #               counts), deterministically strided when N > cap.
+        # transmission — full-simulation accounting computed from the
+        #               COMPLETE measured_states array (never from the
+        #               truncated samples above).
+        from core.events import (
+            build_event_record,
+            compute_transmission_accounting,
+            select_event_stream_indices,
+        )
+
+        bit_stream = [
+            build_event_record(p)
+            for p in measured_states if p.get('measured')
+        ][:500]
+
+        selected_indices = select_event_stream_indices(measured_states)
+        event_stream = [
+            build_event_record(measured_states[i])
+            for i in selected_indices
+        ]
+        transmission_counts = compute_transmission_accounting(
+            measured_states
+        )
+        transmission = TransmissionAccounting(**transmission_counts)
+        transmission.event_stream_truncated = (
+            len(event_stream) < len(measured_states)
+        )
+
+        # QBER may be None (insufficient sample -> not estimated). Preserve
+        # None explicitly — never coerce to 0.0 — and expose the estimation
+        # state so the frontend can distinguish it from a measured QBER=0.
+        qber_value = qber_result['qber']
+        qber_estimated = bool(qber_result.get('qber_estimated', False))
 
         return SimulationResponse(
-            qber=round(qber_result['qber'], 6),
+            qber=(round(qber_value, 6) if qber_value is not None else None),
+            qber_estimated=qber_estimated,
             skr=round(skr, 6),
             sifted_key_length=sift_result['sifted_count'],
             raw_key_length=n_bits_actual,
@@ -239,13 +299,21 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             skr_vs_distance=chart_data['skr_vs_distance'],
             secure_threshold_breached=qber_result['threshold_breached'],
             cloning_probe_active=any(
-              g.get('type') in ('clone', 'cnot') 
+              g.get('type') in ('clone', 'cnot')
               for g in request.gates
             ),
             wcp_enabled=request.wcp_enabled,
             wcp_stats=wcp_stats,
             pns_stats=pns_stats,
+            # PNS security assessment (post-Campaign-1 fix: serialize the
+            # previously-discarded compute_pns_security() result; None when
+            # PNS disabled / not computed)
+            pns_compromised=pns_security.get('pns_compromised') if pns_security else None,
+            effective_skr=round(pns_security['effective_skr'], 6) if pns_security and 'effective_skr' in pns_security else None,
+            qber_misleading=pns_security.get('qber_misleading') if pns_security else None,
             decoy_results=decoy_results,
+            event_stream=event_stream,
+            transmission=transmission,
         )
 
     except Exception as e:

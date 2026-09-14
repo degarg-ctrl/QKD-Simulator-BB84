@@ -15,7 +15,7 @@ from routers import simulation
 app = FastAPI(
     title="BB84 QKD Simulator API",
     description="Backend API for simulating Quantum Key Distribution protocol",
-    version="0.1.0"
+    version="0.4.0"
 )
 
 # Configure CORS for frontend access
@@ -36,7 +36,7 @@ def health_check():
     return {
         "status": "ok",
         "protocol": "BB84",
-        "version": "0.3"
+        "version": "0.4.0"
     }
 
 frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
