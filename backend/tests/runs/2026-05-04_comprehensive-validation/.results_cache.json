@@ -10,9 +10,9 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.42699999999999994,
-    "mean_sifted_key_length": 427.0,
-    "mean_survival_fraction": 0.8527199999999999,
+    "mean_skr": 0.42835999999999996,
+    "mean_sifted_key_length": 428.36,
+    "mean_survival_fraction": 0.8492799999999999,
     "pass": true
   },
   {
@@ -26,9 +26,9 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.42404,
-    "mean_sifted_key_length": 848.08,
-    "mean_survival_fraction": 0.84858,
+    "mean_skr": 0.42926000000000003,
+    "mean_sifted_key_length": 858.52,
+    "mean_survival_fraction": 0.8517600000000001,
     "pass": true
   },
   {
@@ -42,9 +42,9 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.42656,
-    "mean_sifted_key_length": 1279.68,
-    "mean_survival_fraction": 0.8505866666666665,
+    "mean_skr": 0.4258533333333333,
+    "mean_sifted_key_length": 1277.56,
+    "mean_survival_fraction": 0.8486533333333333,
     "pass": true
   },
   {
@@ -58,9 +58,9 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.42590000000000006,
-    "mean_sifted_key_length": 1703.6,
-    "mean_survival_fraction": 0.85128,
+    "mean_skr": 0.4239099999999999,
+    "mean_sifted_key_length": 1695.64,
+    "mean_survival_fraction": 0.84883,
     "pass": true
   },
   {
@@ -74,9 +74,9 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.42560000000000003,
-    "mean_sifted_key_length": 2128.0,
-    "mean_survival_fraction": 0.85092,
+    "mean_skr": 0.42475199999999996,
+    "mean_sifted_key_length": 2123.76,
+    "mean_survival_fraction": 0.8506799999999999,
     "pass": true
   },
   {
@@ -90,9 +90,9 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.4232666666666667,
-    "mean_sifted_key_length": 2539.6,
-    "mean_survival_fraction": 0.8505733333333332,
+    "mean_skr": 0.42656666666666665,
+    "mean_sifted_key_length": 2559.4,
+    "mean_survival_fraction": 0.8493999999999999,
     "pass": true
   },
   {
@@ -106,9 +106,9 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.4264228571428571,
-    "mean_sifted_key_length": 2984.96,
-    "mean_survival_fraction": 0.8492228571428571,
+    "mean_skr": 0.4254,
+    "mean_sifted_key_length": 2977.8,
+    "mean_survival_fraction": 0.8502685714285715,
     "pass": true
   },
   {
@@ -122,9 +122,9 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.42616499999999996,
-    "mean_sifted_key_length": 3409.32,
-    "mean_survival_fraction": 0.85037,
+    "mean_skr": 0.424255,
+    "mean_sifted_key_length": 3394.04,
+    "mean_survival_fraction": 0.8493299999999999,
     "pass": true
   },
   {
@@ -138,9 +138,9 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.42669333333333337,
-    "mean_sifted_key_length": 3840.24,
-    "mean_survival_fraction": 0.850191111111111,
+    "mean_skr": 0.4255155555555556,
+    "mean_sifted_key_length": 3829.64,
+    "mean_survival_fraction": 0.8504844444444446,
     "pass": true
   },
   {
@@ -152,11 +152,11 @@
     "attack_prob": 0.0,
     "attack_strategy": "intercept_resend",
     "n_trials": 25,
-    "mean_qber": 9.638554216867471e-05,
-    "std_qber": 0.00047219079378952835,
-    "mean_skr": 0.42553120729283367,
-    "mean_sifted_key_length": 4263.44,
-    "mean_survival_fraction": 0.850688,
+    "mean_qber": 0.0,
+    "std_qber": 0.0,
+    "mean_skr": 0.426164,
+    "mean_sifted_key_length": 4261.64,
+    "mean_survival_fraction": 0.849892,
     "pass": true
   },
   {
@@ -168,9 +168,9 @@
     "attack_prob": 0.0,
     "n_trials": 25,
     "mean_qber": 0.0,
-    "mean_skr": 0.42560000000000003,
-    "mean_sifted_key_length": 2128.0,
-    "mean_survival_fraction": 0.85092
+    "mean_skr": 0.42272,
+    "mean_sifted_key_length": 2113.6,
+    "mean_survival_fraction": 0.849936
   },
   {
     "section": 2,
@@ -181,9 +181,9 @@
     "attack_prob": 0.0,
     "n_trials": 25,
     "mean_qber": 0.0,
-    "mean_skr": 0.267752,
-    "mean_sifted_key_length": 1338.76,
-    "mean_survival_fraction": 0.536424
+    "mean_skr": 0.26892000000000005,
+    "mean_sifted_key_length": 1344.6,
+    "mean_survival_fraction": 0.535528
   },
   {
     "section": 2,
@@ -194,9 +194,9 @@
     "attack_prob": 0.0,
     "n_trials": 25,
     "mean_qber": 0.0,
-    "mean_skr": 0.133096,
-    "mean_sifted_key_length": 665.48,
-    "mean_survival_fraction": 0.268424
+    "mean_skr": 0.13536,
+    "mean_sifted_key_length": 676.8,
+    "mean_survival_fraction": 0.27072
   },
   {
     "section": 2,
@@ -207,9 +207,9 @@
     "attack_prob": 0.0,
     "n_trials": 25,
     "mean_qber": 0.0,
-    "mean_skr": 0.042256,
-    "mean_sifted_key_length": 211.28,
-    "mean_survival_fraction": 0.08445599999999999
+    "mean_skr": 0.04281599999999999,
+    "mean_sifted_key_length": 214.08,
+    "mean_survival_fraction": 0.08548000000000001
   },
   {
     "section": 2,
@@ -219,10 +219,10 @@
     "noise_level": 0.0,
     "attack_prob": 0.0,
     "n_trials": 25,
-    "mean_qber": 0.0,
-    "mean_skr": 0.013071999999999999,
-    "mean_sifted_key_length": 65.36,
-    "mean_survival_fraction": 0.02612
+    "mean_qber": NaN,
+    "mean_skr": 0.0,
+    "mean_sifted_key_length": 68.0,
+    "mean_survival_fraction": 0.027223999999999998
   },
   {
     "section": 2,
@@ -232,10 +232,10 @@
     "noise_level": 0.0,
     "attack_prob": 0.0,
     "n_trials": 25,
-    "mean_qber": 0.0,
-    "mean_skr": 0.003968,
-    "mean_sifted_key_length": 19.84,
-    "mean_survival_fraction": 0.0082
+    "mean_qber": NaN,
+    "mean_skr": 0.0,
+    "mean_sifted_key_length": 21.56,
+    "mean_survival_fraction": 0.008575999999999999
   },
   {
     "section": 2,
@@ -245,10 +245,10 @@
     "noise_level": 0.0,
     "attack_prob": 0.0,
     "n_trials": 25,
-    "mean_qber": 0.0,
-    "mean_skr": 0.0012959999999999998,
-    "mean_sifted_key_length": 6.48,
-    "mean_survival_fraction": 0.0025680000000000004
+    "mean_qber": NaN,
+    "mean_skr": 0.0,
+    "mean_sifted_key_length": 6.6,
+    "mean_survival_fraction": 0.0025439999999999994
   },
   {
     "section": 2,
@@ -258,10 +258,10 @@
     "noise_level": 0.0,
     "attack_prob": 0.0,
     "n_trials": 25,
-    "mean_qber": 0.0,
-    "mean_skr": 0.00038399999999999996,
+    "mean_qber": NaN,
+    "mean_skr": 0.0,
     "mean_sifted_key_length": 1.92,
-    "mean_survival_fraction": 0.0008
+    "mean_survival_fraction": 0.0007279999999999999
   },
   {
     "section": 3,
@@ -271,7 +271,7 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.42560000000000003,
+    "mean_skr": 0.42497599999999996,
     "threshold_breached": false
   },
   {
@@ -280,9 +280,9 @@
     "noise_level": 0.01,
     "n_bits": 5000,
     "n_trials": 25,
-    "mean_qber": 0.010574897674645457,
-    "std_qber": 0.005028659405734727,
-    "mean_skr": 0.35417002021694577,
+    "mean_qber": 0.008515169013160922,
+    "std_qber": 0.0073710277775124846,
+    "mean_skr": 0.3684052431905798,
     "threshold_breached": false
   },
   {
@@ -291,9 +291,9 @@
     "noise_level": 0.02,
     "n_bits": 5000,
     "n_trials": 25,
-    "mean_qber": 0.02159563199916667,
-    "std_qber": 0.008673368162830469,
-    "mean_skr": 0.29894280860643,
+    "mean_qber": 0.019065805484263523,
+    "std_qber": 0.009077730640194286,
+    "mean_skr": 0.3117692702860194,
     "threshold_breached": false
   },
   {
@@ -302,9 +302,9 @@
     "noise_level": 0.05,
     "n_bits": 5000,
     "n_trials": 25,
-    "mean_qber": 0.04788417377864072,
-    "std_qber": 0.015657761524034162,
-    "mean_skr": 0.19252614593858638,
+    "mean_qber": 0.049448388420863666,
+    "std_qber": 0.015408741385307765,
+    "mean_skr": 0.18646139318882102,
     "threshold_breached": false
   },
   {
@@ -313,10 +313,10 @@
     "noise_level": 0.08,
     "n_bits": 5000,
     "n_trials": 25,
-    "mean_qber": 0.07836576015735239,
-    "std_qber": 0.021272055968253916,
-    "mean_skr": 0.09369964900793434,
-    "threshold_breached": true
+    "mean_qber": 0.0796813517131993,
+    "std_qber": 0.016288410504685494,
+    "mean_skr": 0.08622339937149306,
+    "threshold_breached": false
   },
   {
     "section": 3,
@@ -324,9 +324,9 @@
     "noise_level": 0.1,
     "n_bits": 5000,
     "n_trials": 25,
-    "mean_qber": 0.09822875104748391,
-    "std_qber": 0.022617435309648534,
-    "mean_skr": 0.042825828912159726,
+    "mean_qber": 0.1040692859428764,
+    "std_qber": 0.022245712628642878,
+    "mean_skr": 0.033206420664300705,
     "threshold_breached": true
   },
   {
@@ -335,9 +335,9 @@
     "noise_level": 0.12,
     "n_bits": 5000,
     "n_trials": 25,
-    "mean_qber": 0.12069816555728825,
-    "std_qber": 0.024230501524626486,
-    "mean_skr": 0.014538783273225444,
+    "mean_qber": 0.12308621169341602,
+    "std_qber": 0.023064223949443574,
+    "mean_skr": 0.010959726908873988,
     "threshold_breached": true
   },
   {
@@ -346,8 +346,8 @@
     "attack_strategy": "intercept_resend",
     "attack_prob": 1.0,
     "n_trials": 25,
-    "mean_qber": 0.2567707888170368,
-    "std_qber": 0.03270288725673868,
+    "mean_qber": 0.24920806724197372,
+    "std_qber": 0.021812874124953134,
     "mean_skr": 0.0
   },
   {
@@ -356,9 +356,9 @@
     "attack_strategy": "intercept_resend",
     "attack_prob": 0.5,
     "n_trials": 25,
-    "mean_qber": 0.1218302768853067,
-    "std_qber": 0.01645371340295926,
-    "mean_skr": 0.0072510647591600575
+    "mean_qber": 0.12255113927389322,
+    "std_qber": 0.024234809569850004,
+    "mean_skr": 0.012769329349685346
   },
   {
     "section": 4,
@@ -366,10 +366,10 @@
     "attack_strategy": "intercept_resend",
     "attack_prob": 0.25,
     "n_trials": 25,
-    "mean_qber": 0.06559217917875286,
-    "std_qber": 0.014208413635303327,
-    "mean_skr": 0.13075058536294862,
-    "mean_survival_fraction": 0.85092
+    "mean_qber": 0.0681855447833423,
+    "std_qber": 0.020833111198191364,
+    "mean_skr": 0.12457953887511306,
+    "mean_survival_fraction": 0.8491359999999999
   },
   {
     "section": 4,
@@ -377,10 +377,10 @@
     "attack_strategy": "partial",
     "attack_prob": 0.25,
     "n_trials": 25,
-    "mean_qber": 0.06559217917875286,
-    "std_qber": 0.014208413635303327,
-    "mean_skr": 0.13075058536294862,
-    "mean_survival_fraction": 0.85092
+    "mean_qber": 0.067043068993681,
+    "std_qber": 0.013678588834595067,
+    "mean_skr": 0.12588066352078575,
+    "mean_survival_fraction": 0.849416
   },
   {
     "section": 4,
@@ -388,10 +388,10 @@
     "attack_strategy": "burst",
     "attack_prob": 0.25,
     "n_trials": 25,
-    "mean_qber": 0.06385670607027405,
-    "std_qber": 0.014018907445221728,
-    "mean_skr": 0.13649255440460867,
-    "mean_survival_fraction": 0.85092
+    "mean_qber": 0.06723230676553499,
+    "std_qber": 0.01806409627011963,
+    "mean_skr": 0.12588442299188052,
+    "mean_survival_fraction": 0.849608
   },
   {
     "section": 4,
@@ -399,10 +399,10 @@
     "attack_strategy": "intercept_resend",
     "attack_prob": 0.5,
     "n_trials": 25,
-    "mean_qber": 0.1218302768853067,
-    "std_qber": 0.01645371340295926,
-    "mean_skr": 0.0072510647591600575,
-    "mean_survival_fraction": 0.85092
+    "mean_qber": 0.1255617707289477,
+    "std_qber": 0.020461697905552793,
+    "mean_skr": 0.009309961677087348,
+    "mean_survival_fraction": 0.8500000000000001
   },
   {
     "section": 4,
@@ -410,10 +410,10 @@
     "attack_strategy": "partial",
     "attack_prob": 0.5,
     "n_trials": 25,
-    "mean_qber": 0.1218302768853067,
-    "std_qber": 0.01645371340295926,
-    "mean_skr": 0.0072510647591600575,
-    "mean_survival_fraction": 0.85092
+    "mean_qber": 0.1307893739060828,
+    "std_qber": 0.022103133940219812,
+    "mean_skr": 0.006920062268167203,
+    "mean_survival_fraction": 0.8516399999999998
   },
   {
     "section": 4,
@@ -421,10 +421,10 @@
     "attack_strategy": "burst",
     "attack_prob": 0.5,
     "n_trials": 25,
-    "mean_qber": 0.13275852943588287,
-    "std_qber": 0.023297007153763972,
-    "mean_skr": 0.005508571046612336,
-    "mean_survival_fraction": 0.85092
+    "mean_qber": 0.12356782059338502,
+    "std_qber": 0.025689548086649285,
+    "mean_skr": 0.010963649272211827,
+    "mean_survival_fraction": 0.849256
   },
   {
     "section": 4,
@@ -432,10 +432,10 @@
     "attack_strategy": "intercept_resend",
     "attack_prob": 0.75,
     "n_trials": 25,
-    "mean_qber": 0.18077677683541182,
-    "std_qber": 0.024480606116219533,
+    "mean_qber": 0.18970292690036886,
+    "std_qber": 0.023988554710460564,
     "mean_skr": 0.0,
-    "mean_survival_fraction": 0.85092
+    "mean_survival_fraction": 0.850688
   },
   {
     "section": 4,
@@ -443,10 +443,10 @@
     "attack_strategy": "partial",
     "attack_prob": 0.75,
     "n_trials": 25,
-    "mean_qber": 0.18077677683541182,
-    "std_qber": 0.024480606116219533,
+    "mean_qber": 0.1921653585497002,
+    "std_qber": 0.024916830161365446,
     "mean_skr": 0.0,
-    "mean_survival_fraction": 0.85092
+    "mean_survival_fraction": 0.8482160000000001
   },
   {
     "section": 4,
@@ -454,10 +454,10 @@
     "attack_strategy": "burst",
     "attack_prob": 0.75,
     "n_trials": 25,
-    "mean_qber": 0.18572569572249492,
-    "std_qber": 0.019348047174379164,
+    "mean_qber": 0.1859057496970927,
+    "std_qber": 0.020058246215528434,
     "mean_skr": 0.0,
-    "mean_survival_fraction": 0.85092
+    "mean_survival_fraction": 0.850872
   },
   {
     "section": 4,
@@ -465,10 +465,10 @@
     "attack_strategy": "intercept_resend",
     "attack_prob": 1.0,
     "n_trials": 25,
-    "mean_qber": 0.2567707888170368,
-    "std_qber": 0.03270288725673868,
+    "mean_qber": 0.248206966045388,
+    "std_qber": 0.029887592295887347,
     "mean_skr": 0.0,
-    "mean_survival_fraction": 0.85092
+    "mean_survival_fraction": 0.849536
   },
   {
     "section": 4,
@@ -476,10 +476,10 @@
     "attack_strategy": "partial",
     "attack_prob": 1.0,
     "n_trials": 25,
-    "mean_qber": 0.2567707888170368,
-    "std_qber": 0.03270288725673868,
+    "mean_qber": 0.2524925219229273,
+    "std_qber": 0.02633802658479588,
     "mean_skr": 0.0,
-    "mean_survival_fraction": 0.85092
+    "mean_survival_fraction": 0.850288
   },
   {
     "section": 4,
@@ -487,10 +487,10 @@
     "attack_strategy": "burst",
     "attack_prob": 1.0,
     "n_trials": 25,
-    "mean_qber": 0.24388223811349852,
-    "std_qber": 0.02846278308043486,
+    "mean_qber": 0.2572305924581567,
+    "std_qber": 0.028494091982742973,
     "mean_skr": 0.0,
-    "mean_survival_fraction": 0.85092
+    "mean_survival_fraction": 0.85088
   },
   {
     "section": 5,
@@ -499,9 +499,9 @@
     "attack_strategy": "intercept_resend",
     "attack_prob": 0.5,
     "n_trials": 25,
-    "mean_qber": 0.16423558897243104,
-    "std_qber": 0.09314889016035593,
-    "mean_skr": 0.0052849129637977535,
+    "mean_qber": 0.12640205683549335,
+    "std_qber": 0.07265947723710495,
+    "mean_skr": 0.007151289483588697,
     "multi_photon_fraction": 0.0044
   },
   {
@@ -511,9 +511,9 @@
     "attack_strategy": "intercept_resend",
     "attack_prob": 0.5,
     "n_trials": 25,
-    "mean_qber": 0.12248138485531827,
-    "std_qber": 0.05490083787219845,
-    "mean_skr": 0.009883888474162475,
+    "mean_qber": 0.12499348999349,
+    "std_qber": 0.06155035000776836,
+    "mean_skr": 0.010644864479447043,
     "multi_photon_fraction": 0.0166
   },
   {
@@ -523,9 +523,9 @@
     "attack_strategy": "intercept_resend",
     "attack_prob": 0.5,
     "n_trials": 25,
-    "mean_qber": 0.14172222045195226,
-    "std_qber": 0.03029415776321924,
-    "mean_skr": 0.003837678048358025,
+    "mean_qber": 0.12139690889154764,
+    "std_qber": 0.04030822735302085,
+    "mean_skr": 0.012598446160846235,
     "multi_photon_fraction": 0.0822
   },
   {
@@ -535,9 +535,9 @@
     "attack_strategy": "pns",
     "attack_prob": 0.5,
     "n_trials": 25,
-    "mean_qber": 0.0013333333333333333,
-    "std_qber": 0.0065319726474218085,
-    "mean_skr": 0.05919759566722518
+    "mean_qber": 0.0,
+    "std_qber": 0.0,
+    "mean_skr": 0.059704
   },
   {
     "section": 5,
@@ -548,7 +548,7 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.13548
+    "mean_skr": 0.13555999999999999
   },
   {
     "section": 5,
@@ -558,7 +558,7 @@
     "attack_strategy": "pns",
     "n_trials": 25,
     "mean_qber": 0.0,
-    "mean_skr": 0.101416,
+    "mean_skr": 0.10267199999999999,
     "decoy_results_keys": [
       "pns_detected",
       "confidence",
@@ -566,6 +566,17 @@
       "y1_expected",
       "y1_suppression",
       "threshold_used",
+      "decision_rule",
+      "decoy_gain_expected",
+      "signal_gain_expected",
+      "decoy_detections",
+      "decoy_total",
+      "signal_detections",
+      "signal_total",
+      "p_value_decoy",
+      "p_value_signal",
+      "p_value",
+      "insufficient_sample",
       "signal_gain",
       "decoy_gain",
       "gain_difference"
@@ -579,7 +590,7 @@
     "attack_strategy": "pns",
     "n_trials": 25,
     "mean_qber": 0.0,
-    "mean_skr": 0.101416,
+    "mean_skr": 0.101264,
     "decoy_results_keys": [
       "pns_detected",
       "confidence",
@@ -587,6 +598,17 @@
       "y1_expected",
       "y1_suppression",
       "threshold_used",
+      "decision_rule",
+      "decoy_gain_expected",
+      "signal_gain_expected",
+      "decoy_detections",
+      "decoy_total",
+      "signal_detections",
+      "signal_total",
+      "p_value_decoy",
+      "p_value_signal",
+      "p_value",
+      "insufficient_sample",
       "signal_gain",
       "decoy_gain",
       "gain_difference"
@@ -597,24 +619,24 @@
     "test": "wcp_smoke_partial",
     "attack_strategy": "partial",
     "n_trials": 5,
-    "mean_qber": 0.13258390258390257,
-    "mean_skr": 0.0003485585438006643
+    "mean_qber": 0.14102564102564102,
+    "mean_skr": 0.006590836548748519
   },
   {
     "section": 5,
     "test": "wcp_smoke_burst",
     "attack_strategy": "burst",
     "n_trials": 5,
-    "mean_qber": 0.11216502795450163,
-    "mean_skr": 0.017773644467643877
+    "mean_qber": 0.14377289377289376,
+    "mean_skr": 0.004409005135816419
   },
   {
     "section": 6,
     "test": "gate_no_crash",
     "gate": "H",
     "n_trials": 25,
-    "mean_qber": 0.5107378069101096,
-    "std_qber": 0.040961752043857685,
+    "mean_qber": 0.48803139285914027,
+    "std_qber": 0.03175699922184611,
     "mean_skr": 0.0
   },
   {
@@ -622,8 +644,8 @@
     "test": "gate_no_crash",
     "gate": "X",
     "n_trials": 25,
-    "mean_qber": 0.4928443308551158,
-    "std_qber": 0.03769064712449789,
+    "mean_qber": 0.5087431558472848,
+    "std_qber": 0.03725413619532561,
     "mean_skr": 0.0
   },
   {
@@ -640,8 +662,8 @@
     "test": "gate_no_crash",
     "gate": "Z",
     "n_trials": 25,
-    "mean_qber": 0.5071556691448842,
-    "std_qber": 0.03769064712449789,
+    "mean_qber": 0.5054363022540262,
+    "std_qber": 0.039271798194141685,
     "mean_skr": 0.0
   },
   {
@@ -651,7 +673,7 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.42656
+    "mean_skr": 0.42132
   },
   {
     "section": 6,
@@ -660,31 +682,31 @@
     "n_trials": 25,
     "mean_qber": 0.0,
     "std_qber": 0.0,
-    "mean_skr": 0.42656
+    "mean_skr": 0.4241733333333333
   },
   {
     "section": 6,
     "test": "h_gate_qber_delta",
     "gate": "H",
     "baseline_qber": 0.0,
-    "gated_qber": 0.5107378069101096,
-    "delta": 0.5107378069101096
+    "gated_qber": 0.50972533134987,
+    "delta": 0.50972533134987
   },
   {
     "section": 6,
     "test": "z_gate_qber_delta",
     "gate": "Z",
     "baseline_qber": 0.0,
-    "gated_qber": 0.5071556691448842,
-    "delta": 0.5071556691448842
+    "gated_qber": 0.4976433113821534,
+    "delta": 0.4976433113821534
   },
   {
     "section": 6,
     "test": "x_gate_bit_flip",
     "gate": "X",
     "baseline_qber": 0.0,
-    "gated_qber": 0.4928443308551158,
-    "delta": 0.4928443308551158
+    "gated_qber": 0.4906767828741519,
+    "delta": 0.4906767828741519
   },
   {
     "section": 7,
@@ -756,8 +778,8 @@
     "test": "single_photon_100km_loss_rate",
     "distance_km": 100,
     "n_trials": 200,
-    "lost_count": 200,
-    "lost_rate": 1.0
+    "lost_count": 199,
+    "lost_rate": 0.995
   },
   {
     "section": 7,
@@ -778,21 +800,21 @@
   {
     "section": 8,
     "test": "qber_valid_range",
-    "reported_qber": 0.15,
+    "reported_qber": 0.197917,
     "threshold_breached": true
   },
   {
     "section": 8,
     "test": "sifted_key_length_valid",
-    "reported_sifted": 998,
+    "reported_sifted": 974,
     "raw_key_length": 2000,
-    "visible_in_bit_stream": 243
+    "visible_in_bit_stream": 242
   },
   {
     "section": 8,
     "test": "threshold_breach_consistency",
     "attack_prob": 0.0,
-    "qber": 0.010101,
+    "qber": 0.04,
     "reported_breached": false,
     "expected_breached": false
   },
@@ -800,7 +822,7 @@
     "section": 8,
     "test": "threshold_breach_consistency",
     "attack_prob": 1.0,
-    "qber": 0.27451,
+    "qber": 0.336634,
     "reported_breached": true,
     "expected_breached": true
   },
@@ -835,5 +857,445 @@
     "attack_strategy": "pns",
     "pns_stats_non_empty": true,
     "expected": true
+  },
+  {
+    "test_id": "sweep_001",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.42552,
+    "sifted_key_length": 2127,
+    "efficiency": 42.552,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_002",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.05,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.06079,
+    "expected_qber": 0.05,
+    "qber_deviation": 0.01079,
+    "measured_skr": 0.14479,
+    "sifted_key_length": 2114,
+    "efficiency": 42.296,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.00999
+  },
+  {
+    "test_id": "sweep_003",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.1,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.1109,
+    "expected_qber": 0.1,
+    "qber_deviation": 0.0109,
+    "measured_skr": 0.00212,
+    "sifted_key_length": 2114,
+    "efficiency": 42.296,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.00351
+  },
+  {
+    "test_id": "sweep_004",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.25,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.06894,
+    "expected_qber": 0.0625,
+    "qber_deviation": 0.00644,
+    "measured_skr": 0.11764,
+    "sifted_key_length": 2121,
+    "efficiency": 42.424,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.00838
+  },
+  {
+    "test_id": "sweep_005",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.5,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.12387,
+    "expected_qber": 0.125,
+    "qber_deviation": 0.00113,
+    "measured_skr": 0.0,
+    "sifted_key_length": 2101,
+    "efficiency": 42.036,
+    "threshold_breached": true,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.005
+  },
+  {
+    "test_id": "sweep_006",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 1.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.25799,
+    "expected_qber": 0.25,
+    "qber_deviation": 0.00799,
+    "measured_skr": 0.0,
+    "sifted_key_length": 2111,
+    "efficiency": 42.22,
+    "threshold_breached": true,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.02531
+  },
+  {
+    "test_id": "sweep_007",
+    "n_bits": 5000,
+    "distance_km": 10,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.26928,
+    "sifted_key_length": 1346,
+    "efficiency": 26.928,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_008",
+    "n_bits": 5000,
+    "distance_km": 50,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.04212,
+    "sifted_key_length": 210,
+    "efficiency": 4.212,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_009",
+    "n_bits": 5000,
+    "distance_km": 100,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": NaN,
+    "expected_qber": 0.0,
+    "qber_deviation": NaN,
+    "measured_skr": 0.0,
+    "sifted_key_length": 20,
+    "efficiency": 0.416,
+    "threshold_breached": false,
+    "pass_fail": "FAIL",
+    "n_trials": 5,
+    "std_qber": NaN
+  },
+  {
+    "test_id": "sweep_010",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "partial",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.42552,
+    "sifted_key_length": 2127,
+    "efficiency": 42.552,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_011",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.5,
+    "attack_strategy": "partial",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.12387,
+    "expected_qber": 0.125,
+    "qber_deviation": 0.00113,
+    "measured_skr": 0.0,
+    "sifted_key_length": 2101,
+    "efficiency": 42.036,
+    "threshold_breached": true,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.005
+  },
+  {
+    "test_id": "sweep_012",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "burst",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.425,
+    "sifted_key_length": 2125,
+    "efficiency": 42.5,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_013",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.5,
+    "attack_strategy": "burst",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.13647,
+    "expected_qber": 0.125,
+    "qber_deviation": 0.01147,
+    "measured_skr": 0.00381,
+    "sifted_key_length": 2132,
+    "efficiency": 42.652,
+    "threshold_breached": true,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0297
+  },
+  {
+    "test_id": "sweep_014",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 1.0,
+    "attack_strategy": "pns",
+    "wcp_enabled": true,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.04444,
+    "sifted_key_length": 222,
+    "efficiency": 4.444,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_015",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 1.0,
+    "attack_strategy": "pns",
+    "wcp_enabled": true,
+    "mu": 0.2,
+    "decoy_enabled": true,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.0772,
+    "sifted_key_length": 386,
+    "efficiency": 7.72,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_016",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": true,
+    "mu": 0.1,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.0414,
+    "sifted_key_length": 207,
+    "efficiency": 4.14,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_017",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": true,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.08092,
+    "sifted_key_length": 404,
+    "efficiency": 8.092,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_018",
+    "n_bits": 5000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": true,
+    "mu": 0.5,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.1716,
+    "sifted_key_length": 858,
+    "efficiency": 17.16,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_019",
+    "n_bits": 1000,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.4248,
+    "sifted_key_length": 424,
+    "efficiency": 42.48,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
+  },
+  {
+    "test_id": "sweep_020",
+    "n_bits": 500,
+    "distance_km": 0,
+    "noise_level": 0.0,
+    "attack_prob": 0.0,
+    "attack_strategy": "intercept_resend",
+    "wcp_enabled": false,
+    "mu": 0.2,
+    "decoy_enabled": false,
+    "gates": "none",
+    "measured_qber": 0.0,
+    "expected_qber": 0.0,
+    "qber_deviation": 0.0,
+    "measured_skr": 0.3988,
+    "sifted_key_length": 199,
+    "efficiency": 39.88,
+    "threshold_breached": false,
+    "pass_fail": "PASS",
+    "n_trials": 5,
+    "std_qber": 0.0
   }
 ]

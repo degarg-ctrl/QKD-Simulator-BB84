@@ -51,7 +51,8 @@ from core.decoy import assign_decoy_intensities, compute_gains, detect_pns_attac
 @dataclasses.dataclass
 class PipelineResult:
     """Structured output from a single run_pipeline() call."""
-    qber: float
+    qber: float | None        # None when QBER could not be estimated (C1)
+    qber_estimated: bool      # True only when qber is a real estimate
     skr: float
     sifted_key_length: int
     raw_key_length: int
@@ -68,13 +69,15 @@ class PipelineResult:
 @dataclasses.dataclass
 class TrialResult:
     """Averaged output from run_pipeline_trials()."""
-    mean_qber: float
-    std_qber: float
+    mean_qber: float          # NaN if no run produced an estimable QBER
+    std_qber: float           # NaN if no run produced an estimable QBER
     mean_skr: float
     mean_sifted_key_length: float
     mean_survival_fraction: float
     n_trials: int
+    n_estimated_qber: int     # how many trials yielded an estimated QBER
     raw_results: list[PipelineResult]
+    active_results: list[PipelineResult]
 
 
 # ---------------------------------------------------------------------------
@@ -187,8 +190,14 @@ def run_pipeline(
             'lost': not s.get('detected', True),
         })
 
+    # C1 fix (2026-09-14): QBER may now be None when the sifted-key sample is
+    # too small to estimate (previously it was silently reported as 0.0). We
+    # carry None through the harness faithfully (never coercing to 0) and
+    # record the estimation state separately.
+    qber_value = qber_result['qber']
     return PipelineResult(
-        qber=float(qber_result['qber']),
+        qber=(float(qber_value) if qber_value is not None else None),
+        qber_estimated=bool(qber_result.get('qber_estimated', False)),
         skr=float(skr),
         sifted_key_length=int(sift_result['sifted_count']),
         raw_key_length=int(n_bits),
@@ -222,19 +231,27 @@ def run_pipeline_trials(
         result = run_pipeline(seed=trial_seed, **pipeline_kwargs)
         results.append(result)
 
-    qbers = [r.qber for r in results]
+    # Average only runs whose QBER was actually estimated. Unestimated runs
+    # (qber=None) are excluded — NOT treated as 0.0. If no run produced a
+    # usable estimate, the mean/std are NaN (callers/tests must not treat a
+    # NaN mean as a low/secure QBER).
+    effective_qbers = [r.qber for r in results if r.qber is not None]
     skrs  = [r.skr  for r in results]
     sifted = [r.sifted_key_length for r in results]
     surv   = [r.survival_fraction for r in results]
 
+    active_results = [r for r in results if r.qber is not None]
+
     return TrialResult(
-        mean_qber=float(np.mean(qbers)),
-        std_qber=float(np.std(qbers)),
+        mean_qber=float(np.mean(effective_qbers)) if effective_qbers else float('nan'),
+        std_qber=float(np.std(effective_qbers)) if effective_qbers else float('nan'),
         mean_skr=float(np.mean(skrs)),
         mean_sifted_key_length=float(np.mean(sifted)),
         mean_survival_fraction=float(np.mean(surv)),
         n_trials=n_trials,
+        n_estimated_qber=len(effective_qbers),
         raw_results=results,
+        active_results=active_results,
     )
 
 
