@@ -46,9 +46,9 @@ export default function QBERChart({ data = [], currentQBER = null }) {
           </span>
         )}
       </div>
-      <ResponsiveContainer width="100%" height={160}>
+      <ResponsiveContainer width="100%" height={150}>
         <LineChart data={chartData}
-          margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+          margin={{ top: 5, right: 10, left: -20, bottom: 22 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
           <XAxis
             dataKey="distance"
