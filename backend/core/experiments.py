@@ -55,7 +55,12 @@ EXPERIMENT_PRESETS = {
       'basis mismatches cause bits to be discarded.'
     ),
     'default_params': {
-      'n_bits': 8,
+      # Manual-encoding experiments default to 300 photons. At ~50%
+      # basis sifting this yields ~150 sifted bits, comfortably above the
+      # minimum QBER sifted count (QBER_MIN_SIFTED_COUNT = 100 -> 10-bit
+      # sample) so the QBER is actually estimable. With the legacy
+      # 8-photon default the QBER was never estimable (audit fix C1).
+      'n_bits': 300,
       'distance_km': 0,
       'noise_level': 0.0,
       'attack_prob': 0.0,
@@ -64,7 +69,7 @@ EXPERIMENT_PRESETS = {
     },
     'locked_params': ['attack_prob', 'n_bits'],
     'user_input': True,
-    'max_photons': 20,
+    'max_photons': 300,
   },
 
   'exp3': {
@@ -108,7 +113,11 @@ EXPERIMENT_PRESETS = {
       'between interception and QBER elevation.'
     ),
     'default_params': {
-      'n_bits': 8,
+      # Exp 4 demonstrates interception -> QBER. A 300-photon default
+      # yields ~150 sifted bits, above the minimum QBER sifted count
+      # (audit fix C1); the legacy 8-photon default could never produce an
+      # estimable QBER.
+      'n_bits': 300,
       'distance_km': 0,
       'noise_level': 0.0,
       'attack_prob': 1.0,
@@ -117,7 +126,7 @@ EXPERIMENT_PRESETS = {
     },
     'locked_params': ['n_bits'],
     'user_input': True,
-    'max_photons': 20,
+    'max_photons': 300,
   },
 
   'exp5': {
