@@ -214,20 +214,25 @@ function SidebarItem({ item, collapsed, draggable = false, isGate = false, isPro
   }
 
   const innerContent = (
-    <motion.div
+    // IMPORTANT: plain <div>, NOT motion.div. framer-motion's
+    // motion components intercept onDragStart as a gesture prop,
+    // which prevented the native HTML5 drag from ever starting
+    // (the sidebar gate-drag regression). Hover animation is pure
+    // CSS via the hover: classes.
+    <div
       draggable={draggable}
       onDragStart={draggable ? (e) => {
         e.dataTransfer.setData('gateType', item.id)
+        e.dataTransfer.effectAllowed = 'copy'
       } : undefined}
-      whileHover={{ scale: 1.03 }}
       className={`flex items-center rounded border
                  transition-colors select-none
                  ${draggable
-                   ? 'cursor-grab active:cursor-grabbing'
-                   : 'cursor-default'}
+          ? 'cursor-grab active:cursor-grabbing hover:border-[var(--text-subtle)]'
+          : 'cursor-default'}
                  ${collapsed
-                   ? 'w-8 h-8 justify-center mx-auto'
-                   : 'gap-2 px-2 py-1.5 w-full'}
+          ? 'w-8 h-8 justify-center mx-auto'
+          : 'gap-2 px-2 py-1.5 w-full'}
                  bg-transparent
                  hover:bg-white/5`}
       style={{
@@ -239,8 +244,8 @@ function SidebarItem({ item, collapsed, draggable = false, isGate = false, isPro
         className={`rounded flex items-center justify-center
                    font-mono font-bold flex-shrink-0
                    ${collapsed
-                     ? 'w-6 h-6 text-xs'
-                     : 'w-7 h-7 text-xs'}`}
+            ? 'w-6 h-6 text-xs'
+            : 'w-7 h-7 text-xs'}`}
         style={{
           backgroundColor: item.color + '40',
           color: 'var(--text-primary)',
@@ -264,7 +269,7 @@ function SidebarItem({ item, collapsed, draggable = false, isGate = false, isPro
           </motion.span>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   )
 
   // Gates and Probes use SmartTooltipWrapper
@@ -282,8 +287,8 @@ function SidebarItem({ item, collapsed, draggable = false, isGate = false, isPro
 
   // Experiments and others use the standard text TooltipPortal
   return (
-    <TooltipPortal 
-      content={item.tooltip} 
+    <TooltipPortal
+      content={item.tooltip}
       width={224}
       color={item.color}
     >
@@ -301,11 +306,11 @@ function ExperimentButton({ exp, collapsed, isActive, onClick, disabled = false 
       className={`w-full flex items-center gap-2 px-2 py-1.5
                  rounded border transition-colors text-left
                  ${disabled
-                   ? 'opacity-30 cursor-not-allowed'
-                   : 'cursor-pointer'}
+          ? 'opacity-30 cursor-not-allowed'
+          : 'cursor-pointer'}
                  ${isActive && !disabled
-                   ? 'border-opacity-60 bg-opacity-20'
-                   : 'border-[var(--border-color)] bg-[var(--panel-dark)]/20 hover:border-[var(--text-subtle)]'}`}
+          ? 'border-opacity-60 bg-opacity-20'
+          : 'border-[var(--border-color)] bg-[var(--panel-dark)]/20 hover:border-[var(--text-subtle)]'}`}
       style={{
         borderColor: isActive && !disabled ? exp.color + '60' : undefined,
         backgroundColor: isActive && !disabled ? exp.color + '15' : undefined
@@ -388,7 +393,7 @@ export default function Sidebar() {
       transition={{ duration: 0.2, ease: 'easeInOut' }}
       className="flex flex-col border-r 
                  flex-shrink-0 overflow-hidden relative"
-      style={{ 
+      style={{
         backgroundColor: 'var(--panel-bg)',
         borderColor: 'var(--border-color)',
         minHeight: 0
@@ -448,9 +453,9 @@ export default function Sidebar() {
         {/* EXPERIMENTS */}
         <SectionHeader label="Experiments" collapsed={collapsed} />
         {EXPERIMENTS.map(exp => {
-          const requiresRealistic = 
+          const requiresRealistic =
             exp.id === 'exp7' || exp.id === 'exp8'
-          const isDisabled = requiresRealistic && 
+          const isDisabled = requiresRealistic &&
             sourceModel === 'ideal'
           return (
             <ExperimentButton

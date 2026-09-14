@@ -3,7 +3,7 @@
  *
  * Simulation parameter controls panel.
  * All controls write directly to Zustand store via setParams.
- * No local state â€” single source of truth is the store.
+ * No local state — single source of truth is the store.
  */
 
 import { useState } from 'react'
@@ -18,7 +18,7 @@ const PARAM_INFO = {
   n_bits: {
     title: 'Photon Count',
     description: 'Number of photons Alice sends through the quantum channel. More photons produce more accurate QBER statistics.',
-    range: '100 â€” 10,000',
+    range: '100 — 10,000',
     defaultValue: '1,000',
     impact: 'Higher counts improve statistical accuracy but increase simulation time. Minimum 100 for meaningful QBER estimation.'
   },
@@ -27,7 +27,7 @@ const PARAM_INFO = {
     description: 'Determines the photon source type for the simulation.',
     range: 'Ideal / Realistic',
     defaultValue: 'Ideal',
-    impact: 'Ideal uses perfect single photons (standard BB84). Realistic uses a WCP laser source with Poisson distribution â€” enables PNS attack experiments.'
+    impact: 'Ideal uses perfect single photons (standard BB84). Realistic uses a WCP laser source with Poisson distribution — enables PNS attack experiments.'
   },
   single_photon: {
     title: 'Single Photon Mode',
@@ -42,23 +42,23 @@ const PARAM_INFO = {
   distance_km: {
     title: 'Channel Distance',
     description: 'Fiber optic cable length between Alice and Bob. Longer distance = more photon loss via Beer-Lambert attenuation.',
-    range: '0 â€” 150 km',
+    range: '0 — 150 km',
     defaultValue: '50 km',
     impact: 'At 50km ~10% survive, at 100km ~1% survive. Directly limits the Secret Key Rate.'
   },
   noise_level: {
     title: 'Noise Level',
     description: 'Background noise probability per photon slot. Models thermal noise, detector dark counts, and environmental interference.',
-    range: '0% â€” 10%',
+    range: '0% — 10%',
     defaultValue: '2%',
     impact: 'Even without Eve, noise contributes to QBER. Values above 5% significantly degrade key quality.'
   },
   attack_prob: {
     title: 'Eve Attack Probability',
     description: 'Probability that Eve intercepts each photon in the quantum channel.',
-    range: '0% â€” 100%',
+    range: '0% — 100%',
     defaultValue: '0%',
-    impact: 'At 100%, Eve intercepts all photons â€” introducing exactly 25% QBER. BB84 aborts if QBER exceeds 11%.'
+    impact: 'At 100%, Eve intercepts all photons — introducing exactly 25% QBER. BB84 aborts if QBER exceeds 11%.'
   },
   attack_strategy: {
     title: 'Attack Strategy',
@@ -67,7 +67,7 @@ const PARAM_INFO = {
   },
 }
 
-// ParameterQuestion â€” hover-activated (?) icon with ParameterTooltip
+// ParameterQuestion — hover-activated (?) icon with ParameterTooltip
 function ParameterQuestion({ paramKey }) {
   const info = PARAM_INFO[paramKey]
   if (!info) return null
@@ -204,18 +204,18 @@ export default function ConfigPanel({ className = '' }) {
                   : '1px solid transparent'
               }}
             >
-              {model === 'ideal' ? 'âš› Ideal' : 'ðŸ”¬ Realistic'}
+              {model === 'ideal' ? '⚛ Ideal' : '🔬 Realistic'}
             </button>
           ))}
         </div>
         {sourceModel === 'ideal' && (
           <div className="text-xs font-mono text-[var(--text-subtle)]">
-            Perfect single photons Â· Standard BB84
+            Perfect single photons · Standard BB84
           </div>
         )}
         {sourceModel === 'realistic' && (
           <div className="text-xs font-mono text-[var(--text-subtle)]">
-            WCP laser source Â· Î¼ = {params.mean_photon_number}
+            WCP laser source · μ = {params.mean_photon_number}
           </div>
         )}
       </div>
@@ -348,14 +348,14 @@ export default function ConfigPanel({ className = '' }) {
             Realistic Source Settings
           </div>
           <SliderControl
-            label="Mean Photons (Î¼)"
+            label="Mean Photons (μ)"
             value={params.mean_photon_number}
             min={0.05}
             max={0.5}
             step={0.05}
             onChange={val => setParams({ mean_photon_number: val })}
             displayValue={params.mean_photon_number.toFixed(2)}
-            tooltip="Mean photon number per pulse (Î¼)."
+            tooltip="Mean photon number per pulse (μ)."
           />
           <div className="flex items-center justify-between py-1">
             <span className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider">
@@ -384,7 +384,7 @@ export default function ConfigPanel({ className = '' }) {
             exit={{ opacity: 0, height: 0 }}
             className="p-2 bg-red-950/50 border border-red-800/50 rounded text-xs text-red-400 font-mono overflow-hidden"
           >
-            âš  Attack level may breach 11% QBER threshold
+            ⚠ Attack level may breach 11% QBER threshold
           </motion.div>
         )}
       </AnimatePresence>

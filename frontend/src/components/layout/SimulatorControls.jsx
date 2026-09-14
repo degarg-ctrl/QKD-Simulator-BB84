@@ -1,73 +1,89 @@
 ﻿/**
  * SimulatorControls.jsx
- * 
- * Simulator-specific control bar.
- * Contains: Status indicator, View tabs, Run/Reset/Save/Load buttons, Gate controls
+ *
+ * Simulator-specific control bar: status, view tabs, run/reset,
+ * save/load, gate controls. Lucide icons, solid semantic colors.
  */
 import { motion } from 'framer-motion'
-import { useSimulation } from '../../hooks/useSimulation'
 import { useState } from 'react'
+import {
+  Save, FolderOpen, Play, Pause, RotateCcw, Search, X,
+} from 'lucide-react'
+import { useSimulation } from '../../hooks/useSimulation'
 import SaveExperimentModal from '../experiments/SaveExperimentModal'
 import LoadExperimentModal from '../experiments/LoadExperimentModal'
 import useSimulationStore from '../../store/simulationStore'
+
+const BTN = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs ' +
+  'font-medium border transition-colors disabled:opacity-40 ' +
+  'disabled:cursor-not-allowed'
 
 export default function SimulatorControls() {
   const [saveModalOpen, setSaveModalOpen] = useState(false)
   const [loadModalOpen, setLoadModalOpen] = useState(false)
   const { runSimulation, isLoading } = useSimulation()
-  const { results, reset, placedGates, clearGates, openInspector, inspector, activeView, setActiveView, animation, togglePause } = useSimulationStore()
+  const {
+    results, reset, placedGates, clearGates,
+    openInspector, inspector, activeView, setActiveView,
+    animation, togglePause,
+  } = useSimulationStore()
 
   const isBreached = results?.secure_threshold_breached ?? false
   const hasResults = results !== null
 
   return (
     <>
-      <div className="flex items-center justify-between px-4 py-2 h-12 flex-shrink-0"
-           style={{
-             backgroundColor: 'var(--panel-bg)',
-             borderBottom: '1px solid var(--border-color)'
-           }}>
-        
-        {/* Left: Status Indicator */}
+      <div className="flex items-center justify-between px-4 py-2 h-12
+                      flex-shrink-0"
+        style={{
+          backgroundColor: 'var(--panel-bg)',
+          borderBottom: '1px solid var(--border-color)'
+        }}>
+
+        {/* Left: status */}
         <div className="flex items-center gap-2">
           {isLoading && (
             <motion.div
-              animate={{ opacity: [1, 0.3, 1] }}
+              animate={{ opacity: [1, 0.35, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
-              className="flex items-center gap-1.5"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-              <span className="text-xs font-mono text-yellow-400">SIMULATING</span>
+              className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
+              <span className="text-xs font-medium text-[#F59E0B]">
+                SIMULATING
+              </span>
             </motion.div>
           )}
           {!isLoading && hasResults && !isBreached && (
             <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span className="text-xs font-mono text-green-500">SECURE</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+              <span className="text-xs font-medium text-[#22C55E]">
+                SECURE
+              </span>
             </div>
           )}
           {!isLoading && hasResults && isBreached && (
-            <motion.div
-              animate={{ opacity: [1, 0.5, 1] }}
-              transition={{ duration: 0.8, repeat: Infinity }}
-              className="flex items-center gap-1.5"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-              <span className="text-xs font-mono text-red-500">BREACH DETECTED</span>
-            </motion.div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
+              <span className="text-xs font-medium text-[#EF4444]">
+                BREACH DETECTED
+              </span>
+            </div>
           )}
           {!isLoading && !hasResults && (
             <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-[var(--text-subtle)]" />
-              <span className="text-xs font-mono text-[var(--text-muted)]">READY</span>
+              <div className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: 'var(--text-subtle)' }} />
+              <span className="text-xs font-medium text-[var(--text-muted)]">
+                READY
+              </span>
             </div>
           )}
         </div>
 
-        {/* Right: Controls */}
-        <div className="flex items-center gap-2">
-          {/* View Tabs */}
-          <div className="flex items-center gap-1 border border-[var(--border-color)] rounded p-0.5">
+        {/* Right: controls */}
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-0.5 rounded p-0.5"
+            style={{ border: '1px solid var(--border-color)' }}>
             {[
               { id: 'simulator', label: 'SIM' },
               { id: 'results', label: 'RESULTS' },
@@ -75,97 +91,99 @@ export default function SimulatorControls() {
               <button
                 key={view.id}
                 onClick={() => setActiveView(view.id)}
-                className={`px-3 py-1 text-xs font-mono rounded transition-colors ${
-                  activeView === view.id
-                    ? 'bg-quantum-blue text-white'
-                    : 'text-gray-500 hover:text-gray-300'
-                }`}
+                className={`px-2.5 py-1 text-xs font-medium rounded
+                            transition-colors
+                            ${activeView === view.id
+                    ? 'text-white'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`}
+                style={activeView === view.id
+                  ? { backgroundColor: '#00B8E6' } : undefined}
               >
                 {view.label}
               </button>
             ))}
           </div>
 
-          {/* Reset Button */}
           <button
             onClick={reset}
             disabled={isLoading || !hasResults}
-            className="px-3 py-1 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--text-subtle)] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            RESET
+            className={`${BTN} text-[var(--text-muted)]
+                        hover:text-[var(--text-primary)]`}
+            style={{ borderColor: 'var(--border-color)' }}>
+            <RotateCcw size={13} /> RESET
           </button>
 
-          {/* Save Button */}
           <button
             onClick={() => setSaveModalOpen(true)}
-            className="px-3 py-1 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--text-subtle)] rounded transition-colors"
-          >
-            ðŸ’¾ SAVE
+            className={`${BTN} text-[var(--text-muted)]
+                        hover:text-[var(--text-primary)]`}
+            style={{ borderColor: 'var(--border-color)' }}>
+            <Save size={13} /> SAVE
           </button>
 
-          {/* Load Button */}
           <button
             onClick={() => setLoadModalOpen(true)}
-            className="px-3 py-1 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--text-subtle)] rounded transition-colors"
-          >
-            ðŸ“‚ LOAD
+            className={`${BTN} text-[var(--text-muted)]
+                        hover:text-[var(--text-primary)]`}
+            style={{ borderColor: 'var(--border-color)' }}>
+            <FolderOpen size={13} /> LOAD
           </button>
 
-          {/* Clear Gates Button */}
           {placedGates.length > 0 && (
             <button
               onClick={clearGates}
-              className="px-3 py-1 text-xs font-mono border border-[var(--border-color)] rounded text-[var(--text-muted)] hover:text-red-400 hover:border-red-800 transition-colors"
-            >
-              âœ• GATES ({placedGates.length})
+              className={`${BTN} text-[var(--text-muted)]
+                          hover:text-[#EF4444]`}
+              style={{ borderColor: 'var(--border-color)' }}>
+              <X size={13} /> GATES ({placedGates.length})
             </button>
           )}
 
-          {/* Inspector Button */}
-          {results && results.bit_stream?.length > 0 && (
-            <button
-              onClick={openInspector}
-              className="px-3 py-1 text-xs font-mono border rounded transition-colors"
-              style={{
-                borderColor: inspector.isOpen ? '#00aacc' : 'var(--border-color)',
-                color: inspector.isOpen ? '#00aacc' : 'var(--text-muted)',
-                backgroundColor: inspector.isOpen ? '#00aacc15' : 'transparent'
-              }}
-            >
-              ðŸ” INSPECT
-            </button>
-          )}
+          {results && (results.event_stream?.length > 0 ||
+            results.bit_stream?.length > 0) && (
+              <button
+                onClick={openInspector}
+                className={`${BTN}`}
+                style={{
+                  borderColor: inspector.isOpen
+                    ? '#00B8E6' : 'var(--border-color)',
+                  color: inspector.isOpen
+                    ? '#00B8E6' : 'var(--text-muted)',
+                  backgroundColor: inspector.isOpen
+                    ? 'rgba(0,184,230,0.08)' : 'transparent'
+                }}>
+                <Search size={13} /> INSPECT
+              </button>
+            )}
 
-          {/* Pause Button */}
           {results && (
             <button
               onClick={togglePause}
-              className="px-3 py-1 text-xs font-mono border rounded transition-colors border-[var(--border-color)] hover:border-[var(--text-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-            >
-              {animation.isPaused ? 'â–¶ RESUME' : 'â¸ PAUSE'}
+              className={`${BTN} text-[var(--text-muted)]
+                          hover:text-[var(--text-primary)]`}
+              style={{ borderColor: 'var(--border-color)' }}>
+              {animation.isPaused
+                ? <><Play size={13} /> RESUME</>
+                : <><Pause size={13} /> PAUSE</>}
             </button>
           )}
 
-          {/* Run Button */}
           <button
             onClick={runSimulation}
             disabled={isLoading}
-            className="px-4 py-1 text-xs font-mono font-semibold rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: isLoading ? '#555' : '#00c8ff',
-              color: '#000',
-              border: 'none'
-            }}
-          >
-            {isLoading ? 'RUNNING...' : 'â–¶ RUN'}
+            className="px-4 py-1.5 text-xs font-semibold rounded
+                       text-white transition-colors disabled:opacity-40
+                       disabled:cursor-not-allowed"
+            style={{ backgroundColor: isLoading ? '#64748B' : '#00B8E6' }}>
+            {isLoading ? 'RUNNING…' : 'RUN'}
           </button>
         </div>
       </div>
 
-      {/* Modals */}
-      <SaveExperimentModal isOpen={saveModalOpen} onClose={() => setSaveModalOpen(false)} />
-      <LoadExperimentModal isOpen={loadModalOpen} onClose={() => setLoadModalOpen(false)} />
+      <SaveExperimentModal isOpen={saveModalOpen}
+        onClose={() => setSaveModalOpen(false)} />
+      <LoadExperimentModal isOpen={loadModalOpen}
+        onClose={() => setLoadModalOpen(false)} />
     </>
   )
 }
-

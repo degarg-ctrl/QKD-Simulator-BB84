@@ -4,16 +4,16 @@
   const entityInfo = {
     clone: {
       name: 'Cloning Probe',
-      icon: 'âŠ—',
+      icon: '⊗',
       description: 'Demonstrates the No-Cloning Theorem by attempting to copy a quantum state.',
-      mechanism: 'CNOT entanglement between photon and probe qubit. The original state collapses â€” proving perfect cloning is impossible.',
+      mechanism: 'CNOT entanglement between photon and probe qubit. The original state collapses — proving perfect cloning is impossible.',
       effect: 'QBER spikes immediately as Bob receives damaged photons',
       useIn: 'Experiment 6',
       color: '#ef4444'
     },
     cnot: {
       name: 'CNOT Tap',
-      icon: 'âŠ•',
+      icon: '⊕',
       description: 'Controlled-NOT entanglement probe that Eve uses to extract information.',
       mechanism: 'Entangles the photon (control) with a probe qubit (target). Measurement disturbs both qubits.',
       effect: 'Eve gains partial information but introduces detectable errors',
@@ -62,7 +62,7 @@
             Effect on Protocol
           </div>
           <div className="text-red-400 text-sm bg-red-900/20 border border-red-500/20 rounded p-2">
-            âš  {info.effect}
+            ⚠ {info.effect}
           </div>
         </div>
 

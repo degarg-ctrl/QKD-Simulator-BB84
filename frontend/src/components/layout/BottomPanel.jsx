@@ -1,36 +1,76 @@
 ﻿/**
  * src/components/layout/BottomPanel.jsx
  *
- * Bottom panel containing metrics, charts, and bit stream table.
- * Has two tabs: "Performance" (metrics + charts) and "Bit Stream" 
- * (per-photon data table).
- * Only visible after simulation has run.
- * Supports collapse/expand toggle.
+ * Bottom results panel: Performance / Transmission / Bit Stream tabs.
+ *
+ * Layout contract:
+ *   - Simulation canvas remains the PRIMARY workspace — the panel's
+ *     expanded height is clamped to [120px, 45%] of the workspace
+ *     and defaults to ~26%.
+ *   - Collapsed: a single compact summary bar.
+ *   - Expanded: draggable resize handle on the top edge; the panel
+ *     is bounded within the workspace and resizing does not
+ *     interfere with the canvas (the handle is the only drag
+ *     surface, pointer-events elsewhere pass through normally).
  */
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import useSimulationStore from '../../store/simulationStore'
 import MetricCard from '../metrics/MetricCard'
 import QBERChart from '../metrics/QBERChart'
 import SKRChart from '../metrics/SKRChart'
+import TransmissionPanel from '../results/TransmissionPanel'
+
+const MIN_HEIGHT = 120
+const MAX_FRACTION = 0.45
 
 export default function BottomPanel({ className = '' }) {
-  const { results, bottomPanelCollapsed, 
-          toggleBottomPanel } = useSimulationStore()
+  const { results, bottomPanelCollapsed,
+    toggleBottomPanel } = useSimulationStore()
   const [activeTab, setActiveTab] = useState('metrics')
+  const [height, setHeight] = useState(240)   // ~26% of a 900px workspace
+  const [isResizing, setIsResizing] = useState(false)
+  const panelRef = useRef(null)
+  const resizeStart = useRef(null)
 
   const tabs = [
-    { id: 'metrics', label: 'Performance & Security' },
-    { id: 'bitstream',   label: 'Bit Stream' },
+    { id: 'metrics', label: 'Performance' },
+    { id: 'transmission', label: 'Transmission' },
+    { id: 'bitstream', label: 'Bit Stream' },
   ]
 
-  // Collapsed state â€” thin bar with toggle
+  // ── Drag-resize (from the top edge) ─────────────────────────
+  const onResizeStart = useCallback((e) => {
+    e.preventDefault()
+    setIsResizing(true)
+    resizeStart.current = { y: e.clientY, height }
+  }, [height])
+
+  useEffect(() => {
+    if (!isResizing) return
+    const onMove = (e) => {
+      const delta = resizeStart.current.y - e.clientY
+      const workspace = panelRef.current?.parentElement?.clientHeight
+        ?? window.innerHeight
+      const maxH = Math.floor(workspace * MAX_FRACTION)
+      setHeight(Math.min(Math.max(resizeStart.current.height + delta,
+        MIN_HEIGHT), maxH))
+    }
+    const onUp = () => setIsResizing(false)
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  }, [isResizing])
+
+  // ── Collapsed: compact summary bar ──────────────────────────
   if (bottomPanelCollapsed) {
     return (
       <div
-        className="flex items-center justify-between 
-                   px-4 py-2 flex-shrink-0 cursor-pointer
-                   hover:bg-white/5 transition-colors"
+        className="flex items-center justify-between px-4 py-2
+                   flex-shrink-0 cursor-pointer transition-colors"
         style={{
           borderTop: '1px solid var(--border-color)',
           backgroundColor: 'var(--panel-bg)'
@@ -38,156 +78,152 @@ export default function BottomPanel({ className = '' }) {
         onClick={toggleBottomPanel}
       >
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-[var(--text-muted)]">
-            â–² Performance & Security
+          <ChevronUp size={13} className="text-[var(--text-muted)]" />
+          <span className="text-xs font-medium text-[var(--text-muted)]">
+            Results
           </span>
           {results && (
-            <span className="text-xs font-mono text-[var(--text-subtle)]">
-              QBER: {(results.qber * 100).toFixed(2)}% 
-              Â· SKR: {results.skr.toFixed(3)}
+            <span className="text-xs font-mono tabular-nums
+                             text-[var(--text-subtle)]">
+              QBER {results.qber_estimated && results.qber != null
+                ? `${(results.qber * 100).toFixed(2)}%`
+                : 'n/a'} · SKR {results.skr.toFixed(3)}
             </span>
           )}
         </div>
-        <span className="text-xs font-mono text-[var(--text-subtle)]">
+        <span className="text-xs text-[var(--text-subtle)]">
           Click to expand
         </span>
       </div>
     )
   }
 
-  // Normal expanded state â€” no results yet
+  // ── No results: minimal placeholder ─────────────────────────
   if (!results) return (
     <div
-      className="flex items-center justify-between 
-                 px-4 py-2 flex-shrink-0"
+      className="flex items-center justify-between px-4 py-2 flex-shrink-0"
       style={{
         borderTop: '1px solid var(--border-color)',
         backgroundColor: 'var(--panel-bg)'
       }}
     >
-      <span className="text-xs font-mono text-[var(--text-subtle)]">
+      <span className="text-xs text-[var(--text-subtle)]">
         Run a simulation to see results
       </span>
-      <span className="text-xs font-mono text-[var(--text-subtle)] 
-                       cursor-pointer hover:text-[var(--text-primary)]"
-            onClick={toggleBottomPanel}>
-        â–¼
-      </span>
+      <button onClick={toggleBottomPanel}
+        className="text-[var(--text-muted)] hover:text-[var(--text-primary)]
+                         transition-colors">
+        <ChevronDown size={14} />
+      </button>
     </div>
   )
 
+  // ── Expanded panel ──────────────────────────────────────────
   return (
-    <motion.div
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      className={`flex-shrink-0 overflow-hidden ${className}`}
-      style={{ 
+    <div
+      ref={panelRef}
+      className={`flex flex-col flex-shrink-0 ${className}`}
+      style={{
+        height,
         borderTop: '1px solid var(--border-color)',
-        backgroundColor: 'var(--panel-bg)'
+        backgroundColor: 'var(--panel-bg)',
+        userSelect: isResizing ? 'none' : undefined
       }}
     >
-      {/* Tab bar with collapse toggle */}
-      <div className="flex items-center px-4"
-           style={{ borderBottom: '1px solid var(--border-color)' }}>
+      {/* Resize handle — the ONLY drag surface (cursor: ns-resize) */}
+      <div
+        onMouseDown={onResizeStart}
+        className="h-1.5 cursor-ns-resize hover:bg-[#00B8E6]/30
+                   transition-colors flex-shrink-0"
+        style={isResizing ? { backgroundColor: 'rgba(0,184,230,0.35)' }
+          : undefined}
+        title="Drag to resize"
+      />
+
+      {/* Tab bar */}
+      <div className="flex items-center px-4 flex-shrink-0"
+        style={{ borderBottom: '1px solid var(--border-color)' }}>
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-xs font-mono tracking-wider
-                       border-b-2 transition-colors
-                       ${activeTab === tab.id
-                         ? 'border-indigo-500 text-[var(--text-primary)]'
-                         : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-subtle)]'
-                       }`}
-          >
+            className={`px-4 py-2 text-xs font-medium border-b-2
+                        transition-colors
+                        ${activeTab === tab.id
+                ? 'border-[#00B8E6] text-[var(--text-primary)]'
+                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`}>
             {tab.label}
           </button>
         ))}
-        {/* Collapse button on right */}
         <button
           onClick={toggleBottomPanel}
-          className="ml-auto text-xs font-mono text-[var(--text-muted)]
-                     hover:text-[var(--text-primary)] transition-colors 
-                     px-2 py-2"
-          title="Collapse panel"
-        >
-          â–¼ collapse
+          className="ml-auto flex items-center gap-1 px-2 py-2 text-xs
+                     text-[var(--text-muted)] hover:text-[var(--text-primary)]
+                     transition-colors"
+          title="Collapse panel">
+          Collapse <ChevronDown size={13} />
         </button>
       </div>
 
-      {/* Tab content */}
-      <div className="p-4 overflow-hidden">
+      {/* Tab content (scrollable) */}
+      <div className="flex-1 p-4 overflow-y-auto min-h-0">
         {activeTab === 'metrics' && (
-          <div className="flex gap-6 min-h-0 items-start">
-            {/* Metric cards */}
+          <div className="flex gap-6 min-h-0 items-start h-full">
             <div className="grid grid-cols-2 gap-3 w-72 flex-shrink-0">
-              <MetricCard
-                label="QBER"
-                value={(results.qber * 100).toFixed(2)}
-                unit="%"
-                status={
-                  results.qber >= 0.11 ? 'danger' :
-                  results.qber >= 0.07 ? 'warning' : 'normal'
-                }
-                subtitle={results.secure_threshold_breached
-                  ? 'Session aborted' : 'Secure'}
-              />
-              <MetricCard
-                label="SKR"
-                value={results.skr.toFixed(3)}
-                unit="bits/bit"
-                status={results.skr === 0 ? 'danger' :
-                        results.skr < 0.05 ? 'warning' : 'normal'}
-              />
-              <MetricCard
-                label="Sifted Key"
+              <MetricCard label="QBER"
+                value={results.qber_estimated && results.qber != null
+                  ? (results.qber * 100).toFixed(2) : '—'}
+                unit={results.qber_estimated && results.qber != null ? '%' : ''}
+                status={!results.qber_estimated ? 'inactive'
+                  : results.qber >= 0.11 ? 'danger'
+                    : results.qber >= 0.07 ? 'warning' : 'normal'}
+                subtitle={!results.qber_estimated
+                  ? 'Not estimated (small sample)'
+                  : results.secure_threshold_breached
+                    ? 'Session aborted' : 'Secure'} />
+              <MetricCard label="SKR"
+                value={results.skr.toFixed(3)} unit="bits/bit"
+                status={results.skr === 0 ? 'danger'
+                  : results.skr < 0.05 ? 'warning' : 'normal'} />
+              <MetricCard label="Sifted Key"
                 value={results.sifted_key_length.toLocaleString()}
-                unit="bits"
-                status="normal"
-                subtitle={`of ${results.raw_key_length.toLocaleString()} raw`}
-              />
-              <MetricCard
-                label="Efficiency"
-                value={results.efficiency.toFixed(1)}
-                unit="%"
-                status={results.efficiency < 5 ? 'warning' : 'normal'}
-              />
+                unit="bits" status="normal"
+                subtitle={`of ${results.raw_key_length.toLocaleString()} raw`} />
+              <MetricCard label="Efficiency"
+                value={results.efficiency.toFixed(1)} unit="%"
+                status={results.efficiency < 5 ? 'warning' : 'normal'} />
             </div>
-            {/* Charts and Note Container */}
-            <div className="flex-1 flex flex-col min-w-0">
-              {/* Charts */}
-            <div className="flex-1 grid grid-cols-2 gap-6 min-h-0">
-              <QBERChart
-                data={results.qber_vs_distance}
-                currentQBER={results.qber}
-              />
-              <SKRChart
-                data={results.skr_vs_distance}
-                currentSKR={results.skr}
-              />
-            </div>
-            {/* Theoretical vs Simulated explanation */}
-            <div className="mt-2 flex items-start gap-2 
-                            text-xs font-mono text-[var(--text-subtle)]
-                            overflow-hidden">
-              <span className="text-[var(--text-muted)]">â„¹</span>
-              <span>
-                Graph shows theoretical model across distances. 
-                Simulated value shows your actual run result. 
-                Differences are normal at low photon counts â€” 
-                use n_bits â‰¥ 5000 for convergence.
-              </span>
+            <div className="flex-1 flex flex-col min-w-0 h-full">
+              <div className="flex-1 grid grid-cols-2 gap-6 min-h-0">
+                <QBERChart data={results.qber_vs_distance}
+                  currentQBER={results.qber} />
+                <SKRChart data={results.skr_vs_distance}
+                  currentSKR={results.skr} />
+              </div>
+              <div className="mt-2 flex items-start gap-2 text-xs
+                              text-[var(--text-subtle)]">
+                <span className="text-[var(--text-muted)]">ℹ</span>
+                <span>
+                  Graph shows the theoretical model across distances.
+                  Simulated value shows your actual run result.
+                  Differences are normal at low photon counts — use
+                  n_bits ≥ 5000 for convergence.
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {activeTab === 'transmission' && (
+          <TransmissionPanel results={results} />
         )}
 
         {activeTab === 'bitstream' && (
-          <div className="overflow-auto max-h-48">
+          <div className="overflow-auto h-full">
             <table className="w-full text-xs font-mono">
               <thead>
-                <tr className="text-[var(--text-muted)] border-b border-[var(--border-color)] text-left">
+                <tr className="text-[var(--text-muted)]
+                               border-b border-[var(--border-color)] text-left">
                   <th className="py-2 pr-4">#</th>
                   <th className="py-2 pr-4">Alice Bit</th>
                   <th className="py-2 pr-4">A. Basis</th>
@@ -201,10 +237,9 @@ export default function BottomPanel({ className = '' }) {
               <tbody>
                 {results.bit_stream.map((photon, i) => (
                   <tr key={i}
-                      className={`border-b border-[var(--border-color)]
+                    className={`border-b border-[var(--border-color)]
                         ${photon.intercepted ? 'bg-red-950/20' : ''}
-                        ${photon.match ? '' : 'opacity-40'}
-                      `}>
+                        ${photon.match ? '' : 'opacity-40'}`}>
                     <td className="py-1 pr-4 text-[var(--text-muted)]">
                       {photon.index}
                     </td>
@@ -212,14 +247,14 @@ export default function BottomPanel({ className = '' }) {
                       {photon.alice_bit}
                     </td>
                     <td className="py-1 pr-4" style={{
-                      color: photon.alice_basis === '+' 
-                        ? '#6366f1' : '#a855f7'
+                      color: photon.alice_basis === '+'
+                        ? '#00B8E6' : '#c084fc'
                     }}>
                       {photon.alice_basis}
                     </td>
                     <td className="py-1 pr-4" style={{
-                      color: photon.bob_basis === '+' 
-                        ? '#6366f1' : '#a855f7'
+                      color: photon.bob_basis === '+'
+                        ? '#00B8E6' : '#c084fc'
                     }}>
                       {photon.bob_basis}
                     </td>
@@ -227,19 +262,19 @@ export default function BottomPanel({ className = '' }) {
                       {photon.bob_bit}
                     </td>
                     <td className="py-1 pr-4">
-                      <span className={photon.match 
-                        ? 'text-green-400' : 'text-gray-600'}>
-                        {photon.match ? 'âœ“' : 'âœ—'}
+                      <span className={photon.match
+                        ? 'text-[#22C55E]' : 'text-gray-600'}>
+                        {photon.match ? '✓' : '✕'}
                       </span>
                     </td>
                     <td className="py-1 pr-4">
-                      <span className={photon.intercepted 
-                        ? 'text-red-400' : 'text-gray-600'}>
-                        {photon.intercepted ? 'âš¡' : 'â€”'}
+                      <span className={photon.intercepted
+                        ? 'text-[#EF4444]' : 'text-gray-600'}>
+                        {photon.intercepted ? '⚡' : '—'}
                       </span>
                     </td>
                     <td className="py-1 text-[var(--text-subtle)]">
-                      {photon.polarization_angle}Â°
+                      {photon.polarization_angle}°
                     </td>
                   </tr>
                 ))}
@@ -248,7 +283,6 @@ export default function BottomPanel({ className = '' }) {
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   )
 }
-
