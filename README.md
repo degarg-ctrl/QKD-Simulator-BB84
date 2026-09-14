@@ -81,7 +81,7 @@ BB84 (named after its inventors Bennett and Brassard, 1984) works in six stages.
 | Term | What It Means | Why It Matters |
 |:-----|:-------------|:--------------|
 | **Basis** | The encoding/measurement scheme used for a photon. Two options: Rectilinear (+) which encodes bits at 0°/90°, or Diagonal (×) which encodes at 45°/135°. | If Alice and Bob use different bases, the measurement result is random — this is the core of BB84. |
-| **QBER** (Quantum Bit Error Rate) | The percentage of errors in the sifted key. | QBER tells you if Eve is present. At 0% attack, QBER ≈ 0%. At 100% attack, QBER ≈ 25%. |
+| **QBER** (Quantum Bit Error Rate) | The percentage of errors in the sifted key. | QBER tells you if Eve is present. At 0% attack, QBER ≈ 0%. At 100% attack, QBER ≈ 25%. When the sifted key is too short to sample, QBER is reported as **not estimated** (shown as "—") rather than 0%. |
 | **SKR** (Secret Key Rate) | The number of secure key bits extracted per raw bit sent. Calculated as `S × (1 − 2H(Q))`, where H is binary entropy. | If QBER ≥ 11%, SKR = 0 — the channel is too compromised to extract any secure key. |
 | **No-Cloning Theorem** | A fundamental law of quantum mechanics: an unknown quantum state cannot be perfectly duplicated. | This is *why* QKD works. Eve can't copy a photon without disturbing it. |
 | **WCP** (Weak Coherent Pulse) | Real laser sources don't emit exactly 1 photon per pulse — they emit a random number following a Poisson distribution. | Multi-photon pulses create a vulnerability that Eve can exploit (PNS attack). |
@@ -225,12 +225,21 @@ Request Body:
   decoy_enabled:    bool     (toggles decoy state protocol)
 
 Response Body:
-  qber, skr, sifted_key_length, raw_key_length, efficiency
+  qber:             float | null  (null when not estimated — see below)
+  qber_estimated:   bool          (false when qber is null)
+  skr, sifted_key_length, raw_key_length, efficiency
   bit_stream:       PhotonRecord[]  (up to 500 detected photons)
   qber_vs_distance: chart data
   skr_vs_distance:  chart data
   secure_threshold_breached: bool
   wcp_stats, pns_stats, decoy_results: dict (when applicable)
+
+QBER null semantics (small-sample fix, C1):
+  QBER is only reported when the sacrificed sample is large enough
+  (>= 10 sampled sifted bits, i.e. sifted key >= 100 bits). Otherwise
+  qber = null and qber_estimated = false. A null QBER means "not
+  estimated" and MUST NOT be read as 0%. When qber is null, skr = 0
+  (security cannot be certified) and key extraction aborts.
 ```
 
 ---
@@ -242,7 +251,7 @@ The simulator includes **8 guided experiments**, each with pre-configured parame
 | # | Title | Concept | Key Observation |
 |:-:|:------|:--------|:----------------|
 | 1 | **Random Bits — Clean Channel** | Baseline BB84 protocol | QBER ≈ 0%, sifting retains ~50% of raw bits |
-| 2 | **Manual Photon Encoding** | User-defined bits and bases (max 20) | Direct relationship between basis choice and sifted key |
+| 2 | **Manual Photon Encoding** | User-defined bits and bases (300 photons default, so the sifted key reaches the minimum QBER sample) | Direct relationship between basis choice and sifted key |
 | 3 | **Eve Intercepts** | Eavesdropping detection via QBER | QBER spikes to ~25% under full intercept-resend attack |
 | 4 | **Manual Encoding + Eve** | Per-photon interception tracing | See exactly which photons Eve corrupted |
 | 5 | **Quantum Gate Transmission** | Gate transformations (H/X/Y/Z/S/T) | Hadamard switches bases; unexpected transforms mimic eavesdropping |
@@ -287,6 +296,7 @@ All physics values below are enforced by [PHYSICS_CONTRACT.md](docs/PHYSICS_CONT
 | Dark count probability | 10⁻⁵ per time slot |
 | QBER security threshold | 11% |
 | QBER sample fraction | 10% of sifted bits |
+| QBER minimum sample | 10 sampled sifted bits (sifted key >= 100 bits); below this QBER = null |
 | Default mean photon number (μ) | 0.2 |
 
 ---

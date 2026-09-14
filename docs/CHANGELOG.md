@@ -1,6 +1,99 @@
 # Changelog
 Format: [YYYY-MM-DD HH:MM] | Branch | Action | filepath
 
+[2026-09-14 18:22] | fix/c1-p1-reconciliation | modified | backend/pytest.ini
+[2026-09-14 18:22] | fix/c1-p1-reconciliation | modified | backend/core/alice.py
+[2026-09-14 18:22] | fix/c1-p1-reconciliation | modified | frontend/src/api/simulatorAPI.js
+[2026-09-14 18:22] | fix/c1-p1-reconciliation | modified | docs/TEST_LOG.md
+[2026-09-14 18:22] | fix/c1-p1-reconciliation | modified | docs/CHANGELOG.md
+[2026-09-14 18:22] | fix/c1-p1-reconciliation | modified | docs/ERROR_LOG.md
+[2026-09-14 17:44] | fix/qber-small-sample-c1 | modified | backend/core/constants.py
+[2026-09-14 17:44] | fix/qber-small-sample-c1 | modified | backend/core/protocol.py
+[2026-09-14 17:44] | fix/qber-small-sample-c1 | modified | backend/core/metrics.py
+[2026-09-14 17:44] | fix/qber-small-sample-c1 | modified | backend/core/pns.py
+[2026-09-14 17:44] | fix/qber-small-sample-c1 | modified | backend/core/experiments.py
+[2026-09-14 17:44] | fix/qber-small-sample-c1 | modified | backend/models/schemas.py
+[2026-09-14 17:44] | fix/qber-small-sample-c1 | modified | backend/routers/simulation.py
+[2026-09-14 17:45] | fix/qber-small-sample-c1 | modified | frontend/src/store/simulationStore.js
+[2026-09-14 17:45] | fix/qber-small-sample-c1 | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-14 17:45] | fix/qber-small-sample-c1 | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-14 17:45] | fix/qber-small-sample-c1 | modified | frontend/src/components/metrics/QBERChart.jsx
+[2026-09-14 17:45] | fix/qber-small-sample-c1 | modified | frontend/src/components/guide/GuidedExercises.jsx
+[2026-09-14 17:46] | fix/qber-small-sample-c1 | modified | frontend/src/components/experiments/ExperimentModal.jsx
+[2026-09-14 17:46] | fix/qber-small-sample-c1 | modified | frontend/src/components/experiments/PhotonInputTable.jsx
+[2026-09-14 17:46] | fix/qber-small-sample-c1 | modified | backend/tests/runs/2026-05-04_comprehensive-validation/suite/conftest.py
+[2026-09-14 17:46] | fix/qber-small-sample-c1 | modified | backend/tests/runs/2026-05-02_physics-accuracy/suite/conftest.py
+[2026-09-14 17:46] | fix/qber-small-sample-c1 | modified | backend/tests/runs/2026-05-02_physics-accuracy/suite/test_property_based.py
+[2026-09-14 17:47] | fix/qber-small-sample-c1 | created  | backend/tests/runs/2026-09-14_qber-small-sample/suite/conftest.py
+[2026-09-14 17:47] | fix/qber-small-sample-c1 | created  | backend/tests/runs/2026-09-14_qber-small-sample/suite/test_qber_small_sample.py
+[2026-09-14 17:47] | fix/qber-small-sample-c1 | created  | backend/tests/runs/2026-09-14_qber-small-sample/README.md
+[2026-09-14 17:47] | fix/qber-small-sample-c1 | created  | backend/tests/runs/2026-09-14_qber-small-sample/specs/requirements.md
+[2026-09-14 17:47] | fix/qber-small-sample-c1 | created  | backend/tests/runs/2026-09-14_qber-small-sample/specs/design.md
+[2026-09-14 17:47] | fix/qber-small-sample-c1 | created  | backend/tests/runs/2026-09-14_qber-small-sample/specs/tasks.md
+[2026-09-14 17:48] | fix/qber-small-sample-c1 | modified | docs/PHYSICS_CONTRACT.md
+[2026-09-14 17:48] | fix/qber-small-sample-c1 | modified | CODEBASE_RULES.md
+[2026-09-14 17:48] | fix/qber-small-sample-c1 | modified | README.md
+[2026-09-14 17:49] | fix/qber-small-sample-c1 | modified | docs/TEST_LOG.md
+[2026-09-14 17:49] | fix/qber-small-sample-c1 | modified | docs/ERROR_LOG.md
+[2026-09-14 17:49] | fix/qber-small-sample-c1 | modified | docs/CHANGELOG.md
+
+[2026-09-09 23:35] | fix/ui-corrective | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-09 23:34] | fix/ui-corrective | modified | frontend/src/pages/GuidePage.jsx
+[2026-09-09 23:34] | fix/ui-corrective | modified | frontend/src/components/results/OneTimePad.jsx
+[2026-09-09 23:34] | fix/ui-corrective | modified | frontend/src/components/entities/EntityTooltip.jsx
+[2026-09-09 23:34] | fix/ui-corrective | modified | frontend/src/components/experiments/ExperimentModal.jsx
+[2026-09-09 23:34] | fix/ui-corrective | modified | frontend/src/components/guide/ExerciseStep.jsx
+[2026-09-09 23:34] | fix/ui-corrective | modified | frontend/src/components/experiments/PhotonInputTable.jsx
+[2026-09-09 23:34] | fix/ui-corrective | modified | frontend/src/components/controls/ConfigPanel.jsx
+[2026-09-09 23:36] | fix/ui-corrective | modified | frontend/src/components/layout/TopBar.jsx
+[2026-09-09 23:36] | fix/gate-regression | modified | frontend/src/components/layout/Sidebar.jsx
+[2026-09-09 23:37] | fix/gate-regression | modified | frontend/src/components/canvas/QuantumCanvas.jsx
+[2026-09-09 23:37] | fix/zoom-lifecycle | modified | frontend/src/hooks/usePhotonAnimation.js
+[2026-09-09 23:38] | fix/fiber-loss-visual | modified | frontend/src/components/canvas/PhotonParticle.js
+[2026-09-09 23:38] | fix/ui-corrective | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-09 23:39] | fix/ui-corrective | modified | frontend/src/components/layout/SimulatorControls.jsx
+[2026-09-09 23:44] | fix/ui-corrective | modified | frontend/src/index.css
+[2026-09-09 23:41] | test/lifecycle-gates | created  | frontend/src/hooks/usePhotonAnimation.test.js
+[2026-09-09 23:41] | test/lifecycle-gates | created  | backend/tests/runs/2026-09-09_event-model-transmission/suite/test_gates_functional.py
+[2026-09-09 23:46] | fix/ui-corrective | modified | docs/CHANGELOG.md
+[2026-09-09 23:46] | fix/ui-corrective | modified | docs/TEST_LOG.md
+[2026-09-09 23:46] | fix/ui-corrective | modified | docs/ERROR_LOG.md
+[2026-09-09 23:46] | fix/ui-corrective | modified | docs/PHYSICS_CONTRACT.md
+
+[2026-09-09 22:10] | feature/event-model | modified | backend/models/schemas.py
+[2026-09-09 22:12] | feature/event-model | modified | backend/core/channel.py
+[2026-09-09 22:14] | feature/event-model | modified | backend/core/alice.py
+[2026-09-09 22:14] | feature/event-model | modified | backend/core/eve.py
+[2026-09-09 22:16] | feature/event-model | modified | backend/core/pns.py
+[2026-09-09 22:19] | feature/event-model | created  | backend/core/events.py
+[2026-09-09 22:20] | feature/event-model | modified | backend/routers/simulation.py
+[2026-09-09 22:22] | feature/event-model | created  | backend/tests/runs/2026-09-09_event-model-transmission/README.md
+[2026-09-09 22:23] | feature/event-model | created  | backend/tests/runs/2026-09-09_event-model-transmission/suite/conftest.py
+[2026-09-09 22:23] | feature/event-model | created  | backend/tests/runs/2026-09-09_event-model-transmission/suite/test_transmission_accounting.py
+[2026-09-09 22:24] | feature/event-model | created  | backend/tests/runs/2026-09-09_event-model-transmission/suite/test_eve_pns_events.py
+[2026-09-09 22:24] | feature/event-model | created  | backend/tests/runs/2026-09-09_event-model-transmission/specs/requirements.md
+[2026-09-09 22:24] | feature/event-model | created  | backend/tests/runs/2026-09-09_event-model-transmission/specs/design.md
+[2026-09-09 22:24] | feature/event-model | created  | backend/tests/runs/2026-09-09_event-model-transmission/specs/tasks.md
+[2026-09-09 22:24] | feature/event-model | modified | backend/pytest.ini
+[2026-09-09 22:29] | feature/event-model | created  | backend/tests/runs/2026-09-09_event-model-transmission/TEST_RESULTS.md
+[2026-09-09 22:29] | feature/event-model | created  | backend/tests/runs/2026-09-09_event-model-transmission/TEST_FINDINGS.md
+[2026-09-09 22:32] | feature/visualization | created  | frontend/src/components/canvas/visualEncoding.js
+[2026-09-09 22:34] | feature/visualization | modified | frontend/src/components/canvas/PhotonParticle.js
+[2026-09-09 22:35] | feature/visualization | modified | frontend/src/hooks/usePhotonAnimation.js
+[2026-09-09 22:36] | feature/visualization | created  | frontend/src/components/canvas/TransmissionHUD.jsx
+[2026-09-09 22:38] | feature/visualization | modified | frontend/src/components/canvas/QuantumCanvas.jsx
+[2026-09-09 22:42] | feature/visualization | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-09 22:43] | feature/visualization | created  | frontend/src/components/results/TransmissionPanel.jsx
+[2026-09-09 22:45] | feature/visualization | modified | frontend/src/components/inspector/PhotonInspector.jsx
+[2026-09-09 22:48] | feature/visualization | created  | frontend/src/components/canvas/visualEncoding.test.js
+[2026-09-09 22:48] | feature/visualization | modified | frontend/package.json
+[2026-09-09 22:49] | feature/visualization | created  | frontend/vitest.config.js
+[2026-09-09 22:52] | feature/visualization | modified | docs/PHYSICS_CONTRACT.md
+[2026-09-09 22:53] | feature/visualization | modified | docs/CHANGELOG.md
+[2026-09-09 22:53] | feature/visualization | modified | docs/TEST_LOG.md
+[2026-09-09 22:53] | feature/visualization | modified | docs/ERROR_LOG.md
+[2026-09-09 22:53] | feature/visualization | modified | docs/HIGH_LEVEL_DESIGN.md
+
 [2026-08-21 20:20] | chore/test-cleanup | deleted  | extract.txt
 [2026-08-21 20:20] | chore/test-cleanup | deleted  | extract_docx.py
 [2026-08-21 20:20] | chore/test-cleanup | deleted  | extract_docx2.py
@@ -201,3 +294,19 @@ Format was: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 [2026-09-01 02:34] | main | modified | CODEBASE_RULES.md
 [2026-09-01 02:36] | main | deleted  | frontend/build_error.txt
 [2026-09-01 03:10] | main | created  | docs/QKDSimFlow_Technical_Context.md
+[2026-09-14 18:02] | main | created  | backend/core/rng.py
+[2026-09-14 18:02] | main | modified | backend/core/alice.py, backend/core/bob.py, backend/core/channel.py, backend/core/eve.py, backend/core/pns.py, backend/core/protocol.py, backend/core/gates.py
+[2026-09-14 18:02] | main | modified | backend/core/decoy.py, backend/core/metrics.py, backend/core/events.py
+[2026-09-14 18:02] | main | modified | backend/models/schemas.py, backend/routers/simulation.py
+[2026-09-14 18:02] | main | modified | docs/PHYSICS_CONTRACT.md
+[2026-09-14 18:02] | main | modified | backend/pytest.ini
+[2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/README.md
+[2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/specs/requirements.md, backend/tests/runs/2026-09-14_p1-audit-fixes/specs/design.md, backend/tests/runs/2026-09-14_p1-audit-fixes/specs/tasks.md
+[2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/conftest.py
+[2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/test_h1_vacuum_gain.py
+[2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/test_h2_decoy_long_distance.py
+[2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/test_h3_cloning_probe.py
+[2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/test_h4_chart_qber.py
+[2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/test_h5_event_cap.py
+[2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/test_h6_noise_state_consistency.py
+[2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/test_h7_rng_reproducibility.py
