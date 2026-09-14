@@ -1,6 +1,7 @@
 ﻿/**
  * Photon input table for Exp 2 and Exp 4.
- * User configures up to 20 photons manually.
+ * User configures up to 300 photons manually (large enough for the
+ * sifted key to reach the minimum QBER sample; audit fix C1).
  * Each row: bit toggle (0/1) + basis toggle (+/x) + 
  * auto-computed state label.
  */
@@ -9,10 +10,10 @@ import { useState, useCallback } from 'react'
 
 // State label lookup per BB84 rules
 const STATE_LABELS = {
-  '+_0': { label: '|0âŸ©', angle: '0Â°' },
-  '+_1': { label: '|1âŸ©', angle: '90Â°' },
-  'x_0': { label: '|+âŸ©', angle: '45Â°' },
-  'x_1': { label: '|-âŸ©', angle: '135Â°' },
+  '+_0': { label: '|0⟩', angle: '0°' },
+  '+_1': { label: '|1⟩', angle: '90°' },
+  'x_0': { label: '|+⟩', angle: '45°' },
+  'x_1': { label: '|-⟩', angle: '135°' },
 }
 
 const BASIS_COLORS = {
@@ -22,10 +23,10 @@ const BASIS_COLORS = {
 
 const DEFAULT_PHOTON = { bit: 0, basis: '+' }
 
-export default function PhotonInputTable({ 
+export default function PhotonInputTable({
   onChange,      // callback: (bits, bases) => void
-  maxPhotons = 20,
-  initialCount = 8
+  maxPhotons = 300,
+  initialCount = 300
 }) {
   const [photons, setPhotons] = useState(() =>
     Array(initialCount).fill(null).map(() => ({ ...DEFAULT_PHOTON }))
@@ -79,7 +80,7 @@ export default function PhotonInputTable({
     <div className="flex flex-col gap-3">
       {/* Table */}
       <div className="overflow-auto max-h-64 rounded-lg border"
-           style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+        style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
         <table className="w-full text-xs font-mono">
           <thead className="sticky top-0" style={{ backgroundColor: 'var(--panel-dark)' }}>
             <tr className="border-b" style={{ borderColor: 'var(--border-color)' }}>
@@ -101,9 +102,9 @@ export default function PhotonInputTable({
               const stateKey = `${photon.basis}_${photon.bit}`
               const stateInfo = STATE_LABELS[stateKey]
               return (
-                <tr key={i} 
-                    className="border-b transition-colors hover:bg-white/5"
-                    style={{ borderColor: 'var(--border-color)' }}>
+                <tr key={i}
+                  className="border-b transition-colors hover:bg-white/5"
+                  style={{ borderColor: 'var(--border-color)' }}>
                   <td className="px-3 py-1.5" style={{ color: 'var(--text-subtle)' }}>
                     {i + 1}
                   </td>
@@ -118,9 +119,9 @@ export default function PhotonInputTable({
                                      font-mono font-bold border
                                      transition-colors
                                      ${photon.bit === val
-                                       ? 'bg-quantum-blue border-quantum-blue text-white'
-                                       : 'hover:text-[var(--text-primary)]'
-                                     }`}
+                              ? 'bg-quantum-blue border-quantum-blue text-white'
+                              : 'hover:text-[var(--text-primary)]'
+                            }`}
                           style={{
                             borderColor: photon.bit === val ? undefined : 'var(--border-color)',
                             color: photon.bit === val ? undefined : 'var(--text-muted)'
@@ -142,9 +143,9 @@ export default function PhotonInputTable({
                                      font-mono font-bold border
                                      transition-colors
                                      ${photon.basis === val
-                                       ? 'border-transparent text-white'
-                                       : 'hover:text-[var(--text-primary)]'
-                                     }`}
+                              ? 'border-transparent text-white'
+                              : 'hover:text-[var(--text-primary)]'
+                            }`}
                           style={photon.basis === val ? {
                             backgroundColor: BASIS_COLORS[val] + '30',
                             borderColor: BASIS_COLORS[val],
@@ -161,8 +162,8 @@ export default function PhotonInputTable({
                   </td>
                   {/* Auto state label */}
                   <td className="px-3 py-1.5">
-                    <span style={{ 
-                      color: BASIS_COLORS[photon.basis] 
+                    <span style={{
+                      color: BASIS_COLORS[photon.basis]
                     }}>
                       {stateInfo?.label}
                     </span>
@@ -178,7 +179,7 @@ export default function PhotonInputTable({
                       className="hover:text-red-400 disabled:opacity-30 transition-colors"
                       style={{ color: 'var(--text-subtle)' }}
                     >
-                      âœ•
+                      ◊
                     </button>
                   </td>
                 </tr>

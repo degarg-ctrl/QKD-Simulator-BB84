@@ -1,30 +1,29 @@
 ﻿/**
  * src/components/inspector/PhotonInspector.jsx
  *
- * Floating draggable panel showing step-by-step
- * photon journey through the BB84 pipeline.
- * Appears over the canvas after simulation runs.
- * User steps through each detected photon one by one.
+ * Floating draggable panel showing the complete journey of one
+ * pulse/photon through the BB84 pipeline.
+ *
+ * Reads backend event records (event_stream): every field shown —
+ * Alice's encoding, fiber outcome, WCP photon count, Eve's
+ * measurement/PNS action, Bob's detection — comes from the actual
+ * simulated event. Falls back to the legacy bit_stream (detected
+ * photons only) for older responses.
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
-
-const BASIS_COLOR = {
-  '+': '#00aacc',
-  'x': '#ccaa00',
-}
 
 function StageCard({ title, color, children }) {
   return (
     <div className="flex flex-col gap-1.5 p-3 rounded-lg"
-         style={{ 
-           backgroundColor: color + '15',
-           border: `1px solid ${color}40`
-         }}>
+      style={{
+        backgroundColor: color + '15',
+        border: `1px solid ${color}40`
+      }}>
       <div className="text-xs font-mono uppercase tracking-wider"
-           style={{ color }}>
+        style={{ color }}>
         {title}
       </div>
       <div className="flex flex-col gap-1">
@@ -36,11 +35,11 @@ function StageCard({ title, color, children }) {
 
 function DataRow({ label, value, highlight = false }) {
   return (
-    <div className="flex items-center justify-between 
+    <div className="flex items-center justify-between
                     text-xs font-mono">
       <span className="text-[var(--text-muted)]">{label}</span>
-      <span className={highlight 
-        ? 'text-[var(--text-primary)] font-bold' 
+      <span className={highlight
+        ? 'text-[var(--text-primary)] font-bold'
         : 'text-[var(--text-muted)]'}>
         {value}
       </span>
@@ -64,7 +63,10 @@ export default function PhotonInspector() {
   const dragStart = useRef(null)
   const panelRef = useRef(null)
 
-  const photons = results?.bit_stream || []
+  // Full event stream (all outcomes) with legacy fallback
+  const photons = results?.event_stream?.length
+    ? results.event_stream
+    : (results?.bit_stream || [])
   const current = photons[inspector.currentIndex]
   const total = photons.length
 
@@ -79,8 +81,8 @@ export default function PhotonInspector() {
       setInspectorIndex(inspector.currentIndex + 1)
     }, inspector.playSpeed)
     return () => clearTimeout(timer)
-  }, [inspector.isPlaying, inspector.currentIndex, 
-      total, inspector.playSpeed])
+  }, [inspector.isPlaying, inspector.currentIndex,
+    total, inspector.playSpeed])
 
   const goFirst = () => {
     setInspectorPlaying(false)
@@ -140,16 +142,21 @@ export default function PhotonInspector() {
 
   if (!inspector.isOpen || !current) return null
 
-  // Determine result status
+  // Event outcome (backend fields)
   const isMatch = current.match
   const isIntercepted = current.intercepted
-  const isLost = current.lost
-  const inSiftedKey = isMatch && !isLost
+  const isDark = !!current.dark_count
+  const isVacuum = !!current.wcp_vacuum
+  const isPnsSplit = !!current.pns_split
+  const isPnsBlocked = !!current.pns_blocked
+  const fiberSurvived = current.fiber_survived !== false
+  const detected = !!current.detector_detected
+  const inSiftedKey = !!current.sifted
 
   const stateLabel = {
-    '+_0': '|0âŸ©', '+_1': '|1âŸ©',
-    'x_0': '|+âŸ©', 'x_1': '|-âŸ©'
-  }[`${current.alice_basis}_${current.alice_bit}`] || '|?âŸ©'
+    '+_0': '|0⟩', '+_1': '|1⟩',
+    'x_0': '|+⟩', 'x_1': '|−⟩'
+  }[`${current.alice_basis}_${current.alice_bit}`] || '|?⟩'
 
   return (
     <motion.div
@@ -172,46 +179,45 @@ export default function PhotonInspector() {
       onClick={(e) => e.stopPropagation()}
     >
       {/* Panel background */}
-      <div style={{ 
+      <div style={{
         backgroundColor: 'var(--panel-bg)',
         border: '1px solid var(--border-color)'
       }}>
 
         {/* Header */}
-        <div className="flex items-center justify-between 
+        <div className="flex items-center justify-between
                         px-4 py-3"
-             style={{ borderBottom: '1px solid var(--border-color)' }}>
+          style={{ borderBottom: '1px solid var(--border-color)' }}>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-quantum-blue 
+            <div className="w-2 h-2 rounded-full bg-quantum-blue
                             animate-pulse" />
-            <span className="text-xs font-mono text-[var(--text-primary)] 
+            <span className="text-xs font-mono text-[var(--text-primary)]
                              uppercase tracking-wider">
-              Photon Inspector
+              Pulse Inspector
             </span>
           </div>
           <button
             onClick={closeInspector}
-            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] 
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)]
                        transition-colors text-sm"
           >
-            âœ•
+            ✕
           </button>
         </div>
 
         {/* Progress */}
-        <div className="px-4 py-2 flex items-center 
+        <div className="px-4 py-2 flex items-center
                         justify-between"
-             style={{ borderBottom: '1px solid var(--border-color)' }}>
+          style={{ borderBottom: '1px solid var(--border-color)' }}>
           <span className="text-xs font-mono text-[var(--text-muted)]">
-            Photon {inspector.currentIndex + 1} of {total}
+            Event {inspector.currentIndex + 1} of {total}
           </span>
-          {/* Progress bar */}
           <div className="flex-1 mx-3 h-1 bg-[var(--panel-dark)] rounded-full">
             <div
               className="h-full rounded-full transition-all"
               style={{
                 width: `${((inspector.currentIndex + 1) / total) * 100}%`,
-                backgroundColor: '#00aacc'
+                backgroundColor: '#22d3ee'
               }}
             />
           </div>
@@ -224,135 +230,215 @@ export default function PhotonInspector() {
         <div className="p-3 flex flex-col gap-2">
 
           {/* Alice stage */}
-          <StageCard title="Alice â€” Encoding" 
-                     color="#00aacc">
-            <DataRow label="Secret bit" 
-                     value={current.alice_bit} 
-                     highlight />
+          <StageCard title="Alice — Encoding" color="#22d3ee">
+            <DataRow label="Secret bit"
+              value={current.alice_bit}
+              highlight />
             <DataRow label="Basis chosen"
-                     value={current.alice_basis === '+'
-                       ? '+ Rectilinear'
-                       : 'Ã— Diagonal'} />
+              value={current.alice_basis === '+'
+                ? '+ Rectilinear'
+                : '× Diagonal'} />
             <DataRow label="Quantum state"
-                     value={stateLabel} highlight />
+              value={stateLabel} highlight />
             <DataRow label="Polarization"
-                     value={`${current.polarization_angle}Â°`} />
+              value={`${current.alice_polarization_angle
+                ?? current.polarization_angle}°`} />
           </StageCard>
 
           {/* Channel stage */}
           <StageCard title="Quantum Channel"
-                     color={isLost ? '#ff4444' : '#00ff88'}>
+            color={fiberSurvived && !isVacuum
+              ? '#34d399' : '#64748b'}>
             <DataRow label="Distance"
-                     value={`${params.distance_km} km`} />
-            <DataRow label="Photon survived"
-                     value={isLost ? 'âœ— Lost' : 'âœ“ Yes'}
-                     highlight={!isLost} />
-            <DataRow label="Dark count"
-                     value={current.dark_count 
-                       ? 'âš¡ Yes' : 'No'} />
+              value={`${params.distance_km} km`} />
+            <DataRow label="Fiber survived"
+              value={isVacuum ? '— vacuum (no photon)'
+                : fiberSurvived ? '✓ Yes' : '✗ Absorbed'}
+              highlight={fiberSurvived && !isVacuum} />
+            {current.noise_flipped && (
+              <DataRow label="Noise flip"
+                value="⚡ detected bit flipped"
+                highlight />
+            )}
           </StageCard>
 
+          {/* WCP stage (only when the model is active) */}
+          {(current.wcp_photon_count != null || isVacuum) && (
+            <StageCard title="WCP Pulse" color="#c084fc">
+              <DataRow label="Photon count (n)"
+                value={current.wcp_photon_count ?? 0}
+                highlight />
+              <DataRow label="Category"
+                value={isVacuum ? 'Vacuum (n=0)'
+                  : current.wcp_single ? 'Single (n=1)'
+                    : 'Multiphoton (n≥2)'} />
+            </StageCard>
+          )}
+
           {/* Eve stage */}
-          <StageCard title="Eve â€” Eavesdropper"
-                     color={isIntercepted 
-                       ? '#ff4444' : '#555555'}>
-            <DataRow label="Intercepted"
-                     value={isIntercepted 
-                       ? 'âš¡ YES â€” state disturbed' 
-                       : 'âœ“ Not intercepted'}
-                     highlight={isIntercepted} />
-            {isIntercepted && (
-              <DataRow label="Basis mismatch"
-                       value={current.basis_mismatch
-                         ? 'Yes â€” error introduced'
-                         : 'No â€” correct guess'} />
+          <StageCard title="Eve — Eavesdropper"
+            color={isIntercepted || isPnsSplit || isPnsBlocked
+              ? '#ef4444' : '#475569'}>
+            {isIntercepted ? (
+              <>
+                <DataRow label="Intercepted"
+                  value="⚡ YES — measured & re-sent"
+                  highlight />
+                <DataRow label="Eve basis"
+                  value={current.eve_basis === '+'
+                    ? '+ Rectilinear' : '× Diagonal'} />
+                <DataRow label="Eve measured bit"
+                  value={current.eve_bit} />
+                <DataRow label="Basis vs Alice"
+                  value={current.eve_basis_match
+                    ? '✓ Match — no disturbance'
+                    : '✗ Mismatch — state disturbed'}
+                  highlight={!current.eve_basis_match} />
+                <DataRow label="Re-sent angle"
+                  value={`${current.eve_resend_angle}°`} />
+              </>
+            ) : isPnsSplit ? (
+              <>
+                <DataRow label="Attack" value="PNS — split" highlight />
+                <DataRow label="Multiphoton pulse"
+                  value="✓ Eve retained one photon" highlight />
+                <DataRow label="Eve has copy" value="YES" />
+                <DataRow label="QBER impact"
+                  value="none (measures after basis reveal)" />
+              </>
+            ) : isPnsBlocked ? (
+              <>
+                <DataRow label="Attack" value="PNS — block" highlight />
+                <DataRow label="Single photon"
+                  value="✗ blocked — Bob receives nothing"
+                  highlight />
+              </>
+            ) : (
+              <DataRow label="Intercepted"
+                value="✓ Not intercepted" />
             )}
           </StageCard>
 
           {/* Bob stage */}
-          <StageCard title="Bob â€” Measurement"
-                     color="#00ff88">
-            <DataRow label="Basis chosen"
-                     value={current.bob_basis === '+'
-                       ? '+ Rectilinear'
-                       : current.bob_basis === 'x'
-                         ? 'Ã— Diagonal'
-                         : 'N/A (lost)'} />
-            <DataRow label="Measured bit"
-                     value={current.bob_bit ?? 'N/A'}
-                     highlight />
-            <DataRow label="Basis match"
-                     value={isMatch ? 'âœ“ Match' : 'âœ— Mismatch'} />
+          <StageCard title="Bob — Measurement"
+            color={detected || isDark ? '#34d399' : '#94a3b8'}>
+            {isDark ? (
+              <>
+                <DataRow label="Outcome"
+                  value="⚡ Dark count (spurious click)"
+                  highlight />
+                <DataRow label="Basis chosen"
+                  value={current.bob_basis === '+'
+                    ? '+ Rectilinear' : '× Diagonal'} />
+                <DataRow label="Registered bit"
+                  value={`${current.bob_bit} (random)`} />
+              </>
+            ) : !fiberSurvived || isPnsBlocked || isVacuum ? (
+              <DataRow label="Outcome"
+                value={isPnsBlocked ? '✗ Blocked at Eve'
+                  : isVacuum ? '— nothing to detect'
+                    : '✗ Lost in fiber'} />
+            ) : !detected ? (
+              <DataRow label="Outcome"
+                value="✗ Detector miss (efficiency draw)"
+                highlight />
+            ) : (
+              <>
+                <DataRow label="Outcome"
+                  value="✓ Real detection" highlight />
+                <DataRow label="Basis chosen"
+                  value={current.bob_basis === '+'
+                    ? '+ Rectilinear'
+                    : current.bob_basis === 'x'
+                      ? '× Diagonal'
+                      : 'N/A'} />
+                <DataRow label="Measured bit"
+                  value={current.bob_bit ?? 'N/A'}
+                  highlight />
+                <DataRow label="Basis match"
+                  value={isMatch ? '✓ Match' : '✗ Mismatch'} />
+              </>
+            )}
           </StageCard>
 
           {/* Result */}
           <div className="p-3 rounded-lg text-center"
-               style={{
-                 backgroundColor: inSiftedKey 
-                   ? '#00ff8820' : '#ff444420',
-                 border: `1px solid ${inSiftedKey 
-                   ? '#00ff8840' : '#ff444440'}`
-               }}>
+            style={{
+              backgroundColor: inSiftedKey
+                ? '#34d39920' : '#f8717120',
+              border: `1px solid ${inSiftedKey
+                ? '#34d39940' : '#f8717140'}`
+            }}>
             <div className="text-sm font-mono font-bold"
-                 style={{ 
-                   color: inSiftedKey ? '#00ff88' : '#ff4444' 
-                 }}>
-              {isLost
-                ? 'âœ— Lost in channel'
-                : !isMatch
-                  ? 'âœ— Discarded â€” basis mismatch'
-                  : isIntercepted
-                    ? 'âš¡ Kept but may contain error'
-                    : 'âœ“ Added to sifted key'
+              style={{
+                color: inSiftedKey ? '#34d399' : '#f87171'
+              }}>
+              {isDark
+                ? '⚡ Dark count — not a real photon'
+                : isVacuum
+                  ? '— Vacuum pulse — nothing sent'
+                  : isPnsBlocked
+                    ? '✗ Blocked by Eve (PNS)'
+                    : !fiberSurvived
+                      ? '✗ Lost in fiber'
+                      : !detected
+                        ? '✗ Detector miss — not registered'
+                        : !isMatch
+                          ? '✗ Discarded — basis mismatch'
+                          : isPnsSplit
+                            ? '⚡ Sifted — Eve holds a copy (PNS)'
+                            : isIntercepted
+                              ? '⚡ Sifted — may contain Eve error'
+                              : '✓ Added to sifted key'
               }
             </div>
           </div>
         </div>
 
         {/* Controls */}
-        <div className="flex items-center justify-between 
+        <div className="flex items-center justify-between
                         px-3 py-2"
-             style={{ borderTop: '1px solid var(--border-color)' }}>
+          style={{ borderTop: '1px solid var(--border-color)' }}>
           <button onClick={goFirst}
-                  disabled={inspector.currentIndex === 0}
-                  className="px-2 py-1 text-xs font-mono
+            disabled={inspector.currentIndex === 0}
+            className="px-2 py-1 text-xs font-mono
                              text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
-            |â—€
+            |◀
           </button>
           <button onClick={goPrev}
-                  disabled={inspector.currentIndex === 0}
-                  className="px-2 py-1 text-xs font-mono
+            disabled={inspector.currentIndex === 0}
+            className="px-2 py-1 text-xs font-mono
                              text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
-            â—€ Prev
+            ◀ Prev
           </button>
           <button onClick={togglePlay}
-                  className="px-4 py-1.5 text-xs font-mono
+            className="px-4 py-1.5 text-xs font-mono
                              rounded font-bold transition-colors"
-                  style={{
-                    backgroundColor: inspector.isPlaying
-                      ? '#ff444430' : '#00aacc30',
-                    color: inspector.isPlaying
-                      ? '#ff4444' : '#00aacc',
-                    border: `1px solid ${inspector.isPlaying
-                      ? '#ff444460' : '#00aacc60'}`
-                  }}>
-            {inspector.isPlaying ? 'â¸ Pause' : 'â–¶ Play'}
+            style={{
+              backgroundColor: inspector.isPlaying
+                ? '#ef444430' : '#22d3ee30',
+              color: inspector.isPlaying
+                ? '#ef4444' : '#22d3ee',
+              border: `1px solid ${inspector.isPlaying
+                ? '#ef444460' : '#22d3ee60'}`
+            }}>
+            {inspector.isPlaying ? '⏸ Pause' : '▶ Play'}
           </button>
           <button onClick={goNext}
-                  disabled={inspector.currentIndex >= total - 1}
-                  className="px-2 py-1 text-xs font-mono
+            disabled={inspector.currentIndex >= total - 1}
+            className="px-2 py-1 text-xs font-mono
                              text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
-            Next â–¶
+            Next ▶
           </button>
           <button onClick={goLast}
-                  disabled={inspector.currentIndex >= total - 1}
-                  className="px-2 py-1 text-xs font-mono
+            disabled={inspector.currentIndex >= total - 1}
+            className="px-2 py-1 text-xs font-mono
                              text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
-            â–¶|
+            ▶|
           </button>
         </div>
       </div>
@@ -362,4 +448,3 @@ export default function PhotonInspector() {
 
 // Depends on: store/simulationStore.js
 // Used by: pages/SimulatorPage.jsx (rendered over canvas)
-

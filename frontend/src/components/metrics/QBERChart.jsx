@@ -5,8 +5,8 @@
  * Data comes from results.qber_vs_distance from backend.
  * Shows a horizontal red threshold line at 11%.
  */
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, 
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ReferenceLine, ResponsiveContainer
 } from 'recharts'
 
@@ -40,39 +40,43 @@ export default function QBERChart({ data = [], currentQBER = null }) {
                          uppercase tracking-wider">
           QBER vs Distance (Theoretical)
         </span>
-        {currentQBER !== null && (
+        {currentQBER !== null && currentQBER !== undefined && (
           <span className="text-xs font-mono text-indigo-400">
             Simulated: {(currentQBER * 100).toFixed(2)}%
           </span>
         )}
       </div>
       <ResponsiveContainer width="100%" height={160}>
-        <LineChart data={chartData} 
-                   margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+        <LineChart data={chartData}
+          margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-          <XAxis 
-            dataKey="distance" 
+          <XAxis
+            dataKey="distance"
             stroke="var(--text-muted)"
             tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }}
-            label={{ value: 'km', position: 'insideRight', 
-                     fill: 'var(--text-muted)', fontSize: 10 }}
+            label={{
+              value: 'km', position: 'insideRight',
+              fill: 'var(--text-muted)', fontSize: 10
+            }}
           />
-          <YAxis 
+          <YAxis
             stroke="var(--text-muted)"
             tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }}
             tickFormatter={v => `${v}%`}
           />
           <Tooltip content={<CustomTooltip />} />
-          <ReferenceLine 
-            y={11} 
-            stroke="#ef4444" 
+          <ReferenceLine
+            y={11}
+            stroke="#ef4444"
             strokeDasharray="4 4"
-            label={{ value: '11% threshold', fill: '#ef4444', 
-                     fontSize: 9, fontFamily: 'monospace' }}
+            label={{
+              value: '11% threshold', fill: '#ef4444',
+              fontSize: 9, fontFamily: 'monospace'
+            }}
           />
-          <Line 
-            type="monotone" 
-            dataKey="qber" 
+          <Line
+            type="monotone"
+            dataKey="qber"
             stroke="#6366f1"
             strokeWidth={2}
             dot={false}

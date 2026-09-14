@@ -149,7 +149,7 @@ export default function OneTimePad() {
         />
         <div className="text-xs font-mono text-[var(--text-subtle)]">
           {message.length}/{maxChars} characters used
-          Â· {message.length * 8}/{keyBits.length} key bits consumed
+          · {message.length * 8}/{keyBits.length} key bits consumed
         </div>
       </div>
 
@@ -256,7 +256,7 @@ export default function OneTimePad() {
                         color: encryption.isCorrect
                           ? '#00ff88' : '#ff4444' 
                       }}>
-                  {encryption.isCorrect ? 'âœ“' : 'âœ—'}
+                  {encryption.isCorrect ? '✓' : '✕'}
                 </span>
               </div>
             </div>
@@ -269,9 +269,9 @@ export default function OneTimePad() {
                  backgroundColor: 'var(--panel-dark)',
                  border: '1px solid var(--border-color)'
                }}>
-            <span className="text-[var(--text-muted)]">â„¹</span>
+            <span className="text-[var(--text-muted)]">ℹ</span>
             {' '}XOR encryption with a random key is the 
-            one-time pad â€” proven by Claude Shannon (1949) 
+            one-time pad — proven by Claude Shannon (1949) 
             to be information-theoretically secure when the 
             key is random, secret, used only once, and at 
             least as long as the message. BB84 provides 
