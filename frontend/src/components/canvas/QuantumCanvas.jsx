@@ -6,47 +6,30 @@
  *
  * Layout (canvas coordinates, 1200x400px):
  *
- * ALICE(120,200) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ EVE(600,200) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ BOB(1080,200)
- *     â”‚                                  â”‚                               â”‚
- *  Lane 1 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
- *  Lane 2 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
- *  Lane 3 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ * ALICE(120,200) ────────────────── EVE(600,200) ────────────────── BOB(1080,200)
+ *     │                                  │                               │
+ *  Lane 1 ════════════════════════════════════════════════════════════════
+ *  Lane 2 ════════════════════════════════════════════════════════════════
+ *  Lane 3 ════════════════════════════════════════════════════════════════
  *
- * Canvas is responsive â€” scales to container width maintaining aspect ratio.
+ * Canvas is responsive — scales to container width maintaining aspect ratio.
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react'
+import { MousePointer2, Hand } from 'lucide-react'
 import useSimulationStore from '../../store/simulationStore'
 import { usePhotonAnimation } from '../../hooks/usePhotonAnimation'
 import GateStateVector from '../gates/GateStateVector'
 import GateContextMenu from '../gates/GateContextMenu'
-// â”€â”€â”€ DESIGN CONSTANTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const CANVAS_WIDTH = 1200
-const CANVAS_HEIGHT = 400
-const ALICE_X = 120
-const BOB_X = 1080
-const EVE_X = 600
-const ENTITY_Y = 200
-
-const LANE_Y_POSITIONS = [150, 200, 250]  // 3 channel lanes
-
-const COLORS = {
-  background:      '#1a1a2e',
-  laneLine:        '#ffffff',
-  laneGlow:        'rgba(255,255,255,0.3)',
-  aliceNode:       '#00d4ff',
-  bobNode:         '#00ff88',
-  eveNode:         '#ff4444',
-  eveNodeInactive: '#555555',
-  nodeText:        '#ffffff',
-  nodeBorder:      'rgba(255,255,255,0.4)',
-  photonBlue:      '#00d4ff',
-  photonPurple:    '#ffd700',
-  photonLost:      '#555555',
-  labelText:       '#aaaaaa',
-}
-
-const NODE_RADIUS = 28
+import TransmissionHUD from './TransmissionHUD'
+import {
+  CANVAS_WIDTH, CANVAS_HEIGHT, ALICE_X, BOB_X, EVE_X, ENTITY_Y,
+  LANE_Y_POSITIONS, COLORS, PALETTE, NODE_RADIUS,
+} from './visualEncoding'
+// ─── DESIGN CONSTANTS ────────────────────────────────────────────
+// Geometry, lanes, palette and NODE_RADIUS now come from
+// ./visualEncoding (single source of truth, shared with
+// PhotonParticle and the animation scheduler).
 
 export default function QuantumCanvas({ className = '' }) {
 
@@ -56,14 +39,14 @@ export default function QuantumCanvas({ className = '' }) {
   const [contextMenu, setContextMenu] = useState(null)
   const [showStateVectors, setShowStateVectors] = useState(true)
   const [hoveredGateId, setHoveredGateId] = useState(null)
-  
+
   const { results, animation, params, addGate, placedGates, removeGate, setSelectedGate, deleteGate, copyGate, viewResetSignal } = useSimulationStore()
 
   // Viewport & Pan states
   const [scale, setScale] = useState(1)
   const [toolMode, setToolMode] = useState('cursor') // 'cursor' | 'hand'
   const [baseWidth, setBaseWidth] = useState(1200)
-  
+
   const isDragging = useRef(false)
   const lastMouse = useRef({ x: 0, y: 0 })
 
@@ -84,23 +67,36 @@ export default function QuantumCanvas({ className = '' }) {
     ctx.save()
 
     const r = NODE_RADIUS
+    // Slow time-based pulse for active nodes (subtle, non-flashy)
+    const t = Date.now() / 1000
+    const pulse = 0.5 + 0.5 * Math.sin(t * 2.2)
 
     if (type === 'alice') {
-      // Laser source â€” rectangle housing + emission triangle
+      // Laser source — rectangle housing + emission triangle
       const w = r * 2.2, h = r * 1.4
       ctx.fillStyle = color + '25'
       ctx.strokeStyle = color
       ctx.lineWidth = 2
       ctx.beginPath()
-      ctx.roundRect(x - w/2, y - h/2, w, h, 4)
+      ctx.roundRect(x - w / 2, y - h / 2, w, h, 4)
       ctx.fill()
       ctx.stroke()
+      // Source aperture: soft pulsing emission glow at the output
+      const apertureX = x + w / 2 + 10
+      const glow = ctx.createRadialGradient(
+        apertureX, y, 0, apertureX, y, 14 + pulse * 6)
+      glow.addColorStop(0, color + '55')
+      glow.addColorStop(1, color + '00')
+      ctx.fillStyle = glow
+      ctx.beginPath()
+      ctx.arc(apertureX, y, 14 + pulse * 6, 0, Math.PI * 2)
+      ctx.fill()
       // Emission triangle on right side
       ctx.fillStyle = color + '50'
       ctx.beginPath()
-      ctx.moveTo(x + w/2, y - 6)
-      ctx.lineTo(x + w/2 + 10, y)
-      ctx.lineTo(x + w/2, y + 6)
+      ctx.moveTo(x + w / 2, y - 6)
+      ctx.lineTo(x + w / 2 + 10, y)
+      ctx.lineTo(x + w / 2, y + 6)
       ctx.closePath()
       ctx.fill()
       // Laser text
@@ -110,20 +106,31 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.textBaseline = 'middle'
       ctx.fillText('SRC', x, y)
     } else if (type === 'bob') {
-      // Detector â€” funnel/trapezoid shape
+      // Detector — funnel/trapezoid shape
       const w = r * 2.2, h = r * 1.4
       ctx.fillStyle = color + '25'
       ctx.strokeStyle = color
       ctx.lineWidth = 2
       ctx.beginPath()
-      // Funnel â€” wider on left (receiving), narrow on right (sensing)
-      ctx.moveTo(x - w/2, y - h/2)
-      ctx.lineTo(x + w/2, y - h/4)
-      ctx.lineTo(x + w/2, y + h/4)
-      ctx.lineTo(x - w/2, y + h/2)
+      // Funnel — wider on left (receiving), narrow on right (sensing)
+      ctx.moveTo(x - w / 2, y - h / 2)
+      ctx.lineTo(x + w / 2, y - h / 4)
+      ctx.lineTo(x + w / 2, y + h / 4)
+      ctx.lineTo(x - w / 2, y + h / 2)
       ctx.closePath()
       ctx.fill()
       ctx.stroke()
+      // Detector arc: subtle pulsing sensing region on the left face
+      const senseX = x - w / 2
+      const arc = ctx.createRadialGradient(
+        senseX, y, 0, senseX, y, 12 + pulse * 5)
+      arc.addColorStop(0, color + '44')
+      arc.addColorStop(1, color + '00')
+      ctx.fillStyle = arc
+      ctx.beginPath()
+      ctx.arc(senseX, y, 12 + pulse * 5, 0, Math.PI * 2)
+      ctx.fill()
+
       // Detector text
       ctx.fillStyle = color
       ctx.font = 'bold 10px monospace'
@@ -131,7 +138,7 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.textBaseline = 'middle'
       ctx.fillText('DET', x, y)
     } else if (type === 'eve') {
-      // Spy tap â€” diamond/rhombus shape
+      // Spy tap — diamond/rhombus shape
       const s = r * 1.1
       ctx.fillStyle = color + '20'
       ctx.strokeStyle = color
@@ -144,7 +151,7 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.closePath()
       ctx.fill()
       ctx.stroke()
-      // Tap icon â€” crosshair lines
+      // Tap icon — crosshair lines
       ctx.strokeStyle = color + '60'
       ctx.lineWidth = 1
       ctx.beginPath()
@@ -153,6 +160,15 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.moveTo(x, y - s * 0.4)
       ctx.lineTo(x, y + s * 0.4)
       ctx.stroke()
+      // Active Eve: pulsing halo (she only "exists" when attacking)
+      const active = !sublabel.includes('Inactive')
+      if (active) {
+        ctx.beginPath()
+        ctx.arc(x, y, s + 6 + pulse * 5, 0, Math.PI * 2)
+        ctx.strokeStyle = color + (pulse > 0.5 ? '55' : '22')
+        ctx.lineWidth = 1.5
+        ctx.stroke()
+      }
     } else {
       // Fallback: solid bordered circle
       ctx.beginPath()
@@ -196,64 +212,108 @@ export default function QuantumCanvas({ className = '' }) {
    * Draw the three horizontal channel lanes.
    */
   const drawChannelLanes = useCallback((ctx) => {
+    /**
+     * ONE physical channel, three VISUAL lanes.
+     *
+     * The lanes are drawn as sub-paths inside a single fiber envelope
+     * (a subtle bounded region between Alice and Bob) so the layout
+     * reads as one optical channel, not three independent fibers.
+     * A horizontal attenuation gradient (stronger → fainter with
+     * distance) hints at Beer-Lambert loss along the fiber; the
+     * label states the simulated distance.
+     */
     ctx.save()
 
     const eveActive = params.attack_prob > 0
+    const channelLeft = ALICE_X + NODE_RADIUS
+    const channelRight = BOB_X - NODE_RADIUS
+    const channelWidth = channelRight - channelLeft
+    const envelopeTop = LANE_Y_POSITIONS[0] - 26
+    const envelopeBottom = LANE_Y_POSITIONS[2] + 26
 
+    // ── Fiber envelope: one channel boundary ──────────────────
+    const grad = ctx.createLinearGradient(channelLeft, 0, channelRight, 0)
+    grad.addColorStop(0, 'rgba(148, 163, 184, 0.10)')
+    grad.addColorStop(1, 'rgba(148, 163, 184, 0.03)')
+    ctx.fillStyle = grad
+    ctx.beginPath()
+    ctx.roundRect(channelLeft, envelopeTop, channelWidth,
+      envelopeBottom - envelopeTop, 14)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.22)'
+    ctx.lineWidth = 1
+    ctx.stroke()
+
+    // ── Central optical path (faint guide through all lanes) ──
+    ctx.setLineDash([2, 6])
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(channelLeft, ENTITY_Y)
+    ctx.lineTo(channelRight, ENTITY_Y)
+    ctx.stroke()
+    ctx.setLineDash([])
+
+    // ── Visual lanes (dashed, fading with distance) ───────────
     LANE_Y_POSITIONS.forEach((y, laneIndex) => {
-      ctx.strokeStyle = 'rgba(255,255,255,0.5)'
+      const laneGrad = ctx.createLinearGradient(
+        channelLeft, 0, channelRight, 0)
+      laneGrad.addColorStop(0, 'rgba(255,255,255,0.55)')
+      laneGrad.addColorStop(1, 'rgba(255,255,255,0.18)')
+      ctx.strokeStyle = laneGrad
       ctx.lineWidth = 2
       ctx.setLineDash([10, 15])
 
       if (eveActive) {
         ctx.beginPath()
-        ctx.moveTo(ALICE_X + NODE_RADIUS, y)
+        ctx.moveTo(channelLeft, y)
         ctx.lineTo(EVE_X - NODE_RADIUS, y)
         ctx.stroke()
 
         ctx.beginPath()
         ctx.moveTo(EVE_X + NODE_RADIUS, y)
-        ctx.lineTo(BOB_X - NODE_RADIUS, y)
+        ctx.lineTo(channelRight, y)
         ctx.stroke()
       } else {
         ctx.beginPath()
-        ctx.moveTo(ALICE_X + NODE_RADIUS, y)
-        ctx.lineTo(BOB_X - NODE_RADIUS, y)
+        ctx.moveTo(channelLeft, y)
+        ctx.lineTo(channelRight, y)
         ctx.stroke()
       }
 
-      // Lane label on far left
+      // Cloning probe corruption segment (existing behavior)
       ctx.setLineDash([])
-      ctx.fillStyle = 'rgba(255,255,255,0.3)'
-      ctx.font = '9px JetBrains Mono, monospace'
-      ctx.textAlign = 'left'
-      ctx.fillText(`LANE 0${laneIndex + 1}`, 20, y + 4)
-
-      // Check if any cloning probe is on this lane
       const cloningProbes = placedGates.filter(
-        g => (g.type === 'clone' || g.type === 'cnot') && 
-             g.lane === laneIndex
+        g => (g.type === 'clone' || g.type === 'cnot') &&
+          g.lane === laneIndex
       )
-      
       if (cloningProbes.length > 0) {
         const probe = cloningProbes[0]
-        const channelWidth = BOB_X - ALICE_X
-        const probeX = ALICE_X + channelWidth * probe.position
-        
-        // Draw corrupted segment in red after probe
+        const probeX = ALICE_X + (BOB_X - ALICE_X) * probe.position
         ctx.beginPath()
         ctx.setLineDash([4, 4])
         ctx.strokeStyle = '#ef444460'
         ctx.lineWidth = 1.5
         ctx.moveTo(probeX, y)
-        ctx.lineTo(BOB_X - NODE_RADIUS, y)
+        ctx.lineTo(channelRight, y)
         ctx.stroke()
         ctx.setLineDash([])
       }
     })
 
+    // ── Distance label (top center of the envelope) ───────────
+    ctx.fillStyle = 'rgba(148, 163, 184, 0.75)'
+    ctx.font = '10px JetBrains Mono, monospace'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'bottom'
+    ctx.fillText(
+      `fiber · ${params.distance_km} km · α = 0.2 dB/km`,
+      (channelLeft + channelRight) / 2, envelopeTop - 6
+    )
+    ctx.textBaseline = 'alphabetic'
+
     ctx.restore()
-  }, [placedGates, params.attack_prob])
+  }, [placedGates, params.attack_prob, params.distance_km])
 
   /**
    * Draw placed gates on channel lanes.
@@ -268,46 +328,46 @@ export default function QuantumCanvas({ className = '' }) {
       const laneY = LANE_Y_POSITIONS[gate.lane]
 
       if (gate.type === 'clone' || gate.type === 'cnot') {
-        // Cloning probe â€” render as red danger symbol
+        // Cloning probe — render as red danger symbol
         const size = 26
-        
+
         // Red pulsing background
         ctx.fillStyle = '#ef444420'
         ctx.strokeStyle = '#ef4444'
         ctx.lineWidth = 1.5
         ctx.beginPath()
-        ctx.roundRect(gateX - size/2, laneY - size/2, 
-                      size, size, 4)
+        ctx.roundRect(gateX - size / 2, laneY - size / 2,
+          size, size, 4)
         ctx.fill()
         ctx.stroke()
-      
-      ctx.shadowBlur = 0
-        
+
+        ctx.shadowBlur = 0
+
         // Symbol
         ctx.fillStyle = '#ef4444'
         ctx.font = 'bold 11px monospace'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText(gate.type === 'clone' ? 'âŠ—' : 'âŠ•', 
-                     gateX, laneY)
-        
+        ctx.fillText(gate.type === 'clone' ? '⊗' : '⊕',
+          gateX, laneY)
+
         // Warning label below
         ctx.fillStyle = '#ef444480'
         ctx.font = '8px monospace'
-        ctx.fillText('NO-CLONE', gateX, laneY + size/2 + 8)
-        
+        ctx.fillText('NO-CLONE', gateX, laneY + size / 2 + 8)
+
         return  // Skip general rendering for this gate
       }
 
       const gateColor = gate.color || '#6366f1'
 
-      // Gate background square â€” solid fill, no shadow
+      // Gate background square — solid fill, no shadow
       const size = 32
       ctx.fillStyle = gateColor + '40'
       ctx.strokeStyle = gateColor
       ctx.lineWidth = 2.5
       ctx.beginPath()
-      ctx.roundRect(gateX - size/2, laneY - size/2, size, size, 6)
+      ctx.roundRect(gateX - size / 2, laneY - size / 2, size, size, 6)
       ctx.fill()
       ctx.stroke()
 
@@ -372,7 +432,7 @@ export default function QuantumCanvas({ className = '' }) {
     // Reset transform completely before redrawing
     ctx.setTransform(1, 0, 0, 1, 0, 0)
     ctx.clearRect(0, 0, width, height)
-    
+
     // Scale everything by dpr and then by the dynamic scaling factor (zoomedWidth / 1200)
     // This maps the 1200x400 internal coordinate system perfectly to the canvas pixels!
     const scaleFactorX = (zoomedWidth / CANVAS_WIDTH) * dpr
@@ -386,19 +446,29 @@ export default function QuantumCanvas({ className = '' }) {
     drawChannelLanes(ctx)
     drawGates(ctx)
 
-    drawEntityNode(ctx, ALICE_X, ENTITY_Y, 'ALICE', COLORS.aliceNode, 'Sender', 'alice')
-    drawEntityNode(ctx, BOB_X, ENTITY_Y, 'BOB', COLORS.bobNode, 'Receiver', 'bob')
+    const sourceModel = params.wcp_enabled ? 'WCP source' : 'Single-photon'
+    drawEntityNode(ctx, ALICE_X, ENTITY_Y, 'ALICE',
+      PALETTE.aliceNode, sourceModel, 'alice')
+    drawEntityNode(ctx, BOB_X, ENTITY_Y, 'BOB',
+      PALETTE.bobNode,
+      params.wcp_enabled ? 'η=0.85 · dark 1e-5' : 'ideal detector',
+      'bob')
 
-    const eveColor = params.attack_prob > 0 
-      ? COLORS.eveNode 
-      : COLORS.eveNodeInactive
-    const eveSublabel = params.attack_prob > 0 
-      ? `${(params.attack_prob * 100).toFixed(0)}% intercept`
+    const eveActive = params.attack_prob > 0
+    const eveColor = eveActive
+      ? PALETTE.eveNode
+      : PALETTE.eveNodeInactive
+    const eveSublabel = eveActive
+      ? params.attack_strategy === 'pns'
+        ? `PNS · p=${(params.attack_prob * 100).toFixed(0)}%`
+        : `${(params.attack_prob * 100).toFixed(0)}% intercept`
       : 'Inactive'
     drawEntityNode(ctx, EVE_X, ENTITY_Y, 'EVE', eveColor, eveSublabel, 'eve')
 
     ctx.restore()
-  }, [drawBackground, drawChannelLanes, drawEntityNode, drawGates, params.attack_prob, zoomedWidth, zoomedHeight])
+  }, [drawBackground, drawChannelLanes, drawEntityNode, drawGates,
+    params.attack_prob, params.attack_strategy, params.wcp_enabled,
+    zoomedWidth, zoomedHeight])
 
   /**
    * Handle gate drop from sidebar drag.
@@ -416,10 +486,20 @@ export default function QuantumCanvas({ className = '' }) {
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
 
-    // Determine lane from y position
-    const canvasHeight = rect.height
-    const laneHeight = canvasHeight / 3
-    const lane = Math.min(2, Math.floor(y / laneHeight))
+    // Determine lane from y position: NEAREST lane center, not
+    // canvas thirds. The three lane centers (150/200/250 in the
+    // 400px coordinate system) all sit in the vertical middle of
+    // the canvas, so dividing the canvas into thirds mapped every
+    // drop to lane 1. Nearest-center matching places the gate on
+    // the lane the user actually dropped on.
+    const scaleY = CANVAS_HEIGHT / rect.height
+    const canvasY = y * scaleY
+    let lane = 0
+    let bestDist = Infinity
+    LANE_Y_POSITIONS.forEach((laneY, i) => {
+      const d = Math.abs(canvasY - laneY)
+      if (d < bestDist) { bestDist = d; lane = i }
+    })
 
     // Determine position as fraction of channel width
     const scaleX = CANVAS_WIDTH / rect.width
@@ -436,10 +516,10 @@ export default function QuantumCanvas({ className = '' }) {
     position = Math.round(position * slots) / slots
 
     // Check if slot is occupied in this lane
-    const isOccupied = placedGates.some(g => 
+    const isOccupied = placedGates.some(g =>
       g.lane === lane && Math.abs(g.position - position) < 0.05
     )
-    
+
     if (isOccupied) return
 
     addGate({
@@ -471,15 +551,15 @@ export default function QuantumCanvas({ className = '' }) {
       const channelWidth = BOB_X - ALICE_X
       const gateX = ALICE_X + channelWidth * gate.position
       const laneY = LANE_Y_POSITIONS[gate.lane]
-      const dist = Math.sqrt((canvasX-gateX)**2 + (canvasY-laneY)**2)
+      const dist = Math.sqrt((canvasX - gateX) ** 2 + (canvasY - laneY) ** 2)
       return dist < 20
     })
 
     if (clickedGate) removeGate(clickedGate.id)
   }, [placedGates, removeGate, toolMode])
 
-  // Attach animation loop
-  usePhotonAnimation(canvasRef, drawStaticScene)
+  // Attach animation loop — countersRef feeds the Transmission HUD
+  const { countersRef } = usePhotonAnimation(canvasRef, drawStaticScene)
 
   // Canvas Layout Resize Observer
   useEffect(() => {
@@ -499,7 +579,7 @@ export default function QuantumCanvas({ className = '' }) {
       resizeObserver = new ResizeObserver(handleResize)
       resizeObserver.observe(wrapper)
     }
-    
+
     // Initial calculation
     handleResize()
 
@@ -531,7 +611,7 @@ export default function QuantumCanvas({ className = '' }) {
         setScale(s => Math.min(Math.max(0.5, s + zoomFactor), 3))
       }
     }
-    
+
     if (container) {
       container.addEventListener('wheel', wheelHandler, { passive: false })
     }
@@ -567,17 +647,17 @@ export default function QuantumCanvas({ className = '' }) {
     <div
       ref={wrapperRef}
       className={`relative w-full h-full rounded-lg overflow-hidden border shadow-2xl ${className}`}
-      style={{ 
+      style={{
         background: 'var(--canvas-bg)',
-        borderColor: 'var(--border-color)' 
+        borderColor: 'var(--border-color)'
       }}
     >
       {/* Scrollable Area */}
-      <div 
+      <div
         ref={scrollContainerRef}
         className="absolute inset-0 w-full h-full overflow-auto flex"
       >
-        <div 
+        <div
           className="relative m-auto"
           style={{
             width: `${zoomedWidth}px`,
@@ -635,12 +715,12 @@ export default function QuantumCanvas({ className = '' }) {
             ref={canvasRef}
             style={{ display: 'block' }}
           />
-          
+
           {contextMenu && (
             <GateContextMenu
-              position={{ 
-                x: contextMenu.x * (zoomedWidth / CANVAS_WIDTH), 
-                y: contextMenu.y * (zoomedHeight / CANVAS_HEIGHT) 
+              position={{
+                x: contextMenu.x * (zoomedWidth / CANVAS_WIDTH),
+                y: contextMenu.y * (zoomedHeight / CANVAS_HEIGHT)
               }}
               gate={contextMenu.gate}
               onDelete={() => deleteGate(contextMenu.gate.id)}
@@ -654,16 +734,16 @@ export default function QuantumCanvas({ className = '' }) {
             const channelWidth = BOB_X - ALICE_X
             const gateX = ALICE_X + channelWidth * gate.position
             const laneY = LANE_Y_POSITIONS[gate.lane]
-            
+
             const scaleX = zoomedWidth / CANVAS_WIDTH
             const scaleY = zoomedHeight / CANVAS_HEIGHT
-            
+
             return (
               <div key={gate.id} className="absolute pointer-events-none">
-                <GateStateVector 
-                  gate={gate} 
-                  position={{ x: gateX * scaleX, y: laneY * scaleY }} 
-                  isHovered={hoveredGateId === gate.id} 
+                <GateStateVector
+                  gate={gate}
+                  position={{ x: gateX * scaleX, y: laneY * scaleY }}
+                  isHovered={hoveredGateId === gate.id}
                 />
               </div>
             )
@@ -678,25 +758,27 @@ export default function QuantumCanvas({ className = '' }) {
 
       <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
         <div className="flex rounded-lg overflow-hidden border"
-             style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
-          <button 
+          style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+          <button
             onClick={() => setToolMode('cursor')}
-            className={`px-3 py-1.5 text-sm transition-colors ${toolMode === 'cursor' ? 'bg-cyan-500/20 text-cyan-400' : ''}`}
-            style={{ color: toolMode !== 'cursor' ? 'var(--text-muted)' : undefined }}
+            className={`flex items-center justify-center w-8 h-8 transition-colors ${toolMode === 'cursor' ? 'text-[#00B8E6]' : 'text-[var(--text-muted)]'}`}
+            style={toolMode === 'cursor'
+              ? { backgroundColor: 'rgba(0,184,230,0.12)' } : undefined}
             title="Select Mode"
           >
-            ðŸ‘†
+            <MousePointer2 size={15} />
           </button>
-          <button 
+          <button
             onClick={() => setToolMode('hand')}
-            className={`px-3 py-1.5 text-sm transition-colors ${toolMode === 'hand' ? 'bg-cyan-500/20 text-cyan-400' : ''}`}
-            style={{ color: toolMode !== 'hand' ? 'var(--text-muted)' : undefined }}
+            className={`flex items-center justify-center w-8 h-8 transition-colors ${toolMode === 'hand' ? 'text-[#00B8E6]' : 'text-[var(--text-muted)]'}`}
+            style={toolMode === 'hand'
+              ? { backgroundColor: 'rgba(0,184,230,0.12)' } : undefined}
             title="Pan Mode"
           >
-            âœ‹
+            <Hand size={15} />
           </button>
         </div>
-        <button 
+        <button
           onClick={() => {
             setScale(1)
             if (scrollContainerRef.current) {
@@ -716,26 +798,29 @@ export default function QuantumCanvas({ className = '' }) {
         </button>
       </div>
 
+      {/* Transmission HUD — compact playback + full accounting */}
+      <TransmissionHUD countersRef={countersRef} />
+
       {results?.secure_threshold_breached && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-red-950/40 
                         border border-red-500/50 rounded text-red-400 
                         text-[10px] font-mono tracking-wider animate-pulse pointer-events-none">
-          âš  SECURITY THRESHOLD BREACHED
+          ⚠ SECURITY THRESHOLD BREACHED
         </div>
       )}
     </div>
   )
 }
 
-export { 
-  CANVAS_WIDTH, 
-  CANVAS_HEIGHT, 
-  ALICE_X, 
-  BOB_X, 
-  EVE_X, 
+export {
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+  ALICE_X,
+  BOB_X,
+  EVE_X,
   ENTITY_Y,
-  LANE_Y_POSITIONS, 
-  COLORS, 
-  NODE_RADIUS 
+  LANE_Y_POSITIONS,
+  COLORS,
+  NODE_RADIUS
 }
 
