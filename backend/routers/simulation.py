@@ -161,32 +161,29 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             eve_states, rng
           )
 
-        # Step 3.5: Apply quantum gates and probes per lane
+        # Step 3.5: Apply quantum gates and probes on the single transmission lane
         from core.gates import apply_gates_to_lane, apply_cloning_probe
         if request.gates:
-          gates_by_lane = {}
+          regular_gates = []
           clone_probes = []
           
           for gate in request.gates:
             if gate.get('type') in ('clone', 'cnot'):
               clone_probes.append(gate)
             else:
-              lane = gate.get('lane', 0)
-              if lane not in gates_by_lane:
-                gates_by_lane[lane] = []
-              gates_by_lane[lane].append(gate)
+              regular_gates.append(gate)
           
-          # Apply regular gates lane by lane
-          for lane_index, lane_gates in gates_by_lane.items():
+          # Apply regular gates to the transmission lane
+          if regular_gates:
             eve_states = apply_gates_to_lane(
-              eve_states, lane_index, lane_gates
+              eve_states, 0, regular_gates
             )
           
-          # Apply cloning probes
+          # Apply cloning probes to the transmission lane
           for probe in clone_probes:
             eve_states = apply_cloning_probe(
               eve_states,
-              probe.get('lane', 0),
+              0,
               probe.get('position', 0.5),
               rng=rng,
             )
