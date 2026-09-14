@@ -258,11 +258,8 @@ def compute_transmission_accounting(states: list[dict]) -> dict:
     }
 
 
-# Visual lane count. A pulse's schematic lane is `index % _NUM_LANES`
-# (frontend visualEncoding.laneForIndex and backend gates.apply_gates_to_lane
-# both use this mapping). Sampling must respect it because a single global
-# stride can land entirely on one residue class (audit C3).
-_NUM_LANES = 3
+# Visual lane count. Single BB84 transmission path (lane 0).
+_NUM_LANES = 1
 
 # Rare event categories that must remain representable in the sampled
 # event_stream whenever they occurred in the full simulation. If the
