@@ -98,22 +98,21 @@ describe('classifyOutcome — backend authority', () => {
     })
 })
 
-describe('laneForIndex — deterministic lane assignment', () => {
-    it('rotates round-robin across the three visual lanes', () => {
+describe('laneForIndex — deterministic single transmission lane assignment', () => {
+    it('assigns all pulses to the single BB84 channel lane (lane 0)', () => {
         expect([0, 1, 2, 3, 4, 5].map(laneForIndex))
-            .toEqual([0, 1, 2, 0, 1, 2])
+            .toEqual([0, 0, 0, 0, 0, 0])
     })
 
-    it('matches the backend gate-lane mapping (index % 3)', () => {
+    it('returns 0 for all pulse indices', () => {
         for (let i = 0; i < 30; i++) {
-            expect(laneForIndex(i)).toBe(i % 3)
+            expect(laneForIndex(i)).toBe(0)
         }
     })
 
-    it('is defined for every lane', () => {
-        for (let lane = 0; lane < LANE_COUNT; lane++) {
-            expect(LANE_Y_POSITIONS[lane]).toBeDefined()
-        }
+    it('has exactly 1 lane position at y=200', () => {
+        expect(LANE_COUNT).toBe(1)
+        expect(LANE_Y_POSITIONS[0]).toBe(200)
     })
 })
 
