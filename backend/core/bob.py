@@ -16,7 +16,9 @@ Physics reference: PHYSICS_CONTRACT.md Sections 1, 2, 3
 """
 
 import numpy as np
+from typing import Optional
 from core.constants import BASES, POLARIZATION_ANGLES, STATE_LABELS
+from core.rng import resolve_rng
 
 class Bob:
     """
@@ -24,7 +26,14 @@ class Bob:
     Bob measures each incoming photon in a randomly chosen basis.
     Only photons that were detected (detected=True) are measured.
     Lost photons with no dark count are skipped entirely.
+
+    Randomness is drawn from an injected ``rng`` (the run-level RNG
+    threaded by the router); a private generator is used when omitted
+    (audit fix H7).
     """
+
+    def __init__(self, rng: Optional[np.random.Generator] = None):
+        self.rng = resolve_rng(rng)
 
     def choose_bases(self, n: int) -> np.ndarray:
         """
@@ -37,7 +46,7 @@ class Bob:
         Returns:
             numpy array of n strings, each '+' or 'x'
         """
-        return np.random.choice(BASES, n)
+        return self.rng.choice(BASES, n)
 
     def measure(self, states: list[dict]) -> list[dict]:
         """
@@ -87,7 +96,7 @@ class Bob:
         measured_states = []
         
         # Pre-generate random bits for mismatches and dark counts to speed up
-        random_bits = np.random.randint(0, 2, n)
+        random_bits = self.rng.integers(0, 2, n)
         
         for i, state in enumerate(states):
             new_state = state.copy()
