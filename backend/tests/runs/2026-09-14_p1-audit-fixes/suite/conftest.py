@@ -110,19 +110,16 @@ def run_pipeline(
         from core.gates import apply_gates_to_lane, apply_cloning_probe
         probes = [g for g in gates
                   if g.get('type') in ('clone', 'cnot')]
-        by_lane: dict = {}
-        for g in gates:
-            if g.get('type') in ('clone', 'cnot'):
-                continue
-            by_lane.setdefault(g.get('lane', 0), []).append(g)
-        for lane, lane_gates in by_lane.items():
+        regular_gates = [g for g in gates
+                         if g.get('type') not in ('clone', 'cnot')]
+        if regular_gates:
             eve_states = apply_gates_to_lane(
-                eve_states, lane, lane_gates
+                eve_states, 0, regular_gates
             )
         for probe in probes:
             eve_states = apply_cloning_probe(
                 eve_states,
-                probe.get('lane', 0),
+                0,
                 probe.get('position', 0.5),
                 rng=rng,
             )
