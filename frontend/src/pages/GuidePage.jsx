@@ -12,16 +12,16 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  BookOpen, 
-  Layers, 
-  ShieldCheck, 
-  Calculator, 
-  HelpCircle, 
-  Cpu, 
-  Crosshair, 
-  FlaskConical, 
-  CheckSquare, 
+import {
+  BookOpen,
+  Layers,
+  ShieldCheck,
+  Calculator,
+  HelpCircle,
+  Cpu,
+  Crosshair,
+  FlaskConical,
+  CheckSquare,
   FileText,
   ChevronLeft,
   ChevronRight
@@ -36,15 +36,15 @@ import GatesSection from '../components/guide/GatesSection'
 import PNSAttackSection from '../components/guide/PNSAttackSection'
 import ExperimentsSection from '../components/guide/ExperimentsSection'
 
-// â”€â”€â”€ SECTION 1 DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SECTION 1 DATA ──────────────────────────────────────────
 const QKD_INTRO = {
   title: "What is Quantum Key Distribution?",
   summary: `Quantum Key Distribution (QKD) is a method of 
   establishing a cryptographic key between two parties using 
   the principles of quantum mechanics. Unlike classical 
-  cryptography, its security is guaranteed by physics â€” 
+  cryptography, its security is guaranteed by physics — 
   not computational hardness.`,
-  
+
   whyItMatters: `Classical encryption like RSA relies on the 
   mathematical difficulty of factoring large numbers. 
   Quantum computers running Shor's algorithm can break RSA 
@@ -58,7 +58,7 @@ const QKD_INTRO = {
   detect this disturbance as an elevated QBER.`
 }
 
-// â”€â”€â”€ SECTION 2 DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SECTION 2 DATA ──────────────────────────────────────────
 const BB84_STEPS = [
   {
     step: 1,
@@ -67,7 +67,7 @@ const BB84_STEPS = [
     to create a string of random bits (0s and 1s). These will 
     become the raw material for the secret key.`,
     detail: `In our simulator, Alice generates n_bits random bits 
-    using NumPy's random number generator â€” a classical 
+    using NumPy's random number generator — a classical 
     approximation of a quantum source.`,
     color: '#6366f1',
     symbol: '01'
@@ -76,12 +76,12 @@ const BB84_STEPS = [
     step: 2,
     title: "Alice Chooses Random Bases",
     description: `For each bit, Alice randomly selects one of 
-    two polarization bases: Rectilinear (+) or Diagonal (Ã—). 
+    two polarization bases: Rectilinear (+) or Diagonal (×). 
     Each basis is chosen with equal probability.`,
-    detail: `Rectilinear (+): 0Â° and 90Â° polarization angles.
-Diagonal (Ã—): 45Â° and 135Â° polarization angles.`,
+    detail: `Rectilinear (+): 0° and 90° polarization angles.
+Diagonal (×): 45° and 135° polarization angles.`,
     color: '#6366f1',
-    symbol: '+/Ã—'
+    symbol: '+/×'
   },
   {
     step: 3,
@@ -90,16 +90,16 @@ Diagonal (Ã—): 45Â° and 135Â° polarization angles.`,
     polarization state according to her chosen basis. 
     The photons travel through a fiber optic quantum channel 
     toward Bob.`,
-    detail: `(+,0)â†’|0âŸ© at 0Â° | (+,1)â†’|1âŸ© at 90Â°
-(Ã—,0)â†’|+âŸ© at 45Â° | (Ã—,1)â†’|-âŸ© at 135Â°`,
+    detail: `(+,0)→|0⟩ at 0° | (+,1)→|1⟩ at 90°
+(×,0)→|+⟩ at 45° | (×,1)→|-⟩ at 135°`,
     color: '#a855f7',
-    symbol: 'â†’'
+    symbol: '→'
   },
   {
     step: 4,
     title: "Bob Measures in Random Bases",
     description: `Bob randomly chooses a measurement basis for 
-    each incoming photon â€” independent of Alice's choices. 
+    each incoming photon — independent of Alice's choices. 
     When bases match, Bob gets the correct bit. When they 
     differ, Bob gets a random result.`,
     detail: `Basis match probability: 50%. So roughly half of 
@@ -112,10 +112,10 @@ Diagonal (Ã—): 45Â° and 135Â° polarization angles.`,
     title: "Basis Reconciliation (Sifting)",
     description: `Alice and Bob communicate publicly to compare 
     which bases they used. They keep only the bits where their 
-    bases matched. This is the sifted key â€” roughly 50% of 
+    bases matched. This is the sifted key — roughly 50% of 
     the original bits.`,
     detail: `The basis comparison reveals no information about 
-    the actual bits â€” only which positions to keep. 
+    the actual bits — only which positions to keep. 
     Eve listening to this public channel gains nothing useful.`,
     color: '#22c55e',
     symbol: 'SIFT'
@@ -126,7 +126,7 @@ Diagonal (Ã—): 45Â° and 135Â° polarization angles.`,
     description: `Alice and Bob sacrifice a sample of their 
     sifted key to estimate the Quantum Bit Error Rate (QBER). 
     If QBER is below 11%, they proceed to extract a secure key. 
-    Above 11% â€” session aborted, eavesdropper detected.`,
+    Above 11% — session aborted, eavesdropper detected.`,
     detail: `The remaining bits after QBER sampling form the 
     raw secure key. Privacy amplification can further compress 
     it to eliminate any partial information Eve may have.`,
@@ -135,69 +135,77 @@ Diagonal (Ã—): 45Â° and 135Â° polarization angles.`,
   }
 ]
 
-// â”€â”€â”€ GLOSSARY DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── GLOSSARY DATA ──────────────────────────────────────────
 const GLOSSARY = [
   { term: 'BB84', definition: 'The first quantum key distribution protocol, proposed by Charles Bennett and Gilles Brassard in 1984. Uses four polarization states across two bases to establish a secure key.' },
   { term: 'QBER', definition: 'Quantum Bit Error Rate. The fraction of sifted key bits that differ between Alice and Bob. A QBER above 11% indicates eavesdropping or excessive channel noise.' },
-  { term: 'SKR', definition: 'Secret Key Rate. The rate at which secure key bits can be generated. Computed as S Ã— (1 - 2H(Q)) where S is the sifted key rate and H(Q) is binary entropy.' },
+  { term: 'SKR', definition: 'Secret Key Rate. The rate at which secure key bits can be generated. Computed as S × (1 - 2H(Q)) where S is the sifted key rate and H(Q) is binary entropy.' },
   { term: 'Sifting', definition: 'The process of discarding bits where Alice and Bob chose different measurement bases. Retains approximately 50% of raw bits.' },
-  { term: 'Polarization', definition: 'The orientation of a photon\'s oscillation. BB84 uses four polarization angles (0Â°, 45Â°, 90Â°, 135Â°) to encode bits across two bases.' },
+  { term: 'Polarization', definition: 'The orientation of a photon\'s oscillation. BB84 uses four polarization angles (0°, 45°, 90°, 135°) to encode bits across two bases.' },
   { term: 'Intercept-Resend', definition: 'Eve\'s attack strategy. She measures each photon in a random basis and re-emits a new photon. When her basis mismatches Alice\'s, she introduces a 25% error rate.' },
-  { term: 'Binary Entropy', definition: 'H(Q) = -QÂ·logâ‚‚(Q) - (1-Q)Â·logâ‚‚(1-Q). Measures uncertainty in a biased coin flip. Used in the SKR formula to quantify information Eve may have gained.' },
-  { term: 'Beer-Lambert Law', definition: 'Governs photon loss over fiber distance. Survival probability = 10^(-Î±Â·d/10) where Î± = 0.2 dB/km. At 50km only ~10% of photons survive.' },
-  { term: 'Dark Count', definition: 'A false detector firing with no real photon. Probability ~10â»âµ per slot. Contributes a small baseline QBER even with no Eve and perfect fiber.' },
-  { term: 'Detector Efficiency', definition: 'Î· = probability a real arriving photon is detected. Default 85%. Limits the maximum achievable key rate regardless of distance.' },
+  { term: 'Binary Entropy', definition: 'H(Q) = -Q·log₂(Q) - (1-Q)·log₂(1-Q). Measures uncertainty in a biased coin flip. Used in the SKR formula to quantify information Eve may have gained.' },
+  { term: 'Beer-Lambert Law', definition: 'Governs photon loss over fiber distance. Survival probability = 10^(-Î±·d/10) where α = 0.2 dB/km. At 50km only ~10% of photons survive.' },
+  { term: 'Dark Count', definition: 'A false detector firing with no real photon. Probability ~10⁻⁵ per slot. Contributes a small baseline QBER even with no Eve and perfect fiber.' },
+  { term: 'Detector Efficiency', definition: 'η = probability a real arriving photon is detected. Default 85%. Limits the maximum achievable key rate regardless of distance.' },
 ]
 
-// â”€â”€â”€ TABLE OF CONTENTS DEFINITIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── TABLE OF CONTENTS DEFINITIONS ──────────────────────────
 const TOC_ITEMS = [
-  { id: 'intro',       label: 'What is QKD',        icon: BookOpen },
-  { id: 'protocol',    label: 'BB84 Protocol',      icon: Layers },
-  { id: 'security',    label: 'Security Analysis',  icon: ShieldCheck },
-  { id: 'formulas',    label: 'Key Formulas & Math',icon: Calculator },
-  { id: 'usage',       label: 'Using Simulator',    icon: HelpCircle },
-  { id: 'gates',       label: 'Quantum Gates',      icon: Cpu },
-  { id: 'pns',         label: 'PNS Attack',         icon: Crosshair },
-  { id: 'experiments', label: 'Experiments',        icon: FlaskConical },
-  { id: 'exercises',   label: 'Exercises',          icon: CheckSquare },
-  { id: 'glossary',    label: 'Glossary',           icon: FileText },
+  { id: 'intro', label: 'What is QKD', icon: BookOpen },
+  { id: 'protocol', label: 'BB84 Protocol', icon: Layers },
+  { id: 'security', label: 'Security Analysis', icon: ShieldCheck },
+  { id: 'formulas', label: 'Key Formulas & Math', icon: Calculator },
+  { id: 'usage', label: 'Using Simulator', icon: HelpCircle },
+  { id: 'gates', label: 'Quantum Gates', icon: Cpu },
+  { id: 'pns', label: 'PNS Attack', icon: Crosshair },
+  { id: 'experiments', label: 'Experiments', icon: FlaskConical },
+  { id: 'exercises', label: 'Exercises', icon: CheckSquare },
+  { id: 'glossary', label: 'Glossary', icon: FileText },
 ]
 
-// â”€â”€â”€ POLARIZATION DIAGRAM SVG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── POLARIZATION DIAGRAM SVG ────────────────────────────────
 function PolarizationDiagram() {
   const states = [
-    { angle: 0,   label: '|0âŸ©', basis: '+', bit: 0, 
-      color: '#6366f1', x: 80,  y: 80  },
-    { angle: 90,  label: '|1âŸ©', basis: '+', bit: 1, 
-      color: '#6366f1', x: 200, y: 80  },
-    { angle: 45,  label: '|+âŸ©', basis: 'Ã—', bit: 0, 
-      color: '#a855f7', x: 80,  y: 180 },
-    { angle: 135, label: '|-âŸ©', basis: 'Ã—', bit: 1, 
-      color: '#a855f7', x: 200, y: 180 },
+    {
+      angle: 0, label: '|0⟩', basis: '+', bit: 0,
+      color: '#6366f1', x: 80, y: 80
+    },
+    {
+      angle: 90, label: '|1⟩', basis: '+', bit: 1,
+      color: '#6366f1', x: 200, y: 80
+    },
+    {
+      angle: 45, label: '|+⟩', basis: '×', bit: 0,
+      color: '#a855f7', x: 80, y: 180
+    },
+    {
+      angle: 135, label: '|-⟩', basis: '×', bit: 1,
+      color: '#a855f7', x: 200, y: 180
+    },
   ]
 
   return (
     <div className="rounded-lg p-5 inline-block border"
-         style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+      style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
       <div className="text-xs font-mono mb-4 uppercase tracking-wider font-semibold"
-           style={{ color: 'var(--text-muted)' }}>
+        style={{ color: 'var(--text-muted)' }}>
         BB84 Polarization States
       </div>
       <svg width="280" height="230" className="overflow-visible">
         {/* Column headers */}
-        <text x="80" y="20" textAnchor="middle" 
-              fill="#6366f1" fontSize="12" fontFamily="monospace" fontWeight="bold">
+        <text x="80" y="20" textAnchor="middle"
+          fill="#6366f1" fontSize="12" fontFamily="monospace" fontWeight="bold">
           Bit 0
         </text>
-        <text x="200" y="20" textAnchor="middle" 
-              fill="#6366f1" fontSize="12" fontFamily="monospace" fontWeight="bold">
+        <text x="200" y="20" textAnchor="middle"
+          fill="#6366f1" fontSize="12" fontFamily="monospace" fontWeight="bold">
           Bit 1
         </text>
         {/* Row headers */}
-        <text x="10" y="85" fill="#6366f1" fontSize="13" 
-              fontFamily="monospace" fontWeight="bold">+</text>
-        <text x="10" y="185" fill="#a855f7" fontSize="13" 
-              fontFamily="monospace" fontWeight="bold">Ã—</text>
+        <text x="10" y="85" fill="#6366f1" fontSize="13"
+          fontFamily="monospace" fontWeight="bold">+</text>
+        <text x="10" y="185" fill="#a855f7" fontSize="13"
+          fontFamily="monospace" fontWeight="bold">×</text>
 
         {states.map((s, i) => {
           const rad = (s.angle * Math.PI) / 180
@@ -207,27 +215,27 @@ function PolarizationDiagram() {
           return (
             <g key={i}>
               {/* Outer ring */}
-              <circle cx={s.x} cy={s.y} r="20" 
-                      fill={s.color} fillOpacity="0.15"
-                      stroke={s.color} strokeOpacity="0.4" 
-                      strokeWidth="1.5"/>
+              <circle cx={s.x} cy={s.y} r="20"
+                fill={s.color} fillOpacity="0.15"
+                stroke={s.color} strokeOpacity="0.4"
+                strokeWidth="1.5" />
               {/* Photon body */}
-              <circle cx={s.x} cy={s.y} r="8" 
-                      fill={s.color} fillOpacity="0.9"/>
+              <circle cx={s.x} cy={s.y} r="8"
+                fill={s.color} fillOpacity="0.9" />
               {/* Polarization line */}
-              <line x1={s.x - dx/2} y1={s.y - dy/2}
-                    x2={s.x + dx/2} y2={s.y + dy/2}
-                    stroke="white" strokeWidth="2"/>
+              <line x1={s.x - dx / 2} y1={s.y - dy / 2}
+                x2={s.x + dx / 2} y2={s.y + dy / 2}
+                stroke="white" strokeWidth="2" />
               {/* Label */}
               <text x={s.x} y={s.y + 36} textAnchor="middle"
-                    fill={s.color} fontSize="12" 
-                    fontFamily="monospace" fontWeight="bold">
+                fill={s.color} fontSize="12"
+                fontFamily="monospace" fontWeight="bold">
                 {s.label}
               </text>
               <text x={s.x} y={s.y + 48} textAnchor="middle"
-                    fill="var(--text-subtle)" fontSize="10" 
-                    fontFamily="monospace">
-                {s.angle}Â°
+                fill="var(--text-subtle)" fontSize="10"
+                fontFamily="monospace">
+                {s.angle}°
               </text>
             </g>
           )
@@ -237,39 +245,39 @@ function PolarizationDiagram() {
   )
 }
 
-// â”€â”€â”€ BB84 STEP CARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── BB84 STEP CARD ───────────────────────────────────────────
 function StepCard({ stepData, isActive, onClick }) {
   return (
     <motion.div
       layout
       onClick={onClick}
       className="border rounded-lg cursor-pointer transition-colors"
-      style={{ 
+      style={{
         backgroundColor: isActive ? 'var(--card-bg)' : 'var(--panel-bg)',
-        borderColor: isActive ? stepData.color : 'var(--border-color)' 
+        borderColor: isActive ? stepData.color : 'var(--border-color)'
       }}
     >
       <div className="flex items-center gap-4 p-4">
         <div className="w-8 h-8 rounded flex items-center 
                         justify-center text-xs font-mono font-bold
                         flex-shrink-0 text-white"
-             style={{ 
-               backgroundColor: stepData.color,
-             }}>
+          style={{
+            backgroundColor: stepData.color,
+          }}>
           {stepData.step}
         </div>
         <div className="flex-1">
           <div className="text-sm font-mono font-semibold"
-               style={{ color: 'var(--text-primary)' }}>
+            style={{ color: 'var(--text-primary)' }}>
             {stepData.title}
           </div>
           <div className="text-xs mt-0.5 line-clamp-1"
-               style={{ color: 'var(--text-muted)' }}>
+            style={{ color: 'var(--text-muted)' }}>
             {stepData.description}
           </div>
         </div>
         <div className="font-mono text-xs px-2 py-1 rounded border"
-             style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--text-subtle)' }}>
+          style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--text-subtle)' }}>
           {stepData.symbol}
         </div>
       </div>
@@ -287,9 +295,9 @@ function StepCard({ stepData, isActive, onClick }) {
                 {stepData.description}
               </p>
               <div className="mt-3 p-3 rounded border"
-                   style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
+                style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
                 <p className="text-xs font-mono whitespace-pre-line leading-relaxed"
-                   style={{ color: 'var(--text-primary)' }}>
+                  style={{ color: 'var(--text-primary)' }}>
                   {stepData.detail}
                 </p>
               </div>
@@ -301,12 +309,12 @@ function StepCard({ stepData, isActive, onClick }) {
   )
 }
 
-// â”€â”€â”€ GLOSSARY ITEM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── GLOSSARY ITEM ────────────────────────────────────────────
 function GlossaryItem({ term, definition }) {
   const [open, setOpen] = useState(false)
   return (
     <div className="border rounded-lg overflow-hidden transition-colors"
-         style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+      style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-white/5"
@@ -315,7 +323,7 @@ function GlossaryItem({ term, definition }) {
           {term}
         </span>
         <span className="font-mono text-xs" style={{ color: 'var(--text-subtle)' }}>
-          {open ? 'â–²' : 'â–¼'}
+          {open ? '▲' : '▼'}
         </span>
       </button>
       <AnimatePresence>
@@ -327,7 +335,7 @@ function GlossaryItem({ term, definition }) {
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 text-sm leading-relaxed border-t"
-                 style={{ color: 'var(--text-muted)', borderColor: 'var(--border-color)' }}>
+              style={{ color: 'var(--text-muted)', borderColor: 'var(--border-color)' }}>
               <p className="pt-3">{definition}</p>
             </div>
           </motion.div>
@@ -337,7 +345,7 @@ function GlossaryItem({ term, definition }) {
   )
 }
 
-// â”€â”€â”€ MAIN GUIDE PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── MAIN GUIDE PAGE ──────────────────────────────────────────
 export default function GuidePage() {
   const [activeStep, setActiveStep] = useState(0)
   const [activeSection, setActiveSection] = useState('intro')
@@ -375,9 +383,9 @@ export default function GuidePage() {
 
   return (
     <div className="flex h-full overflow-hidden"
-         style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-      
-      {/* â”€â”€â”€ ADJUSTABLE LEFT SIDEBAR â”€â”€â”€ */}
+      style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+
+      {/* ─── ADJUSTABLE LEFT SIDEBAR ─── */}
       <motion.aside
         animate={{ width: sidebarCollapsed ? 56 : 240 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
@@ -386,10 +394,10 @@ export default function GuidePage() {
       >
         {/* Sidebar Header / Toggle */}
         <div className="flex items-center justify-between px-3 py-3 border-b"
-             style={{ borderColor: 'var(--border-color)' }}>
+          style={{ borderColor: 'var(--border-color)' }}>
           {!sidebarCollapsed && (
             <span className="text-xs font-mono uppercase tracking-widest font-semibold"
-                  style={{ color: 'var(--text-subtle)' }}>
+              style={{ color: 'var(--text-subtle)' }}>
               Guide Index
             </span>
           )}
@@ -412,11 +420,10 @@ export default function GuidePage() {
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
-                className={`w-full flex items-center gap-3 px-2.5 py-2 rounded text-xs font-mono transition-colors text-left ${
-                  isActive
+                className={`w-full flex items-center gap-3 px-2.5 py-2 rounded text-xs font-mono transition-colors text-left ${isActive
                     ? 'bg-cyan-500/20 text-cyan-400 font-semibold'
                     : 'hover:bg-white/5'
-                }`}
+                  }`}
                 style={{
                   color: isActive ? undefined : 'var(--text-muted)'
                 }}
@@ -432,48 +439,48 @@ export default function GuidePage() {
         </nav>
       </motion.aside>
 
-      {/* â”€â”€â”€ MAIN SCROLLABLE CONTENT â”€â”€â”€ */}
-      <main 
+      {/* ─── MAIN SCROLLABLE CONTENT ─── */}
+      <main
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto px-6 py-10 lg:px-12 scroll-smooth"
       >
         <div className="max-w-4xl mx-auto flex flex-col gap-16 pb-24">
 
-          {/* â”€â”€ SECTION 1: What is QKD â”€â”€ */}
+          {/* ── SECTION 1: What is QKD ── */}
           <section id="intro" className="flex flex-col gap-6 scroll-mt-6">
             <div>
               <div className="text-xs font-mono uppercase tracking-widest mb-2 font-semibold"
-                   style={{ color: '#6366f1' }}>
+                style={{ color: '#6366f1' }}>
                 Introduction
               </div>
               <h1 className="text-3xl font-bold font-mono mb-3"
-                  style={{ color: 'var(--text-primary)' }}>
+                style={{ color: 'var(--text-primary)' }}>
                 {QKD_INTRO.title}
               </h1>
               <p className="leading-relaxed text-base max-w-3xl"
-                 style={{ color: 'var(--text-secondary)' }}>
+                style={{ color: 'var(--text-secondary)' }}>
                 {QKD_INTRO.summary}
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="p-5 rounded-lg border"
-                   style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+                style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
                 <div className="text-xs font-mono text-yellow-400 uppercase tracking-wider mb-2 font-semibold">
-                  âš  The Quantum Threat
+                  ⚠ The Quantum Threat
                 </div>
                 <p className="text-sm leading-relaxed"
-                   style={{ color: 'var(--text-secondary)' }}>
+                  style={{ color: 'var(--text-secondary)' }}>
                   {QKD_INTRO.whyItMatters}
                 </p>
               </div>
               <div className="p-5 rounded-lg border"
-                   style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+                style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
                 <div className="text-xs font-mono text-[#22c55e] uppercase tracking-wider mb-2 font-semibold">
-                  âœ“ The Quantum Solution
+                  ✓ The Quantum Solution
                 </div>
                 <p className="text-sm leading-relaxed"
-                   style={{ color: 'var(--text-secondary)' }}>
+                  style={{ color: 'var(--text-secondary)' }}>
                   {QKD_INTRO.keyPrinciple}
                 </p>
               </div>
@@ -484,19 +491,19 @@ export default function GuidePage() {
             </div>
           </section>
 
-          {/* â”€â”€ SECTION 2: BB84 Protocol â”€â”€ */}
+          {/* ── SECTION 2: BB84 Protocol ── */}
           <section id="protocol" className="flex flex-col gap-5 scroll-mt-6">
             <div>
               <div className="text-xs font-mono uppercase tracking-widest mb-2 font-semibold"
-                   style={{ color: '#6366f1' }}>
+                style={{ color: '#6366f1' }}>
                 Protocol
               </div>
               <h2 className="text-2xl font-bold font-mono mb-1"
-                  style={{ color: 'var(--text-primary)' }}>
-                The BB84 Protocol â€” Step by Step
+                style={{ color: 'var(--text-primary)' }}>
+                The BB84 Protocol — Step by Step
               </h2>
               <p className="text-xs font-mono"
-                 style={{ color: 'var(--text-muted)' }}>
+                style={{ color: 'var(--text-muted)' }}>
                 Click any step to expand details.
               </p>
             </div>
@@ -512,22 +519,22 @@ export default function GuidePage() {
             </div>
           </section>
 
-          {/* â”€â”€ SECTION 3: Security Analysis â”€â”€ */}
+          {/* ── SECTION 3: Security Analysis ── */}
           <section id="security" className="flex flex-col gap-5 scroll-mt-6">
             <div>
               <div className="text-xs font-mono uppercase tracking-widest mb-2 font-semibold"
-                   style={{ color: '#6366f1' }}>
+                style={{ color: '#6366f1' }}>
                 Security
               </div>
               <h2 className="text-2xl font-bold font-mono mb-2"
-                  style={{ color: 'var(--text-primary)' }}>
+                style={{ color: 'var(--text-primary)' }}>
                 Security Analysis
               </h2>
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
               <div className="p-4 rounded-lg border"
-                   style={{ backgroundColor: 'rgba(34, 197, 94, 0.08)', borderColor: 'rgba(34, 197, 94, 0.3)' }}>
+                style={{ backgroundColor: 'rgba(34, 197, 94, 0.08)', borderColor: 'rgba(34, 197, 94, 0.3)' }}>
                 <div className="text-xs font-mono text-[#22c55e] mb-1 uppercase tracking-wider font-semibold">
                   QBER &lt; 7%
                 </div>
@@ -539,9 +546,9 @@ export default function GuidePage() {
                 </p>
               </div>
               <div className="p-4 rounded-lg border"
-                   style={{ backgroundColor: 'rgba(234, 179, 8, 0.08)', borderColor: 'rgba(234, 179, 8, 0.3)' }}>
+                style={{ backgroundColor: 'rgba(234, 179, 8, 0.08)', borderColor: 'rgba(234, 179, 8, 0.3)' }}>
                 <div className="text-xs font-mono text-yellow-400 mb-1 uppercase tracking-wider font-semibold">
-                  7% â‰¤ QBER &lt; 11%
+                  7% ≤ QBER &lt; 11%
                 </div>
                 <div className="text-2xl font-mono font-bold text-yellow-400 mb-2">
                   Warning
@@ -551,9 +558,9 @@ export default function GuidePage() {
                 </p>
               </div>
               <div className="p-4 rounded-lg border"
-                   style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+                style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
                 <div className="text-xs font-mono text-[#ef4444] mb-1 uppercase tracking-wider font-semibold">
-                  QBER â‰¥ 11%
+                  QBER ≥ 11%
                 </div>
                 <div className="text-2xl font-mono font-bold text-[#ef4444] mb-2">
                   Abort
@@ -565,14 +572,14 @@ export default function GuidePage() {
             </div>
 
             <div className="p-5 rounded-lg border"
-                 style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+              style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
               <div className="text-xs font-mono uppercase tracking-wider mb-2 font-semibold"
-                   style={{ color: 'var(--text-muted)' }}>
+                style={{ color: 'var(--text-muted)' }}>
                 Secret Key Rate Formula
               </div>
               <div className="font-mono text-center text-lg py-3 font-bold"
-                   style={{ color: '#6366f1' }}>
-                R = S Ã— (1 - 2H(Q))
+                style={{ color: '#6366f1' }}>
+                R = S × (1 - 2H(Q))
               </div>
               <div className="grid grid-cols-3 gap-4 mt-2">
                 <div className="text-center">
@@ -591,37 +598,37 @@ export default function GuidePage() {
             </div>
           </section>
 
-          {/* â”€â”€ SECTION 4: Formulas & Math â”€â”€ */}
+          {/* ── SECTION 4: Formulas & Math ── */}
           <section id="formulas" className="flex flex-col gap-6 scroll-mt-6">
             <div>
               <div className="text-xs font-mono text-cyan-400 uppercase tracking-widest mb-2 font-semibold">
                 Mathematics
               </div>
               <h2 className="text-2xl font-bold font-mono mb-1"
-                  style={{ color: 'var(--text-primary)' }}>
+                style={{ color: 'var(--text-primary)' }}>
                 Key Formulas
               </h2>
               <p className="text-xs font-mono"
-                 style={{ color: 'var(--text-muted)' }}>
+                style={{ color: 'var(--text-muted)' }}>
                 The physics and information theory behind BB84.
               </p>
             </div>
 
             {/* Formula 1: QBER */}
             <div className="p-6 border rounded-lg flex flex-col gap-4"
-                 style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+              style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded bg-cyan-600 flex items-center justify-center font-mono font-bold text-white">
                   Q
                 </div>
                 <h3 className="text-base font-mono font-bold"
-                    style={{ color: 'var(--text-primary)' }}>
+                  style={{ color: 'var(--text-primary)' }}>
                   Quantum Bit Error Rate (QBER)
                 </h3>
               </div>
 
               <div className="p-4 rounded-lg border text-center"
-                   style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
+                style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
                 <div className="text-xl font-mono text-cyan-400 font-bold">
                   QBER = E / N
                 </div>
@@ -639,10 +646,10 @@ export default function GuidePage() {
 
               {/* Chart */}
               <div className="rounded-lg p-3 border"
-                   style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
+                style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
                 <ResponsiveContainer width="100%" height={160}>
                   <LineChart
-                    data={Array.from({length: 11}, (_, i) => ({
+                    data={Array.from({ length: 11 }, (_, i) => ({
                       eve: i * 10,
                       qber: parseFloat((i * 0.1 * 0.25 * 100).toFixed(2))
                     }))}
@@ -665,62 +672,62 @@ export default function GuidePage() {
 
             {/* Formula 2: Binary Entropy */}
             <div className="p-6 border rounded-lg flex flex-col gap-4"
-                 style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+              style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded bg-yellow-600 flex items-center justify-center font-mono font-bold text-white">
                   H
                 </div>
                 <h3 className="text-base font-mono font-bold"
-                    style={{ color: 'var(--text-primary)' }}>
+                  style={{ color: 'var(--text-primary)' }}>
                   Binary Entropy H(Q)
                 </h3>
               </div>
 
               <div className="p-4 rounded-lg border text-center"
-                   style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
+                style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
                 <div className="text-lg font-mono text-yellow-400 font-bold">
-                  H(Q) = -QÂ·logâ‚‚(Q) - (1-Q)Â·logâ‚‚(1-Q)
+                  H(Q) = -Q·log₂(Q) - (1-Q)·log₂(1-Q)
                 </div>
                 <div className="text-xs mt-2 font-mono" style={{ color: 'var(--text-muted)' }}>
-                  Q = QBER | H(0) = 0 | H(0.5) = 1 | H(0.11) â‰ˆ 0.5
+                  Q = QBER | H(0) = 0 | H(0.5) = 1 | H(0.11) ≈ 0.5
                 </div>
               </div>
             </div>
 
             {/* Formula 3: Fiber Attenuation */}
             <div className="p-6 border rounded-lg flex flex-col gap-4"
-                 style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+              style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded bg-purple-600 flex items-center justify-center font-mono font-bold text-white">
                   P
                 </div>
                 <h3 className="text-base font-mono font-bold"
-                    style={{ color: 'var(--text-primary)' }}>
+                  style={{ color: 'var(--text-primary)' }}>
                   Fiber Attenuation (Beer-Lambert Law)
                 </h3>
               </div>
 
               <div className="p-4 rounded-lg border text-center"
-                   style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
+                style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
                 <div className="text-lg font-mono text-purple-400 font-bold">
-                  P_survive = 10^(-Î±Â·d / 10)
+                  P_survive = 10^(-Î±·d / 10)
                 </div>
                 <div className="text-xs mt-2 font-mono" style={{ color: 'var(--text-muted)' }}>
-                  Î± = 0.2 dB/km (1550nm telecom fiber) | d = distance in km
+                  α = 0.2 dB/km (1550nm telecom fiber) | d = distance in km
                 </div>
               </div>
             </div>
           </section>
 
-          {/* â”€â”€ SECTION 5: Using Simulator â”€â”€ */}
+          {/* ── SECTION 5: Using Simulator ── */}
           <section id="usage" className="flex flex-col gap-5 scroll-mt-6">
             <div>
               <div className="text-xs font-mono uppercase tracking-widest mb-2 font-semibold"
-                   style={{ color: '#6366f1' }}>
+                style={{ color: '#6366f1' }}>
                 Tutorial
               </div>
               <h2 className="text-2xl font-bold font-mono mb-2"
-                  style={{ color: 'var(--text-primary)' }}>
+                style={{ color: 'var(--text-primary)' }}>
                 Using the Simulator
               </h2>
             </div>
@@ -728,12 +735,12 @@ export default function GuidePage() {
             <div className="flex flex-col gap-3">
               {[
                 { step: '01', title: 'Set Parameters', desc: 'Configure photon count, distance, noise, and Eve interception in the right sidebar.' },
-                { step: '02', title: 'Click RUN', desc: 'Execute the BB84 pipeline â€” results and animations update in real time.' },
+                { step: '02', title: 'Click RUN', desc: 'Execute the BB84 pipeline — results and animations update in real time.' },
                 { step: '03', title: 'Watch Photons', desc: 'Observe photon transmission across the 3 channel lanes with accurate polarization.' },
                 { step: '04', title: 'Inspect Bit Stream', desc: 'Open the Inspector tab to step through each individual photon state and measurement.' }
               ].map(item => (
                 <div key={item.step} className="flex gap-4 p-4 rounded-lg border"
-                     style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+                  style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
                   <div className="text-xl font-mono font-bold flex-shrink-0 w-8" style={{ color: '#00aacc' }}>
                     {item.step}
                   </div>
@@ -750,35 +757,35 @@ export default function GuidePage() {
             </div>
           </section>
 
-          {/* â”€â”€ SECTION 6: Quantum Gates â”€â”€ */}
+          {/* ── SECTION 6: Quantum Gates ── */}
           <section id="gates" className="scroll-mt-6">
             <GatesSection />
           </section>
 
-          {/* â”€â”€ SECTION 7: PNS Attack â”€â”€ */}
+          {/* ── SECTION 7: PNS Attack ── */}
           <section id="pns" className="scroll-mt-6">
             <PNSAttackSection />
           </section>
 
-          {/* â”€â”€ SECTION 8: Guided Experiments â”€â”€ */}
+          {/* ── SECTION 8: Guided Experiments ── */}
           <section id="experiments" className="scroll-mt-6">
             <ExperimentsSection />
           </section>
 
-          {/* â”€â”€ SECTION 9: Interactive Exercises â”€â”€ */}
+          {/* ── SECTION 9: Interactive Exercises ── */}
           <section id="exercises" className="scroll-mt-6">
             <GuidedExercises />
           </section>
 
-          {/* â”€â”€ SECTION 10: Glossary â”€â”€ */}
+          {/* ── SECTION 10: Glossary ── */}
           <section id="glossary" className="flex flex-col gap-5 scroll-mt-6">
             <div>
               <div className="text-xs font-mono uppercase tracking-widest mb-2 font-semibold"
-                   style={{ color: '#6366f1' }}>
+                style={{ color: '#6366f1' }}>
                 Reference
               </div>
               <h2 className="text-2xl font-bold font-mono mb-2"
-                  style={{ color: 'var(--text-primary)' }}>
+                style={{ color: 'var(--text-primary)' }}>
                 Glossary
               </h2>
             </div>
@@ -789,16 +796,16 @@ export default function GuidePage() {
             </div>
           </section>
 
-          {/* â”€â”€ FOOTER CTA â”€â”€ */}
+          {/* ── FOOTER CTA ── */}
           <div className="border-t pt-8 text-center" style={{ borderColor: 'var(--border-color)' }}>
             <button
               onClick={() => setActiveView('simulator')}
               className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-mono text-sm transition-colors"
             >
-              â–¶ Open Simulator
+              ▶ Open Simulator
             </button>
             <p className="text-xs font-mono mt-3" style={{ color: 'var(--text-subtle)' }}>
-              BB84 QKD Simulator â€” Interactive Research & Teaching Tool
+              BB84 QKD Simulator — Interactive Research & Teaching Tool
             </p>
           </div>
 

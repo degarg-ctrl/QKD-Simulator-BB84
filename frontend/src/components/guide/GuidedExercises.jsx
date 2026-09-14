@@ -9,7 +9,9 @@ const exercises = [
       { instruction: 'Set distance to 0km', verify: (params) => params.distance_km === 0 },
       { instruction: 'Set attack probability to 0%', verify: (params) => params.attack_prob === 0 },
       { instruction: 'Click Run Simulation', verify: (results) => results !== null },
-      { instruction: 'Observe QBER ≈ 0%', verify: (results) => results?.qber < 0.02 },
+      // Guard on qber_estimated: qber is null when not estimated, and
+      // null must NOT be read as 0% (audit fix C1).
+      { instruction: 'Observe QBER ≈ 0%', verify: (results) => results?.qber_estimated === true && results.qber < 0.02 },
     ]
   },
   {
@@ -18,7 +20,7 @@ const exercises = [
     steps: [
       { instruction: 'Set attack probability to 100%', verify: (params) => params.attack_prob === 1.0 },
       { instruction: 'Run simulation', verify: (results) => results !== null },
-      { instruction: 'Observe QBER ≈ 25%', verify: (results) => results?.qber > 0.20 && results?.qber < 0.30 },
+      { instruction: 'Observe QBER ≈ 25%', verify: (results) => results?.qber_estimated === true && results.qber > 0.20 && results.qber < 0.30 },
     ]
   },
   {
@@ -89,7 +91,7 @@ export default function GuidedExercises() {
       >
         ← Back to exercises
       </button>
-      
+
       <h2 className="text-2xl font-semibold text-white mb-2">
         Exercise {exercise.id}: {exercise.title}
       </h2>

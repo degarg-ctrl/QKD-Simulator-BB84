@@ -6,16 +6,17 @@
  * results from the most recent experiment run.
  *
  * Sections:
- *   1. Experiment Parameters â€” what was run
- *   2. Comparison Table â€” simulated vs theoretical vs delta
+ *   1. Experiment Parameters — what was run
+ *   2. Comparison Table — simulated vs theoretical vs delta
  *   3. QBER chart with simulated point marked
  *   4. SKR chart with simulated point marked  
- *   5. Security Verdict â€” full analysis
- *   6. Bit Stream Detail â€” filterable table
+ *   5. Security Verdict — full analysis
+ *   6. Bit Stream Detail — filterable table
  */
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { KeyRound } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ReferenceLine, ResponsiveContainer,
@@ -24,69 +25,69 @@ import {
 import useSimulationStore from '../store/simulationStore'
 import OneTimePad from '../components/results/OneTimePad'
 
-// â”€â”€â”€ HELPER: compute theoretical values at exact distance â”€
+// ─── HELPER: compute theoretical values at exact distance ─
 function getTheoreticalAtDistance(results, distanceKm) {
   if (!results?.qber_vs_distance?.length) return null
-  
+
   // Find closest point in theoretical curve
   const qberPoint = results.qber_vs_distance.reduce((prev, curr) =>
-    Math.abs(curr.distance - distanceKm) < 
-    Math.abs(prev.distance - distanceKm) ? curr : prev
+    Math.abs(curr.distance - distanceKm) <
+      Math.abs(prev.distance - distanceKm) ? curr : prev
   )
   const skrPoint = results.skr_vs_distance.reduce((prev, curr) =>
-    Math.abs(curr.distance - distanceKm) < 
-    Math.abs(prev.distance - distanceKm) ? curr : prev
+    Math.abs(curr.distance - distanceKm) <
+      Math.abs(prev.distance - distanceKm) ? curr : prev
   )
-  
+
   return {
     qber: qberPoint.qber,
     skr: skrPoint.skr,
   }
 }
 
-// â”€â”€â”€ HELPER: compute theoretical survival at distance â”€â”€â”€â”€â”€
+// ─── HELPER: compute theoretical survival at distance ─────
 // detectorEfficiency: 1.0 for ideal mode, 0.85 for realistic mode
 function theoreticalSurvival(distanceKm, detectorEfficiency = 0.85) {
   const lossdB = 0.2 * distanceKm
   return Math.pow(10, -lossdB / 10) * detectorEfficiency
 }
 
-// â”€â”€â”€ HELPER: format delta with sign and color â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function DeltaBadge({ simulated, theoretical, isPercent = false, 
-                      invertGood = false }) {
+// ─── HELPER: format delta with sign and color ─────────────
+function DeltaBadge({ simulated, theoretical, isPercent = false,
+  invertGood = false }) {
   const delta = simulated - theoretical
   const isGood = invertGood ? delta < 0 : delta >= 0
   const sign = delta >= 0 ? '+' : ''
-  const formatted = isPercent 
+  const formatted = isPercent
     ? `${sign}${(delta * 100).toFixed(2)}%`
     : `${sign}${delta.toFixed(4)}`
-  
+
   return (
     <span className={`font-mono text-xs px-1.5 py-0.5 rounded
-                     ${Math.abs(delta) < 0.001 
-                       ? 'text-white bg-gray-600'
-                       : isGood 
-                         ? 'text-white bg-green-600'
-                         : 'text-white bg-yellow-600'
-                     }`}>
-      {Math.abs(delta) < 0.0001 ? 'â‰ˆ 0' : formatted}
+                     ${Math.abs(delta) < 0.001
+        ? 'text-white bg-gray-600'
+        : isGood
+          ? 'text-white bg-green-600'
+          : 'text-white bg-yellow-600'
+      }`}>
+      {Math.abs(delta) < 0.0001 ? '≈ 0' : formatted}
     </span>
   )
 }
 
-// â”€â”€â”€ EMPTY STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── EMPTY STATE ──────────────────────────────────────────
 function EmptyResults() {
   const { setActiveView } = useSimulationStore()
   return (
     <div className="flex flex-col items-center justify-center 
                     h-full gap-6 text-center py-20">
-      <div className="text-6xl opacity-20">ðŸ“Š</div>
+      <div className="text-6xl opacity-20">📊</div>
       <div>
         <div className="text-lg font-mono text-gray-400 mb-2">
           No Results Yet
         </div>
         <div className="text-sm text-gray-600 max-w-sm">
-          Run a simulation first, then come back here 
+          Run a simulation first, then come back here
           to see a detailed analysis of your experiment.
         </div>
       </div>
@@ -96,13 +97,13 @@ function EmptyResults() {
                    text-white rounded font-mono text-sm
                    transition-colors"
       >
-        â–¶ Go to Simulator
+        ▶ Go to Simulator
       </button>
     </div>
   )
 }
 
-// â”€â”€â”€ MAIN PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── MAIN PAGE ────────────────────────────────────────────
 export default function ResultsPage() {
   const { results, params, sourceModel } = useSimulationStore()
   const [bitStreamFilter, setBitStreamFilter] = useState('all')
@@ -114,12 +115,20 @@ export default function ResultsPage() {
     results, params.distance_km
   )
   // Detector efficiency depends on mode:
-  // Ideal = perfect detectors (Î·=1.0), Realistic = Si-APD (Î·=0.85)
+  // Ideal = perfect detectors (η=1.0), Realistic = Si-APD (η=0.85)
   const detectorEta = sourceModel === 'ideal' ? 1.0 : 0.85
   const theoreticalSurvivalRate = theoreticalSurvival(
     params.distance_km, detectorEta
   )
-  const actualSurvivalRate = results.sifted_key_length / 
+  // QBER estimation state (audit fix C1): qber is null and qber_estimated
+  // is false when the sifted-key sample was too small to estimate QBER.
+  // Null must NEVER be read as a measured QBER of 0.
+  const qberEstimated = results.qber_estimated === true &&
+    results.qber != null
+  const isBreached = results.secure_threshold_breached === true
+  const isSecure = qberEstimated && !isBreached
+  const isUndetermined = !qberEstimated
+  const actualSurvivalRate = results.sifted_key_length /
     params.n_bits * 2  // approximate
 
   // Prepare chart data with simulated point marked
@@ -144,31 +153,35 @@ export default function ResultsPage() {
   const comparisonRows = [
     {
       metric: 'QBER',
-      simulated: `${(results.qber * 100).toFixed(2)}%`,
-      theoretical: theoretical 
-        ? `${(theoretical.qber * 100).toFixed(2)}%` 
+      simulated: qberEstimated
+        ? `${(results.qber * 100).toFixed(2)}%`
+        : 'Not estimated',
+      theoretical: theoretical
+        ? `${(theoretical.qber * 100).toFixed(2)}%`
         : 'N/A',
-      simulatedRaw: results.qber,
+      simulatedRaw: qberEstimated ? results.qber : undefined,
       theoreticalRaw: theoretical?.qber || 0,
       isPercent: true,
       invertGood: true,
-      note: results.qber >= 0.11 
-        ? 'âš  Threshold breached' 
-        : 'âœ“ Within safe range'
+      note: !qberEstimated
+        ? 'Sifted sample too small to estimate'
+        : results.qber >= 0.11
+          ? '⚠ Threshold breached'
+          : '✓ Within safe range'
     },
     {
       metric: 'SKR',
       simulated: results.skr.toFixed(4),
-      theoretical: theoretical 
-        ? theoretical.skr.toFixed(4) 
+      theoretical: theoretical
+        ? theoretical.skr.toFixed(4)
         : 'N/A',
       simulatedRaw: results.skr,
       theoreticalRaw: theoretical?.skr || 0,
       isPercent: false,
       invertGood: false,
-      note: results.skr === 0 
-        ? 'âš  No secure key' 
-        : 'âœ“ Key extractable'
+      note: results.skr === 0
+        ? '⚠ No secure key'
+        : '✓ Key extractable'
     },
     {
       metric: 'Sifted Key',
@@ -196,7 +209,6 @@ export default function ResultsPage() {
     },
   ]
 
-  const isSecure = !results.secure_threshold_breached
   const eveActive = params.attack_prob > 0
 
   return (
@@ -222,11 +234,14 @@ export default function ResultsPage() {
           {/* Security badge */}
           <div className={`px-4 py-2 rounded-lg border font-mono
                           text-sm font-bold
-                          ${isSecure
-                            ? 'bg-green-950/30 border-green-800/50 text-quantum-green'
-                            : 'bg-red-950/30 border-red-800/50 text-quantum-red'
-                          }`}>
-            {isSecure ? 'âœ“ SECURE' : 'âš  BREACH'}
+                          ${isUndetermined
+              ? 'bg-yellow-950/30 border-yellow-800/50 text-yellow-400'
+              : isSecure
+                ? 'bg-green-950/30 border-green-800/50 text-quantum-green'
+                : 'bg-red-950/30 border-red-800/50 text-quantum-red'
+            }`}>
+            {isUndetermined ? 'ⓘ UNDETERMINED'
+              : isSecure ? '✓ SECURE' : '⚠ BREACH'}
           </div>
         </div>
 
@@ -246,9 +261,11 @@ export default function ResultsPage() {
               { label: 'Eve Attack', value: `${(params.attack_prob * 100).toFixed(0)}%` },
               { label: 'Strategy', value: params.attack_strategy.replace('_', '-') },
               { label: 'Gates', value: `${useSimulationStore.getState().placedGates?.length || 0} placed` },
-              { label: 'Source Model', 
-                value: sourceModel === 'ideal' 
-                  ? 'âš› Ideal' : 'ðŸ”¬ Realistic' },
+              {
+                label: 'Source Model',
+                value: sourceModel === 'ideal'
+                  ? '⚛ Ideal' : '🔬 Realistic'
+              },
             ].map(p => (
               <div key={p.label} className="flex flex-col gap-1">
                 <div className="text-xs text-[var(--text-subtle)] font-mono 
@@ -300,10 +317,10 @@ export default function ResultsPage() {
               <tbody>
                 {comparisonRows.map((row, i) => (
                   <tr key={row.metric}
-                      className={`border-b border-[var(--border-color)]
-                                 ${i % 2 === 0 
-                                   ? 'bg-[var(--panel-dark)]/10' 
-                                   : 'bg-transparent'}`}>
+                    className={`border-b border-[var(--border-color)]
+                                 ${i % 2 === 0
+                        ? 'bg-[var(--panel-dark)]/10'
+                        : 'bg-transparent'}`}>
                     <td className="px-4 py-3 text-[var(--text-muted)] 
                                    font-semibold">
                       {row.metric}
@@ -315,14 +332,15 @@ export default function ResultsPage() {
                       {row.theoretical}
                     </td>
                     <td className="px-4 py-3">
-                      {row.theoreticalRaw !== undefined && (
-                        <DeltaBadge
-                          simulated={row.simulatedRaw}
-                          theoretical={row.theoreticalRaw}
-                          isPercent={row.isPercent}
-                          invertGood={row.invertGood}
-                        />
-                      )}
+                      {row.simulatedRaw !== undefined &&
+                        row.theoreticalRaw !== undefined && (
+                          <DeltaBadge
+                            simulated={row.simulatedRaw}
+                            theoretical={row.theoreticalRaw}
+                            isPercent={row.isPercent}
+                            invertGood={row.invertGood}
+                          />
+                        )}
                     </td>
                     <td className="px-4 py-3 text-[var(--text-subtle)] text-xs">
                       {row.note}
@@ -333,15 +351,15 @@ export default function ResultsPage() {
             </table>
           </div>
           <div className="text-xs text-[var(--text-secondary)] font-mono">
-            â„¹ Theoretical values computed from physics model at 
-            {params.distance_km}km. Differences normal at low 
-            photon counts â€” use n_bits â‰¥ 5000 for convergence.
+            ℹ Theoretical values computed from physics model at
+            {params.distance_km}km. Differences normal at low
+            photon counts — use n_bits ≥ 5000 for convergence.
           </div>
         </div>
 
         {/* Charts side by side */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
+
           {/* QBER chart with simulated dot */}
           <div className="p-4 bg-panel-bg border border-border-subtle 
                           rounded-lg flex flex-col gap-3">
@@ -350,30 +368,38 @@ export default function ResultsPage() {
               QBER vs Distance
             </div>
             <div className="text-xs text-[var(--text-subtle)] font-mono">
-              <span className="text-quantum-blue">â”</span> Theoretical curve
+              <span className="text-quantum-blue">━</span> Theoretical curve
               &nbsp;&nbsp;
-              <span className="text-quantum-red">â—</span> Your result at {params.distance_km}km
+              <span className="text-quantum-red">┏</span> Your result at {params.distance_km}km
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={qberChartData}
-                         margin={{ top: 5, right: 15, 
-                                   left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" 
-                               stroke="var(--border-color)" />
+                margin={{
+                  top: 5, right: 15,
+                  left: -10, bottom: 5
+                }}>
+                <CartesianGrid strokeDasharray="3 3"
+                  stroke="var(--border-color)" />
                 <XAxis dataKey="distance" stroke="var(--text-subtle)"
-                       tick={{ fill: 'var(--text-subtle)', fontSize: 10,
-                               fontFamily: 'monospace' }}
-                       label={{ value: 'km', 
-                                position: 'insideRight',
-                                fill: 'var(--text-subtle)', fontSize: 10 }}
+                  tick={{
+                    fill: 'var(--text-subtle)', fontSize: 10,
+                    fontFamily: 'monospace'
+                  }}
+                  label={{
+                    value: 'km',
+                    position: 'insideRight',
+                    fill: 'var(--text-subtle)', fontSize: 10
+                  }}
                 />
                 <YAxis stroke="var(--text-subtle)"
-                       tick={{ fill: 'var(--text-subtle)', fontSize: 10,
-                               fontFamily: 'monospace' }}
-                       tickFormatter={v => `${v}%`}
+                  tick={{
+                    fill: 'var(--text-subtle)', fontSize: 10,
+                    fontFamily: 'monospace'
+                  }}
+                  tickFormatter={v => `${v}%`}
                 />
                 <Tooltip
-                  contentStyle={{ 
+                  contentStyle={{
                     backgroundColor: 'var(--panel-bg)',
                     border: '1px solid var(--border-color)',
                     borderRadius: '6px',
@@ -384,32 +410,37 @@ export default function ResultsPage() {
                   labelFormatter={(l) => `${l} km`}
                 />
                 <ReferenceLine y={11} stroke="#ef4444"
-                               strokeDasharray="4 4"
-                               label={{ value: '11% threshold',
-                                        fill: '#ef4444',
-                                        fontSize: 9,
-                                        fontFamily: 'monospace' }}
-                />
-                <Line type="monotone" dataKey="theoretical"
-                      stroke="#6366f1" strokeWidth={2}
-                      dot={false}
-                />
-                {/* Simulated result dot */}
-                <ReferenceDot
-                  x={Math.round(params.distance_km)}
-                  y={parseFloat((results.qber * 100).toFixed(2))}
-                  r={6}
-                  fill="#ef4444"
-                  stroke="var(--canvas-bg)"
-                  strokeWidth={2}
-                  label={{ 
-                    value: `${(results.qber * 100).toFixed(1)}%`,
+                  strokeDasharray="4 4"
+                  label={{
+                    value: '11% threshold',
                     fill: '#ef4444',
-                    fontSize: 10,
-                    fontFamily: 'monospace',
-                    position: 'top'
+                    fontSize: 9,
+                    fontFamily: 'monospace'
                   }}
                 />
+                <Line type="monotone" dataKey="theoretical"
+                  stroke="#6366f1" strokeWidth={2}
+                  dot={false}
+                />
+                {/* Simulated result dot — only when QBER was estimated.
+                    A null (unestimated) QBER must not be plotted as 0%. */}
+                {qberEstimated && (
+                  <ReferenceDot
+                    x={Math.round(params.distance_km)}
+                    y={parseFloat((results.qber * 100).toFixed(2))}
+                    r={6}
+                    fill="#ef4444"
+                    stroke="var(--canvas-bg)"
+                    strokeWidth={2}
+                    label={{
+                      value: `${(results.qber * 100).toFixed(1)}%`,
+                      fill: '#ef4444',
+                      fontSize: 10,
+                      fontFamily: 'monospace',
+                      position: 'top'
+                    }}
+                  />
+                )}
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -422,26 +453,34 @@ export default function ResultsPage() {
               SKR vs Distance
             </div>
             <div className="text-xs text-[var(--text-subtle)] font-mono">
-              <span className="text-quantum-green">â”</span> Theoretical curve
+              <span className="text-quantum-green">━</span> Theoretical curve
               &nbsp;&nbsp;
-              <span className="text-quantum-green">â—</span> Your result at {params.distance_km}km
+              <span className="text-quantum-green">┏</span> Your result at {params.distance_km}km
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={skrChartData}
-                         margin={{ top: 5, right: 15,
-                                   left: -10, bottom: 5 }}>
+                margin={{
+                  top: 5, right: 15,
+                  left: -10, bottom: 5
+                }}>
                 <CartesianGrid strokeDasharray="3 3"
-                               stroke="var(--border-color)" />
+                  stroke="var(--border-color)" />
                 <XAxis dataKey="distance" stroke="#4b5563"
-                       tick={{ fill: '#4b5563', fontSize: 10,
-                               fontFamily: 'monospace' }}
-                       label={{ value: 'km',
-                                position: 'insideRight',
-                                fill: '#4b5563', fontSize: 10 }}
+                  tick={{
+                    fill: '#4b5563', fontSize: 10,
+                    fontFamily: 'monospace'
+                  }}
+                  label={{
+                    value: 'km',
+                    position: 'insideRight',
+                    fill: '#4b5563', fontSize: 10
+                  }}
                 />
                 <YAxis stroke="#4b5563"
-                       tick={{ fill: '#4b5563', fontSize: 10,
-                               fontFamily: 'monospace' }}
+                  tick={{
+                    fill: '#4b5563', fontSize: 10,
+                    fontFamily: 'monospace'
+                  }}
                 />
                 <Tooltip
                   contentStyle={{
@@ -455,8 +494,8 @@ export default function ResultsPage() {
                   labelFormatter={(l) => `${l} km`}
                 />
                 <Line type="monotone" dataKey="theoretical"
-                      stroke="#22c55e" strokeWidth={2}
-                      dot={false}
+                  stroke="#22c55e" strokeWidth={2}
+                  dot={false}
                 />
                 {/* Simulated result dot */}
                 <ReferenceDot
@@ -481,66 +520,72 @@ export default function ResultsPage() {
 
         {/* Security verdict */}
         <div className={`p-5 rounded-lg border
-                        ${isSecure
-                          ? 'bg-green-950/20 border-green-900/40'
-                          : 'bg-red-950/20 border-red-900/40'
-                        }`}>
-          <div className="text-xs font-mono uppercase 
+                        ${isUndetermined
+            ? 'bg-yellow-950/20 border-yellow-900/40'
+            : isSecure
+              ? 'bg-green-950/20 border-green-900/40'
+              : 'bg-red-950/20 border-red-900/40'
+          }`}>
+          <div className="text-xs font-mono uppercase
                           tracking-wider mb-3"
-               style={{ color: isSecure ? '#22c55e' : '#ef4444' }}>
+            style={{ color: isUndetermined ? '#eab308' : isSecure ? '#22c55e' : '#ef4444' }}>
             Security Verdict
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-mono font-bold"
-                      style={{ 
-                        color: isSecure ? '#22c55e' : '#ef4444' 
-                      }}>
-                  {isSecure ? 'âœ“ SECURE' : 'âš  THRESHOLD BREACHED'}
+                  style={{
+                    color: isUndetermined ? '#eab308' : isSecure ? '#22c55e' : '#ef4444'
+                  }}>
+                  {isUndetermined ? 'ⓘ QBER NOT ESTIMATED'
+                    : isSecure ? '✓ SECURE' : '⚠ THRESHOLD BREACHED'}
                 </span>
               </div>
               <div className="text-sm text-[var(--text-muted)] leading-relaxed">
-                {isSecure
-                  ? `QBER of ${(results.qber * 100).toFixed(2)}% is below the 11% security threshold. The quantum channel is considered secure. Key extraction was successful.`
-                  : `QBER of ${(results.qber * 100).toFixed(2)}% exceeds the 11% threshold. Significant eavesdropping detected. Session was aborted â€” no secure key extracted.`
+                {isUndetermined
+                  ? `Too few sifted bits to estimate QBER (sifted key = ${results.sifted_key_length}). QBER is reported as not estimated rather than 0%, and security cannot be certified for this run.`
+                  : isSecure
+                    ? `QBER of ${(results.qber * 100).toFixed(2)}% is below the 11% security threshold. The quantum channel is considered secure. Key extraction was successful.`
+                    : `QBER of ${(results.qber * 100).toFixed(2)}% exceeds the 11% threshold. Significant eavesdropping detected. Session was aborted — no secure key extracted.`
                 }
               </div>
             </div>
             <div className="flex flex-col gap-2 text-sm font-mono">
               {[
-                { 
-                  label: 'Eve Detection', 
-                  value: results.qber >= 0.11 
-                    ? 'Triggered' : 'Not triggered',
-                  ok: results.qber < 0.11
+                {
+                  label: 'Eve Detection',
+                  value: !qberEstimated
+                    ? 'Undetermined'
+                    : results.qber >= 0.11 ? 'Triggered' : 'Not triggered',
+                  ok: qberEstimated && results.qber < 0.11
                 },
-                { 
-                  label: 'Eve Active', 
-                  value: eveActive 
-                    ? `Yes (${(params.attack_prob*100).toFixed(0)}%)` 
+                {
+                  label: 'Eve Active',
+                  value: eveActive
+                    ? `Yes (${(params.attack_prob * 100).toFixed(0)}%)`
                     : 'No',
                   ok: !eveActive
                 },
-                { 
-                  label: 'Key Extraction', 
+                {
+                  label: 'Key Extraction',
                   value: isSecure ? 'Successful' : 'Failed',
                   ok: isSecure
                 },
-                { 
+                {
                   label: 'Estimated Key Bits',
-                  value: isSecure 
+                  value: isSecure
                     ? `~${Math.round(results.sifted_key_length * 0.9)} bits`
                     : '0 bits',
                   ok: isSecure
                 },
               ].map(item => (
-                <div key={item.label} 
-                     className="flex justify-between 
+                <div key={item.label}
+                  className="flex justify-between 
                                 border-b border-gray-800/50 py-1">
                   <span className="text-[var(--text-muted)]">{item.label}</span>
-                  <span style={{ 
-                    color: item.ok ? '#22c55e' : '#ef4444' 
+                  <span style={{
+                    color: item.ok ? '#22c55e' : '#ef4444'
                   }}>
                     {item.value}
                   </span>
@@ -550,176 +595,180 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* WCP Statistics â€” Realistic mode only */}
-        {sourceModel === 'realistic' && 
-         results.wcp_enabled && 
-         results.wcp_stats && 
-         Object.keys(results.wcp_stats).length > 0 && (
-          <div className="flex flex-col gap-3">
-            <div className="text-xs font-mono text-[var(--text-secondary)]
+        {/* WCP Statistics — Realistic mode only */}
+        {sourceModel === 'realistic' &&
+          results.wcp_enabled &&
+          results.wcp_stats &&
+          Object.keys(results.wcp_stats).length > 0 && (
+            <div className="flex flex-col gap-3">
+              <div className="text-xs font-mono text-[var(--text-secondary)]
                             uppercase tracking-wider">
-              Weak Coherent Pulse Statistics
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 
+                Weak Coherent Pulse Statistics
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 
                             gap-3">
-              {[
-                { 
-                  label: 'Vacuum Pulses',
-                  value: `${((results.wcp_stats.vacuum_fraction || 0) * 100).toFixed(1)}%`,
-                  color: '#6b7280',
-                  note: 'No photon sent'
-                },
-                {
-                  label: 'Single Photon',
-                  value: `${((results.wcp_stats.single_fraction || 0) * 100).toFixed(1)}%`,
-                  color: '#00aacc',
-                  note: 'Secure'
-                },
-                {
-                  label: 'Multi-Photon',
-                  value: `${((results.wcp_stats.multi_fraction || 0) * 100).toFixed(1)}%`,
-                  color: '#ccaa00',
-                  note: 'PNS vulnerable'
-                },
-                {
-                  label: 'Mean Photon Î¼',
-                  value: params.mean_photon_number?.toFixed(2) || '0.20',
-                  color: '#a855f7',
-                  note: 'Per pulse'
-                },
-              ].map(stat => (
-                <div key={stat.label}
-                     className="p-3 rounded-lg flex flex-col gap-1"
-                     style={{
-                       backgroundColor: stat.color + '15',
-                       border: `1px solid ${stat.color}30`
-                     }}>
-                  <div className="text-xs font-mono text-gray-500
+                {[
+                  {
+                    label: 'Vacuum Pulses',
+                    value: `${((results.wcp_stats.vacuum_fraction || 0) * 100).toFixed(1)}%`,
+                    color: '#6b7280',
+                    note: 'No photon sent'
+                  },
+                  {
+                    label: 'Single Photon',
+                    value: `${((results.wcp_stats.single_fraction || 0) * 100).toFixed(1)}%`,
+                    color: '#00aacc',
+                    note: 'Secure'
+                  },
+                  {
+                    label: 'Multi-Photon',
+                    value: `${((results.wcp_stats.multi_fraction || 0) * 100).toFixed(1)}%`,
+                    color: '#ccaa00',
+                    note: 'PNS vulnerable'
+                  },
+                  {
+                    label: 'Mean Photon μ',
+                    value: params.mean_photon_number?.toFixed(2) || '0.20',
+                    color: '#a855f7',
+                    note: 'Per pulse'
+                  },
+                ].map(stat => (
+                  <div key={stat.label}
+                    className="p-3 rounded-lg flex flex-col gap-1"
+                    style={{
+                      backgroundColor: stat.color + '15',
+                      border: `1px solid ${stat.color}30`
+                    }}>
+                    <div className="text-xs font-mono text-gray-500
                                   uppercase tracking-wider">
-                    {stat.label}
+                      {stat.label}
+                    </div>
+                    <div className="text-lg font-mono font-bold"
+                      style={{ color: stat.color }}>
+                      {stat.value}
+                    </div>
+                    <div className="text-xs text-gray-600 font-mono">
+                      {stat.note}
+                    </div>
                   </div>
-                  <div className="text-lg font-mono font-bold"
-                       style={{ color: stat.color }}>
-                    {stat.value}
-                  </div>
-                  <div className="text-xs text-gray-600 font-mono">
-                    {stat.note}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            {/* PNS warning if pns_stats present */}
-            {results.pns_stats && 
-             results.pns_stats.split_multi > 0 && (
-              <div className="p-3 rounded-lg"
-                   style={{
-                     backgroundColor: '#ccaa0015',
-                     border: '1px solid #ccaa0040'
-                   }}>
-                <div className="text-xs font-mono text-yellow-400
+              {/* PNS warning if pns_stats present */}
+              {results.pns_stats &&
+                results.pns_stats.split_multi > 0 && (
+                  <div className="p-3 rounded-lg"
+                    style={{
+                      backgroundColor: '#ccaa0015',
+                      border: '1px solid #ccaa0040'
+                    }}>
+                    <div className="text-xs font-mono text-yellow-400
                                 uppercase tracking-wider mb-2">
-                  âš  PNS Attack Active
-                </div>
-                <div className="grid grid-cols-3 gap-4 
+                      ⚠ PNS Attack Active
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 
                                 text-xs font-mono">
-                  <div>
-                    <div className="text-gray-500">Split photons</div>
-                    <div className="text-yellow-400 font-bold">
-                      {results.pns_stats.split_multi || 0}
+                      <div>
+                        <div className="text-gray-500">Split photons</div>
+                        <div className="text-yellow-400 font-bold">
+                          {results.pns_stats.split_multi || 0}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-gray-500">
+                          Leaked fraction
+                        </div>
+                        <div className="text-yellow-400 font-bold">
+                          {((results.pns_stats.leak_fraction || 0)
+                            * 100).toFixed(2)}%
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-gray-500">QBER shows</div>
+                        <div className="text-green-400 font-bold">
+                          {qberEstimated
+                            ? `${(results.qber * 100).toFixed(2)}%`
+                            : 'Not estimated'}
+                          {qberEstimated && (
+                            <span className="text-red-400 ml-1">
+                              (misleading!)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      ℹ QBER appears secure but Eve has stolen key
+                      information. Enable Decoy States to detect.
                     </div>
                   </div>
-                  <div>
-                    <div className="text-gray-500">
-                      Leaked fraction
-                    </div>
-                    <div className="text-yellow-400 font-bold">
-                      {((results.pns_stats.leak_fraction || 0) 
-                        * 100).toFixed(2)}%
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-gray-500">QBER shows</div>
-                    <div className="text-green-400 font-bold">
-                      {(results.qber * 100).toFixed(2)}%
-                      <span className="text-red-400 ml-1">
-                        (misleading!)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-2 text-xs text-gray-500">
-                  â„¹ QBER appears secure but Eve has stolen key
-                  information. Enable Decoy States to detect.
-                </div>
-              </div>
-            )}
+                )}
 
-            {/* Decoy results if present */}
-            {results.decoy_results && 
-             Object.keys(results.decoy_results).length > 0 && (
-              <div className="p-3 rounded-lg"
-                   style={{
-                     backgroundColor: results.decoy_results.pns_detected
-                       ? '#ff444415' : '#00ff8815',
-                     border: `1px solid ${
-                       results.decoy_results.pns_detected
-                         ? '#ff444440' : '#00ff8840'
-                     }`
-                   }}>
-                <div className="text-xs font-mono uppercase
+              {/* Decoy results if present */}
+              {results.decoy_results &&
+                Object.keys(results.decoy_results).length > 0 && (
+                  <div className="p-3 rounded-lg"
+                    style={{
+                      backgroundColor: results.decoy_results.pns_detected
+                        ? '#ff444415' : '#00ff8815',
+                      border: `1px solid ${results.decoy_results.pns_detected
+                        ? '#ff444440' : '#00ff8840'
+                        }`
+                    }}>
+                    <div className="text-xs font-mono uppercase
                                 tracking-wider mb-2"
-                     style={{
-                       color: results.decoy_results.pns_detected
-                         ? '#ff4444' : '#00ff88'
-                     }}>
-                  {results.decoy_results.pns_detected
-                    ? 'ðŸš¨ Decoy Protocol: PNS Attack Detected'
-                    : 'âœ“ Decoy Protocol: No PNS Attack'}
-                </div>
-                <div className="grid grid-cols-3 gap-4
+                      style={{
+                        color: results.decoy_results.pns_detected
+                          ? '#ff4444' : '#00ff88'
+                      }}>
+                      {results.decoy_results.pns_detected
+                        ? '🚨 Decoy Protocol: PNS Attack Detected'
+                        : '✓ Decoy Protocol: No PNS Attack'}
+                    </div>
+                    <div className="grid grid-cols-3 gap-4
                                 text-xs font-mono">
-                  <div>
-                    <div className="text-[var(--text-muted)]">Signal gain</div>
-                    <div className="text-[var(--text-primary)] font-bold">
-                      {((results.decoy_results.signal_gain || 0)
-                        * 100).toFixed(2)}%
+                      <div>
+                        <div className="text-[var(--text-muted)]">Signal gain</div>
+                        <div className="text-[var(--text-primary)] font-bold">
+                          {((results.decoy_results.signal_gain || 0)
+                            * 100).toFixed(2)}%
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[var(--text-muted)]">Decoy gain</div>
+                        <div className="text-[var(--text-primary)] font-bold">
+                          {((results.decoy_results.decoy_gain || 0)
+                            * 100).toFixed(2)}%
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[var(--text-muted)]">Confidence</div>
+                        <div className="font-bold"
+                          style={{
+                            color: results.decoy_results.pns_detected
+                              ? '#ff4444' : '#00ff88'
+                          }}>
+                          {((results.decoy_results.confidence || 0)
+                            * 100).toFixed(0)}%
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-[var(--text-muted)]">Decoy gain</div>
-                    <div className="text-[var(--text-primary)] font-bold">
-                      {((results.decoy_results.decoy_gain || 0)
-                        * 100).toFixed(2)}%
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[var(--text-muted)]">Confidence</div>
-                    <div className="font-bold"
-                         style={{
-                           color: results.decoy_results.pns_detected
-                             ? '#ff4444' : '#00ff88'
-                         }}>
-                      {((results.decoy_results.confidence || 0)
-                        * 100).toFixed(0)}%
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+                )}
+            </div>
+          )}
 
         {/* One-Time Pad encryption demo */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded flex items-center
-                            justify-center text-sm"
-                 style={{ 
-                   backgroundColor: '#00aacc20',
-                   border: '1px solid #00aacc40'
-                 }}>
-              ðŸ”
+                            justify-center"
+              style={{
+                backgroundColor: 'rgba(0,184,230,0.12)',
+                border: '1px solid rgba(0,184,230,0.4)',
+                color: '#00B8E6'
+              }}>
+              <KeyRound size={15} />
             </div>
             <div>
               <div className="text-xs font-mono uppercase 
@@ -747,10 +796,10 @@ export default function ResultsPage() {
             {/* Filters */}
             <div className="flex items-center gap-1">
               {[
-                { id: 'all',         label: 'All' },
-                { id: 'matched',     label: 'Matched' },
+                { id: 'all', label: 'All' },
+                { id: 'matched', label: 'Matched' },
                 { id: 'intercepted', label: 'Intercepted' },
-                { id: 'lost',        label: 'Lost' },
+                { id: 'lost', label: 'Lost' },
               ].map(f => (
                 <button
                   key={f.id}
@@ -758,9 +807,9 @@ export default function ResultsPage() {
                   className={`px-2 py-1 text-xs font-mono rounded
                              border transition-colors
                              ${bitStreamFilter === f.id
-                               ? 'border-quantum-blue text-quantum-blue bg-indigo-950/30'
-                               : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                             }`}
+                      ? 'border-quantum-blue text-quantum-blue bg-indigo-950/30'
+                      : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                    }`}
                 >
                   {f.label}
                 </button>
@@ -773,26 +822,26 @@ export default function ResultsPage() {
             <table className="w-full text-xs font-mono">
               <thead className="sticky top-0 bg-panel-bg">
                 <tr className="border-b border-[var(--border-color)]">
-                  {['#', 'Alice Bit', 'A.Basis', 
-                    'B.Basis', 'Bob Bit', 'Match', 
+                  {['#', 'Alice Bit', 'A.Basis',
+                    'B.Basis', 'Bob Bit', 'Match',
                     'Eve', 'Angle'].map(h => (
-                    <th key={h} 
+                      <th key={h}
                         className="text-left px-3 py-2 
                                    text-[var(--text-muted)] uppercase 
                                    tracking-wider text-xs">
-                      {h}
-                    </th>
-                  ))}
+                        {h}
+                      </th>
+                    ))}
                 </tr>
               </thead>
               <tbody>
                 {filteredBitStream.map((photon, i) => (
                   <tr key={i}
-                      className={`border-b border-[var(--border-color)]
-                        ${photon.intercepted 
-                          ? 'bg-red-950/20' : ''}
-                        ${!photon.match 
-                          ? 'opacity-50' : ''}
+                    className={`border-b border-[var(--border-color)]
+                        ${photon.intercepted
+                        ? 'bg-red-950/20' : ''}
+                        ${!photon.match
+                        ? 'opacity-50' : ''}
                       `}>
                     <td className="px-3 py-1.5 text-[var(--text-subtle)]">
                       {photon.index}
@@ -801,36 +850,36 @@ export default function ResultsPage() {
                       {photon.alice_bit}
                     </td>
                     <td className="px-3 py-1.5"
-                        style={{ 
-                          color: photon.alice_basis === '+' 
-                            ? '#6366f1' : '#a855f7' 
-                        }}>
+                      style={{
+                        color: photon.alice_basis === '+'
+                          ? '#6366f1' : '#a855f7'
+                      }}>
                       {photon.alice_basis}
                     </td>
                     <td className="px-3 py-1.5"
-                        style={{ 
-                          color: photon.bob_basis === '+' 
-                            ? '#6366f1' : '#a855f7' 
-                        }}>
+                      style={{
+                        color: photon.bob_basis === '+'
+                          ? '#6366f1' : '#a855f7'
+                      }}>
                       {photon.bob_basis}
                     </td>
                     <td className="px-3 py-1.5 text-[var(--text-secondary)]">
                       {photon.bob_bit}
                     </td>
                     <td className="px-3 py-1.5">
-                      <span className={photon.match 
+                      <span className={photon.match
                         ? 'text-quantum-green' : 'text-[var(--text-muted)]'}>
-                        {photon.match ? 'âœ“' : 'âœ—'}
+                        {photon.match ? '✓' : '✕'}
                       </span>
                     </td>
                     <td className="px-3 py-1.5">
-                      <span className={photon.intercepted 
+                      <span className={photon.intercepted
                         ? 'text-quantum-red' : 'text-[var(--text-muted)]'}>
-                        {photon.intercepted ? 'âš¡' : 'â€”'}
+                        {photon.intercepted ? '⚡' : '—'}
                       </span>
                     </td>
                     <td className="px-3 py-1.5 text-[var(--text-subtle)]">
-                      {photon.polarization_angle}Â°
+                      {photon.polarization_angle}°
                     </td>
                   </tr>
                 ))}

@@ -18,12 +18,12 @@ export default function ExerciseStep({ step, onNext, onPrev, isFirst, isLast }) 
         </h3>
         {isComplete ? (
           <div className="text-green-400 flex items-center gap-2 font-mono text-sm">
-            <span>âœ“</span>
+            <span>✓</span>
             <span>Complete!</span>
           </div>
         ) : (
           <div className="text-yellow-400 flex items-center gap-2 font-mono text-sm">
-            <span>â—‹</span>
+            <span>○</span>
             <span>In progress...</span>
           </div>
         )}
