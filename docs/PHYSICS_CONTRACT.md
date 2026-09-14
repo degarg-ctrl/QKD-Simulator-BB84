@@ -136,6 +136,15 @@ QBER_MIN_SIFTED_COUNT       = 100   # = ceil(10 / 0.10); below -> not estimated
 Applied to photon polarization states per lane in order.
 Gates are applied AFTER channel transmission, BEFORE Bob measures.
 
+Lane identity (audit M14). "Lane" is a deterministic VISUALIZATION
+partition, not a physical per-lane channel: photon i is drawn on lane
+`i % 3` (frontend `visualEncoding.laneForIndex`, backend
+`apply_gates_to_lane`/`apply_cloning_probe`). All pulses travel the same
+physical fiber. Drag-and-drop gate/probe placement selects a subset of
+pulses by this partition, so a gate on lane L acts exactly on the pulses
+with `index % 3 == L`. This is a UX affordance for demonstrating a gate/
+probe on part of the traffic; it does not imply three independent fibers.
+
 H (Hadamard):
   |0> ? |+>  (0° ? 45°)
   |1> ? |->  (90° ? 135°)
@@ -181,7 +190,8 @@ to 67/112 for S and 56/124 for T in GATE_TRANSFORMS). The angle rotation
 is the visual indication; no separate photon color tint is applied.
 
 Gate application rule:
-  - Gates apply only to photons on the matching lane
+  - Gates apply only to photons on the matching lane (`index % 3`,
+    Section 10 lane identity)
   - Multiple gates on same lane apply left to right
   - Gate transformations update both 'bit', 'basis', 
     'state_label' and 'polarization_angle' fields

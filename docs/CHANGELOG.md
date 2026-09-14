@@ -310,3 +310,16 @@ Format was: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 [2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/test_h5_event_cap.py
 [2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/test_h6_noise_state_consistency.py
 [2026-09-14 18:02] | main | created  | backend/tests/runs/2026-09-14_p1-audit-fixes/suite/test_h7_rng_reproducibility.py
+
+[2026-09-14 23:20] | main | created  | backend/conftest.py
+[2026-09-14 23:20] | main | modified | backend/pytest.ini
+[2026-09-14 23:20] | main | modified | backend/core/gates.py
+[2026-09-14 23:20] | main | modified | backend/tests/runs/2026-05-02_physics-accuracy/suite/conftest.py
+[2026-09-14 23:20] | main | modified | docs/PHYSICS_CONTRACT.md
+[2026-09-14 23:20] | main | modified | README.md
+[2026-09-14 23:20] | main | modified | frontend/src/hooks/usePhotonAnimation.js
+[2026-09-14 23:20] | main | modified | frontend/src/hooks/usePhotonAnimation.test.js
+[2026-09-14 23:20] | main | modified | frontend/vitest.config.js
+[2026-09-14 23:20] | main | modified | docs/TEST_LOG.md
+[2026-09-14 23:20] | main | modified | docs/ERROR_LOG.md
+[2026-09-14 23:20] | main | modified | docs/CHANGELOG.md
