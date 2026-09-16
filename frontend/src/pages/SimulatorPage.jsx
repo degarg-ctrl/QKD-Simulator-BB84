@@ -16,7 +16,7 @@ import GatePropertiesPanel from '../components/gates/GatePropertiesPanel'
 
 export default function SimulatorPage() {
   const [configCollapsed, setConfigCollapsed] = useState(false)
-  const { activeView, inspector } = useSimulationStore()
+  const { activeView, inspector, selectedGate } = useSimulationStore()
 
   // Landing Page
   if (activeView === 'landing') {
@@ -71,9 +71,9 @@ export default function SimulatorPage() {
                 {inspector.isOpen && <PhotonInspector />}
               </AnimatePresence>
             </div>
-            <GatePropertiesPanel />            
+            {/* Unified Contextual Right Rail */}
             <motion.div
-              animate={{ width: configCollapsed ? 0 : 256 }}
+              animate={{ width: configCollapsed ? 0 : 280 }}
               transition={{ duration: 0.2, ease: 'easeInOut' }}
               className="border-l overflow-hidden 
                          flex-shrink-0 relative"
@@ -90,13 +90,18 @@ export default function SimulatorPage() {
                            rounded-l flex items-center justify-center
                            text-[var(--text-muted)] hover:text-[var(--text-primary)] z-10
                            transition-colors"
+                title={configCollapsed ? 'Expand panel' : 'Collapse panel'}
               >
                 <span className="text-xs">
                   {configCollapsed ? '‹' : '›'}
                 </span>
               </button>
-              <div className="w-64 h-full overflow-y-auto p-3">
-                <ConfigPanel />
+              <div className="w-[280px] h-full overflow-y-auto p-3">
+                {selectedGate ? (
+                  <GatePropertiesPanel />
+                ) : (
+                  <ConfigPanel />
+                )}
               </div>
             </motion.div>
           </div>

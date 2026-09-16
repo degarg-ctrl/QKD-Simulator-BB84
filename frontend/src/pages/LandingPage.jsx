@@ -328,7 +328,7 @@ export default function LandingPage() {
           <SectionLabel>Interactive</SectionLabel>
           <h2 style={{ ...h2, marginBottom: '0.75rem' }}>Drag-and-drop quantum gates</h2>
           <p style={{ ...bodyText, fontSize: '0.875rem', maxWidth: '38rem', marginBottom: '2.5rem' }}>
-            Place single-qubit gates on any of the three photon lanes. The gate applies its
+            Place single-qubit gates on the quantum channel lane. The gate applies its
             polarization transformation before Bob measures. Useful for studying gate-induced
             decoherence and the no-cloning theorem.
           </p>

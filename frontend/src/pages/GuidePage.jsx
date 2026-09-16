@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/pages/GuidePage.jsx
  *
  * Comprehensive Guide for BB84 QKD Simulator.
@@ -736,7 +736,7 @@ export default function GuidePage() {
               {[
                 { step: '01', title: 'Set Parameters', desc: 'Configure photon count, distance, noise, and Eve interception in the right sidebar.' },
                 { step: '02', title: 'Click RUN', desc: 'Execute the BB84 pipeline — results and animations update in real time.' },
-                { step: '03', title: 'Watch Photons', desc: 'Observe photon transmission across the 3 channel lanes with accurate polarization.' },
+                { step: '03', title: 'Watch Photons', desc: 'Observe photon transmission across the quantum channel with accurate polarization.' },
                 { step: '04', title: 'Inspect Bit Stream', desc: 'Open the Inspector tab to step through each individual photon state and measurement.' }
               ].map(item => (
                 <div key={item.step} className="flex gap-4 p-4 rounded-lg border"
