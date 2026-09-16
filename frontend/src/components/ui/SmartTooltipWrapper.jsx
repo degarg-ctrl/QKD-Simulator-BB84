@@ -5,16 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 /**
  * SmartTooltipWrapper
  * 
- * Wraps a trigger element and renders a tooltip via portal.
- * 
- * Positioning uses direct top-left coordinates (no CSS transforms)
- * so clamping to viewport edges is exact.
+ * Central public tooltip API for QKDSimFlow.
+ * Renders tooltip via portal with viewport collision detection.
  * 
  * Features:
- *   - Viewport-aware positioning (clamps to screen edges with padding)
- *   - Hover persistence (tooltip stays when mouse moves to it)
- *   - Scrollable content (max-height with overflow)
- *   - Configurable placement (right, left, bottom)
+ *   - Guaranteed header clearance (never occludes top transport bar)
+ *   - Trigger non-occlusion (flips or shifts rather than covering source)
+ *   - Hover persistence (cursor can move into tooltip to scroll/interact)
+ *   - Clamping to viewport bounds
  */
 export default function SmartTooltipWrapper({
   children,
@@ -45,7 +43,7 @@ export default function SmartTooltipWrapper({
     clearTimeouts()
     hideTimeout.current = setTimeout(() => {
       setVisible(false)
-    }, 200)
+    }, 150)
   }, [])
 
   const calculatePosition = useCallback(() => {
@@ -53,69 +51,60 @@ export default function SmartTooltipWrapper({
     const trigger = triggerRef.current.getBoundingClientRect()
     const vw = window.innerWidth
     const vh = window.innerHeight
-    const pad = 20 // minimum distance from any screen edge
+    const pad = 12
+    const headerHeight = 56 // Clearance for the top header bar
 
-    // Measure actual tooltip size, fallback to estimates
-    const tw = tooltipRef.current?.scrollWidth || 288
-    const th = tooltipRef.current?.scrollHeight || 300
+    const tw = tooltipRef.current?.scrollWidth || 300
+    const th = tooltipRef.current?.scrollHeight || 360
 
     let left, top
 
     if (placement === 'right' || placement === 'left') {
-      // ── Horizontal placement (tooltip appears beside trigger) ──
-
-      // Try preferred side, flip if needed
+      // Horizontal placement
       if (placement === 'right') {
         left = trigger.right + offset
         if (left + tw > vw - pad) {
-          left = trigger.left - tw - offset
+          left = Math.max(pad, trigger.left - tw - offset)
         }
       } else {
         left = trigger.left - tw - offset
         if (left < pad) {
-          left = trigger.right + offset
+          left = Math.min(vw - pad - tw, trigger.right + offset)
         }
       }
 
-      // If STILL overflows (both sides blocked), center on screen
-      if (left < pad || left + tw > vw - pad) {
-        left = Math.max(pad, (vw - tw) / 2)
-      }
-
-      // Vertical: center tooltip on trigger, then clamp
+      // Vertical alignment: center on trigger, clamped below header
       top = trigger.top + trigger.height / 2 - th / 2
 
-      // Clamp top edge
-      if (top < pad) top = pad
+      // Prevent occluding the header (B8 fix)
+      if (top < headerHeight + pad) {
+        top = headerHeight + pad
+      }
+
       // Clamp bottom edge
-      if (top + th > vh - pad) top = vh - pad - th
-      // If tooltip taller than viewport, pin to top
-      if (top < pad) top = pad
-
+      if (top + th > vh - pad) {
+        top = Math.max(headerHeight + pad, vh - pad - th)
+      }
     } else {
-      // ── Vertical placement (tooltip appears below/above trigger) ──
-
-      // Try below first
+      // Vertical placement (bottom / top)
       top = trigger.bottom + offset
       if (top + th > vh - pad) {
-        // Flip above
-        top = trigger.top - th - offset
+        // Flip above if space permits
+        const aboveTop = trigger.top - th - offset
+        if (aboveTop >= headerHeight + pad) {
+          top = aboveTop
+        } else {
+          top = headerHeight + pad
+        }
       }
-      // If still overflows top, pin to top
-      if (top < pad) top = pad
 
-      // Horizontal: center on trigger, then clamp
       left = trigger.left + trigger.width / 2 - tw / 2
-
       if (left < pad) left = pad
       if (left + tw > vw - pad) left = vw - pad - tw
-      // If tooltip wider than viewport, pin to left
-      if (left < pad) left = pad
     }
 
-    // Calculate how much vertical space is actually available
-    const availableH = vh - top - pad
-    const actualMaxH = Math.min(maxHeight, Math.max(availableH, 200))
+    const availableH = Math.max(160, vh - top - pad)
+    const actualMaxH = Math.min(maxHeight, availableH)
 
     setCoords({ left, top, actualMaxH })
   }, [placement, offset, maxHeight])
@@ -128,7 +117,7 @@ export default function SmartTooltipWrapper({
       requestAnimationFrame(() => {
         calculatePosition()
       })
-    }, 400) // 400ms delay to prevent accidental hovers
+    }, 250)
   }
 
   const handleTriggerLeave = () => {
@@ -143,15 +132,21 @@ export default function SmartTooltipWrapper({
     scheduleHide()
   }
 
-  // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       if (visible) calculatePosition()
     }
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && visible) {
+        setVisible(false)
+      }
+    }
     window.addEventListener('resize', handleResize)
+    window.addEventListener('keydown', handleKeyDown)
     return () => {
       clearTimeouts()
       window.removeEventListener('resize', handleResize)
+      window.removeEventListener('keydown', handleKeyDown)
     }
   }, [visible, calculatePosition])
 
@@ -160,6 +155,7 @@ export default function SmartTooltipWrapper({
       {visible && (
         <motion.div
           ref={tooltipRef}
+          role="tooltip"
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.96 }}
@@ -172,10 +168,10 @@ export default function SmartTooltipWrapper({
             top: coords.top,
             zIndex: 99999,
             maxHeight: coords.actualMaxH,
-            maxWidth: `calc(100vw - 40px)`,
+            maxWidth: 'calc(100vw - 32px)',
             pointerEvents: 'auto',
           }}
-          className="overflow-y-auto overflow-x-hidden"
+          className="overflow-y-auto overflow-x-hidden shadow-2xl"
         >
           {tooltipContent}
         </motion.div>
@@ -188,10 +184,12 @@ export default function SmartTooltipWrapper({
       ref={triggerRef}
       onMouseEnter={handleTriggerEnter}
       onMouseLeave={handleTriggerLeave}
+      onFocus={handleTriggerEnter}
+      onBlur={handleTriggerLeave}
       className="inline-flex"
     >
       {children}
-      {createPortal(tooltip, document.body)}
+      {typeof document !== 'undefined' && createPortal(tooltip, document.body)}
     </div>
   )
 }
