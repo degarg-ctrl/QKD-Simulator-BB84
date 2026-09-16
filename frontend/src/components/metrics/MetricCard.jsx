@@ -12,6 +12,7 @@ export default function MetricCard({
   unit,           // string: "%", "bits", "kbps", etc  
   status,         // 'normal' | 'warning' | 'danger' | 'inactive'
   subtitle,       // optional string: secondary info
+  gauge,          // optional { value: number, max: number, label: string }
   className = ''
 }) {
   const statusColors = {
@@ -21,38 +22,60 @@ export default function MetricCard({
     inactive: 'text-[var(--text-muted)] border-[var(--border-color)] bg-[var(--panel-dark)]/10',
   }
 
-  // Use quantum-prefixed colors if available in tailwind config, 
-  // but falling back to standard colors for safety as per user_global rule
-  // (Note: user_global mentioned quantum-blue/green but standard tailwind colors work too)
-  
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`p-3 rounded-lg border ${statusColors[status]} ${className}`}
+      className={`p-3 rounded-lg border transition-all ${statusColors[status] || statusColors.normal} ${className}`}
       style={{ 
-        background: '#1e1e2e', 
-        border: '1px solid rgba(255,255,255,0.1)' 
+        backgroundColor: status === 'danger'
+          ? 'rgba(239, 68, 68, 0.1)'
+          : status === 'warning'
+          ? 'rgba(245, 158, 11, 0.08)'
+          : 'var(--q-surface-1, #242424)',
+        borderColor: status === 'danger'
+          ? 'rgba(239, 68, 68, 0.35)'
+          : status === 'warning'
+          ? 'rgba(245, 158, 11, 0.35)'
+          : 'var(--q-border-subtle, rgba(255,255,255,0.1))'
       }}
     >
-      <div className="text-xs font-mono uppercase tracking-widest 
-                      mb-1"
-           style={{ color: 'rgba(255,255,255,0.5)' }}>
+      <div className="text-xs font-mono uppercase tracking-wider mb-1 text-[var(--q-text-2)] font-semibold">
         {label}
       </div>
-      <div className="flex items-baseline gap-1">
-        <span className="text-2xl font-mono font-bold">
+      <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
+        <span className="text-2xl font-mono font-bold tracking-tight text-[var(--q-text-1)]">
           {value}
         </span>
-        <span className="text-xs font-mono"
-              style={{ color: 'rgba(255,255,255,0.5)' }}>
-          {unit}
-        </span>
+        {unit && (
+          <span className="text-xs font-mono text-[var(--q-text-3)] whitespace-nowrap">
+            {unit}
+          </span>
+        )}
       </div>
       {subtitle && (
-        <div className="text-xs font-mono mt-1"
-             style={{ color: 'rgba(255,255,255,0.4)' }}>
+        <div className="text-xs font-mono mt-1.5 text-[var(--q-text-3)]">
           {subtitle}
+        </div>
+      )}
+      {gauge && (
+        <div className="mt-2 pt-1.5 border-t border-[var(--border-color)]/40">
+          <div className="flex justify-between text-[10px] font-mono text-[var(--q-text-3)] mb-1">
+            <span>{gauge.label || 'Threshold'}</span>
+            <span>{((gauge.value / gauge.max) * 100).toFixed(0)}%</span>
+          </div>
+          <div className="h-1.5 w-full bg-[var(--q-surface-0)] rounded-full overflow-hidden border border-[var(--border-color)]">
+            <div
+              className={`h-full transition-all duration-300 ${
+                gauge.value >= gauge.max
+                  ? 'bg-red-500'
+                  : gauge.value >= gauge.max * 0.65
+                  ? 'bg-amber-400'
+                  : 'bg-emerald-400'
+              }`}
+              style={{ width: `${Math.min(100, Math.max(0, (gauge.value / gauge.max) * 100))}%` }}
+            />
+          </div>
         </div>
       )}
     </motion.div>

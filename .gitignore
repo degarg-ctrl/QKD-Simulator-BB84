@@ -22,7 +22,8 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE & Tooling
 .vscode/
 .idea/
 *.swp
+graphify-out/

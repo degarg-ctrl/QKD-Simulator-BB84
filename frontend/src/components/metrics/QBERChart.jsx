@@ -7,10 +7,10 @@
  */
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ReferenceLine, ResponsiveContainer
+  Tooltip, ReferenceLine, ReferenceDot, ResponsiveContainer
 } from 'recharts'
 
-export default function QBERChart({ data = [], currentQBER = null }) {
+export default function QBERChart({ data = [], currentQBER = null, distance = null }) {
   // data shape: [{distance: float, qber: float}, ...]
   // Convert qber to percentage for display
   const chartData = data.map(d => ({
@@ -36,32 +36,28 @@ export default function QBERChart({ data = [], currentQBER = null }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-mono text-[var(--text-muted)] 
+        <span className="text-xs font-mono font-semibold text-[var(--q-text-2)] 
                          uppercase tracking-wider">
-          QBER vs Distance (Theoretical)
+          QBER vs Distance (km)
         </span>
         {currentQBER !== null && currentQBER !== undefined && (
-          <span className="text-xs font-mono text-indigo-400">
+          <span className="text-xs font-mono font-semibold text-indigo-400">
             Simulated: {(currentQBER * 100).toFixed(2)}%
           </span>
         )}
       </div>
       <ResponsiveContainer width="100%" height={150}>
         <LineChart data={chartData}
-          margin={{ top: 5, right: 10, left: -20, bottom: 22 }}>
+          margin={{ top: 5, right: 15, left: -20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
           <XAxis
             dataKey="distance"
             stroke="var(--text-muted)"
-            tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }}
-            label={{
-              value: 'km', position: 'insideRight',
-              fill: 'var(--text-muted)', fontSize: 10
-            }}
+            tick={{ fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'monospace' }}
           />
           <YAxis
             stroke="var(--text-muted)"
-            tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }}
+            tick={{ fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'monospace' }}
             tickFormatter={v => `${v}%`}
           />
           <Tooltip content={<CustomTooltip />} />
@@ -71,7 +67,7 @@ export default function QBERChart({ data = [], currentQBER = null }) {
             strokeDasharray="4 4"
             label={{
               value: '11% threshold', fill: '#ef4444',
-              fontSize: 9, fontFamily: 'monospace'
+              fontSize: 10, fontFamily: 'monospace'
             }}
           />
           <Line
@@ -82,6 +78,16 @@ export default function QBERChart({ data = [], currentQBER = null }) {
             dot={false}
             activeDot={{ r: 4, fill: '#6366f1' }}
           />
+          {currentQBER !== null && currentQBER !== undefined && distance !== null && (
+            <ReferenceDot
+              x={distance}
+              y={parseFloat((currentQBER * 100).toFixed(2))}
+              r={5}
+              fill="#ffffff"
+              stroke="#6366f1"
+              strokeWidth={2}
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
     </div>

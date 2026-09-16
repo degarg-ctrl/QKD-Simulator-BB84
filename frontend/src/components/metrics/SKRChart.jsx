@@ -7,10 +7,10 @@
  */
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer
+  Tooltip, ReferenceDot, ResponsiveContainer
 } from 'recharts'
 
-export default function SKRChart({ data = [], currentSKR = null }) {
+export default function SKRChart({ data = [], currentSKR = null, distance = null }) {
   const chartData = data.map(d => ({
     distance: Math.round(d.distance),
     skr: parseFloat(d.skr.toFixed(4))
@@ -34,30 +34,28 @@ export default function SKRChart({ data = [], currentSKR = null }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-mono text-[var(--text-muted)] 
+        <span className="text-xs font-mono font-semibold text-[var(--q-text-2)] 
                          uppercase tracking-wider">
-          SKR vs Distance (Theoretical)
+          SKR vs Distance (km)
         </span>
         {currentSKR !== null && (
-          <span className="text-xs font-mono text-green-400">
+          <span className="text-xs font-mono font-semibold text-emerald-400">
             Simulated: {currentSKR.toFixed(4)}
           </span>
         )}
       </div>
       <ResponsiveContainer width="100%" height={150}>
         <LineChart data={chartData}
-                   margin={{ top: 5, right: 10, left: -20, bottom: 22 }}>
+                   margin={{ top: 5, right: 15, left: -20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
           <XAxis
             dataKey="distance"
             stroke="var(--text-muted)"
-            tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }}
-            label={{ value: 'km', position: 'insideRight',
-                     fill: 'var(--text-muted)', fontSize: 10 }}
+            tick={{ fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'monospace' }}
           />
           <YAxis
             stroke="var(--text-muted)"
-            tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }}
+            tick={{ fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'monospace' }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Line
@@ -68,6 +66,16 @@ export default function SKRChart({ data = [], currentSKR = null }) {
             dot={false}
             activeDot={{ r: 4, fill: '#22c55e' }}
           />
+          {currentSKR !== null && distance !== null && (
+            <ReferenceDot
+              x={distance}
+              y={parseFloat(currentSKR.toFixed(4))}
+              r={5}
+              fill="#ffffff"
+              stroke="#22c55e"
+              strokeWidth={2}
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
     </div>

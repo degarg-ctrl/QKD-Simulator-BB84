@@ -12,13 +12,17 @@ import SmartTooltipWrapper from '../ui/SmartTooltipWrapper'
 import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
 import EditableValue from '../ui/EditableValue'
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../ui/Accordion'
+import { SegmentedControl } from '../ui/SegmentedControl'
+import { ChevronDown } from 'lucide-react'
+import Slider from '../ui/Slider'
 
 // Structured parameter info for ParameterTooltip
 const PARAM_INFO = {
   n_bits: {
     title: 'Photon Count',
-    description: 'Number of photons Alice sends through the quantum channel. Select 1 for single-photon observation, 1-10 for step-by-step tracing, 10-100 for small sample tests, or 100-10,000 for statistical convergence.',
-    range: '1 — 10,000 (3 Modes: 1–10, 10–100, 100–10k)',
+    description: 'Number of photons Alice sends through the quantum channel. Select 1 for single-photon observation, or up to 10,000 for statistical convergence.',
+    range: '1 — 10,000 photons',
     defaultValue: '1,000',
     impact: 'Higher counts produce accurate QBER statistics. Lower counts enable step-by-step observation.'
   },
@@ -28,11 +32,6 @@ const PARAM_INFO = {
     range: 'Ideal / Realistic',
     defaultValue: 'Ideal',
     impact: 'Ideal uses perfect single photons (standard BB84). Realistic uses a WCP laser source with Poisson distribution — enables PNS attack experiments.'
-  },
-  single_photon: {
-    title: 'Single Photon Mode',
-    description: 'Send exactly 1 photon to observe its full journey through the quantum channel.',
-    impact: 'Useful for step-by-step visualization and understanding individual photon behavior.'
   },
   sync_mode: {
     title: 'Sync Mode',
@@ -103,10 +102,10 @@ function SliderControl({ label, value, min, max, step,
                          onChange, displayValue, 
                          paramKey, suffix = '' }) {
   return (
-    <div className="flex flex-col gap-1.5" id={`control-${label.toLowerCase().replace(' ', '-')}`}>
+    <div className="flex flex-col gap-2" id={`control-${label.toLowerCase().replace(' ', '-')}`}>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-[var(--text-muted)] 
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-mono text-[var(--text-secondary)] 
                            uppercase tracking-wider">
             {label}
           </span>
@@ -123,20 +122,13 @@ function SliderControl({ label, value, min, max, step,
           color="#00aacc"
         />
       </div>
-      <div className="relative">
-        <input
-          type="range"
+      <div className="py-1">
+        <Slider
           min={min}
           max={max}
           step={step}
           value={value}
-          onChange={e => onChange(Number(e.target.value))}
-          className="w-full h-1 bg-[var(--panel-dark)]/20 rounded-full appearance-none
-                     cursor-pointer accent-indigo-500
-                     [&::-webkit-slider-thumb]:w-3
-                     [&::-webkit-slider-thumb]:h-3
-                     [&::-webkit-slider-thumb]:rounded-full
-                     [&::-webkit-slider-thumb]:appearance-none"
+          onChange={onChange}
         />
       </div>
     </div>
@@ -144,30 +136,39 @@ function SliderControl({ label, value, min, max, step,
 }
 
 function PhotonCountControl({ value, onChange, paramKey }) {
-  // Map value to index [0 - 117] across 3 tiers:
-  // Tier 1: 1-10 (step 1, indices 0-9)
-  // Tier 2: 10-100 (step 10, indices 9-18)
-  // Tier 3: 100-10000 (step 100, indices 18-117)
-  const photonsToIndex = (n) => {
-    if (n <= 10) return Math.max(0, Math.min(9, Math.round(n) - 1))
-    if (n <= 100) return Math.min(18, 9 + Math.round((n - 10) / 10))
-    return Math.min(117, 18 + Math.round((n - 100) / 100))
+  // Map value across 3 equal-width visual tiers [0 - 300]:
+  // Tier 1 (0% to 33.33%, p: 0-100): 1 to 10 (step 1)
+  // Tier 2 (33.33% to 66.67%, p: 100-200): 10 to 100 (step 10)
+  // Tier 3 (66.67% to 100%, p: 200-300): 100 to 10,000 (step 100)
+  const photonsToPos = (n) => {
+    if (n <= 10) {
+      return Math.max(0, Math.min(100, Math.round(((n - 1) / 9) * 100)))
+    }
+    if (n <= 100) {
+      return Math.min(200, Math.round(100 + ((n - 10) / 90) * 100))
+    }
+    return Math.min(300, Math.round(200 + ((n - 100) / 9900) * 100))
   }
 
-  const indexToPhotons = (idx) => {
-    if (idx <= 9) return idx + 1
-    if (idx <= 18) return 10 + (idx - 9) * 10
-    return 100 + (idx - 18) * 100
+  const posToPhotons = (pos) => {
+    if (pos <= 100) {
+      return Math.max(1, Math.min(10, Math.round(1 + (pos / 100) * 9)))
+    }
+    if (pos <= 200) {
+      const raw = 10 + ((pos - 100) / 100) * 90
+      return Math.round(raw / 10) * 10
+    }
+    const raw = 100 + ((pos - 200) / 100) * 9900
+    return Math.round(raw / 100) * 100
   }
 
-  const currentIdx = photonsToIndex(value)
-  const currentTier = value <= 10 ? '1-10' : value <= 100 ? '10-100' : '100-10k'
+  const currentPos = photonsToPos(value)
 
   return (
-    <div className="flex flex-col gap-1.5" id="control-photons">
+    <div className="flex flex-col gap-2" id="control-photons">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider">
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-mono text-[var(--text-secondary)] uppercase tracking-wider">
             Photons
           </span>
           <ParameterQuestion paramKey={paramKey} />
@@ -183,52 +184,21 @@ function PhotonCountControl({ value, onChange, paramKey }) {
         />
       </div>
 
-      {/* 3-Tier Mode Selector Pills */}
-      <div className="flex items-center gap-1 my-0.5">
-        {[
-          { id: '1-10', label: '1–10 (×1)', defaultVal: 1, title: 'Fine grain mode: 1 to 10 photons (step 1)' },
-          { id: '10-100', label: '10–100 (×10)', defaultVal: 50, title: 'Small batch mode: 10 to 100 photons (step 10)' },
-          { id: '100-10k', label: '100–10k (×100)', defaultVal: 1000, title: 'Statistical mode: 100 to 10,000 photons (step 100)' },
-        ].map(tier => (
-          <button
-            key={tier.id}
-            type="button"
-            onClick={() => onChange(tier.defaultVal)}
-            title={tier.title}
-            className={`flex-1 py-0.5 text-[10px] font-mono rounded border transition-colors ${
-              currentTier === tier.id
-                ? 'bg-cyan-950/60 border-cyan-500 text-cyan-300 font-bold'
-                : 'border-[var(--border-color)] text-[var(--text-subtle)] hover:text-[var(--text-primary)] hover:bg-white/5'
-            }`}
-          >
-            {tier.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Range Slider */}
-      <div className="relative">
-        <input
-          type="range"
+      <div className="py-1">
+        <Slider
           min={0}
-          max={117}
+          max={300}
           step={1}
-          value={currentIdx}
-          onChange={e => onChange(indexToPhotons(Number(e.target.value)))}
-          className="w-full h-1.5 bg-[var(--panel-dark)]/30 rounded-full appearance-none
-                     cursor-pointer accent-cyan-400
-                     [&::-webkit-slider-thumb]:w-3.5
-                     [&::-webkit-slider-thumb]:h-3.5
-                     [&::-webkit-slider-thumb]:rounded-full
-                     [&::-webkit-slider-thumb]:bg-cyan-400
-                     [&::-webkit-slider-thumb]:appearance-none"
+          value={currentPos}
+          onChange={pos => onChange(posToPhotons(pos))}
+          divisions={[33.33, 66.67]}
         />
       </div>
-      <div className="flex justify-between text-[9px] font-mono text-[var(--text-subtle)] px-0.5">
-        <span>1 (single)</span>
-        <span>10</span>
-        <span>100</span>
-        <span>10,000</span>
+      <div className="relative text-[11px] font-mono text-[var(--text-muted)] h-4 select-none">
+        <span className="absolute left-0">1</span>
+        <span className="absolute left-[33.33%] -translate-x-1/2">10</span>
+        <span className="absolute left-[66.67%] -translate-x-1/2">100</span>
+        <span className="absolute right-0">10,000</span>
       </div>
     </div>
   )
@@ -248,210 +218,241 @@ export default function ConfigPanel({ className = '' }) {
   ]
 
   return (
-    <div className={`flex flex-col gap-5 p-4 rounded-lg ${className}`}
-         style={{
-           backgroundColor: 'var(--panel-bg)',
-           border: '1px solid var(--border-color)'
-         }}>
-      
+    <div
+      className={`flex flex-col gap-3 p-3 rounded-lg ${className}`}
+      style={{
+        backgroundColor: 'var(--panel-bg)',
+        border: '1px solid var(--border-color)'
+      }}
+    >
       {/* Panel header */}
-      <div className="flex items-center gap-2 pb-2 
-                      border-b border-[var(--border-color)]">
-        <div className="w-2 h-2 rounded-full bg-indigo-500" />
-        <span className="text-xs font-mono text-[var(--text-muted)] 
-                         uppercase tracking-widest">
-          Parameters
+      <div className="flex items-center justify-between pb-2 border-b border-[var(--border-color)]">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-[var(--text-muted)]" />
+          <span className="text-sm font-mono text-[var(--q-text-1)] uppercase tracking-wider font-semibold">
+            Parameters
+          </span>
+        </div>
+        <span className="text-xs font-mono text-[var(--q-text-3)]">
+          BB84 Protocol
         </span>
       </div>
 
-      {/* Source Model Toggle */}
-      <div className="flex flex-col gap-2 pb-3
-                      border-b border-[var(--border-color)]">
-        <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-[var(--text-muted)]
-                           uppercase tracking-wider">
-            Source Model
-          </span>
-          <ParameterQuestion paramKey="source_model" />
-        </div>
-        <div className="flex gap-1 p-0.5 rounded"
-             style={{ backgroundColor: 'var(--panel-dark)',
-                      border: '1px solid var(--border-color)' }}>
-          {['ideal', 'realistic'].map(model => (
-            <button
-              key={model}
-              onClick={() => setSourceModel(model)}
-              className="flex-1 py-1.5 text-xs font-mono
-                         rounded capitalize transition-colors"
-              style={{
-                backgroundColor: sourceModel === model
-                  ? model === 'ideal' ? '#00aacc30' : '#ccaa0030'
-                  : 'transparent',
-                color: sourceModel === model
-                  ? model === 'ideal' ? '#00aacc' : '#ccaa00'
-                  : 'var(--text-muted)',
-                border: sourceModel === model
-                  ? `1px solid ${model === 'ideal' ? '#00aacc60' : '#ccaa0060'}`
-                  : '1px solid transparent'
-              }}
-            >
-              {model === 'ideal' ? '⚛ Ideal' : '🔬 Realistic'}
-            </button>
-          ))}
-        </div>
-        {sourceModel === 'ideal' && (
-          <div className="text-xs font-mono text-[var(--text-subtle)]">
-            Perfect single photons · Standard BB84
-          </div>
-        )}
-        {sourceModel === 'realistic' && (
-          <div className="text-xs font-mono text-[var(--text-subtle)]">
-            WCP laser source · μ = {params.mean_photon_number}
-          </div>
-        )}
-      </div>
+      {/* 4-Group Radix Accordion */}
+      <Accordion
+        type="multiple"
+        defaultValue={['source', 'channel', 'adversary', 'visualization']}
+        className="flex flex-col gap-1.5"
+      >
+        {/* ── 1. SOURCE PARAMETERS ── */}
+        <AccordionItem value="source">
+          <AccordionTrigger>Source Parameters</AccordionTrigger>
+          <AccordionContent className="flex flex-col gap-3 pt-2">
+            {/* Source Model */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-mono text-[var(--q-text-2)] uppercase tracking-wider">
+                    Source Model
+                  </span>
+                  <ParameterQuestion paramKey="source_model" />
+                </div>
+                <span className="text-xs font-mono text-[var(--q-text-3)]">
+                  {sourceModel === 'ideal' ? 'Ideal Source' : 'WCP Laser'}
+                </span>
+              </div>
+              <SegmentedControl
+                size="md"
+                options={[
+                  { value: 'ideal', label: 'Ideal' },
+                  { value: 'realistic', label: 'Realistic' }
+                ]}
+                value={sourceModel}
+                onChange={setSourceModel}
+                className="w-full"
+              />
+              <div className="p-2.5 rounded-md bg-[var(--q-surface-0)] border border-[var(--border-color)]/70 text-xs font-mono text-[var(--q-text-2)] leading-relaxed">
+                {sourceModel === 'ideal'
+                  ? 'Standard BB84 · Pure single-photon state preparation'
+                  : `WCP Laser Source · Poisson distribution (μ = ${params.mean_photon_number.toFixed(2)})`}
+              </div>
+            </div>
 
-      {/* Photons (Unified 3-Tier Mode: 1-10, 10-100, 100-10,000) */}
-      <PhotonCountControl
-        value={params.n_bits}
-        onChange={val => setParams({ n_bits: val })}
-        paramKey="n_bits"
-      />
+            {/* Photons (Unified 3-Tier Mode: 1-10, 10-100, 100-10,000) */}
+            <PhotonCountControl
+              value={params.n_bits}
+              onChange={val => setParams({ n_bits: val })}
+              paramKey="n_bits"
+            />
 
-      {/* Sync Mode */}
-      <div className="flex items-center justify-between
-                      py-2 border-t border-[var(--border-color)]">
-        <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-[var(--text-muted)]
-                           uppercase tracking-wider">
-            Sync Mode
-          </span>
-          <ParameterQuestion paramKey="sync_mode" />
-        </div>
-        <button
-          onClick={() => setSyncMode(!syncMode)}
-          className={`px-2 py-1 rounded text-xs font-mono border transition-colors
-                     ${syncMode
-                       ? 'bg-indigo-900/50 border-quantum-blue text-quantum-blue'
-                       : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                     }`}
-        >
-          {syncMode ? 'ON' : 'OFF'}
-        </button>
-      </div>
+            {/* Realistic Source Settings (WCP & Decoy) */}
+            {sourceModel === 'realistic' && (
+              <div className="flex flex-col gap-3 pt-2 border-t border-[var(--border-color)]/50">
+                <SliderControl
+                  label="Mean Photons (μ)"
+                  value={params.mean_photon_number}
+                  min={0.05}
+                  max={0.5}
+                  step={0.05}
+                  onChange={val => setParams({ mean_photon_number: val })}
+                  displayValue={params.mean_photon_number.toFixed(2)}
+                />
+                <div className="flex items-center justify-between py-1">
+                  <span className="text-sm font-mono text-[var(--q-text-2)] uppercase tracking-wider">
+                    Decoy States
+                  </span>
+                  <button
+                    onClick={() => setParams({ decoy_enabled: !params.decoy_enabled })}
+                    className={`px-2.5 py-1 rounded text-xs font-mono border transition-colors ${
+                      params.decoy_enabled
+                        ? 'bg-white/10 border-white/30 text-white font-bold'
+                        : 'border-[var(--border-color)] text-[var(--q-text-3)] hover:text-[var(--q-text-1)]'
+                    }`}
+                  >
+                    {params.decoy_enabled ? 'ON' : 'OFF'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </AccordionContent>
+        </AccordionItem>
 
-      {/* Distance */}
-      <SliderControl
-        label="Distance"
-        value={params.distance_km}
-        min={0}
-        max={150}
-        step={1}
-        onChange={val => setParams({ distance_km: val })}
-        displayValue={`${params.distance_km} km`}
-        paramKey="distance_km"
-        suffix="km"
-      />
+        {/* ── 2. CHANNEL PARAMETERS ── */}
+        <AccordionItem value="channel">
+          <AccordionTrigger>Channel Parameters</AccordionTrigger>
+          <AccordionContent className="flex flex-col gap-3 pt-2">
+            {/* Distance */}
+            <SliderControl
+              label="Distance"
+              value={params.distance_km}
+              min={0}
+              max={150}
+              step={1}
+              onChange={val => setParams({ distance_km: val })}
+              displayValue={`${params.distance_km} km`}
+              paramKey="distance_km"
+              suffix="km"
+            />
 
-      {/* Noise */}
-      <SliderControl
-        label="Noise"
-        value={Math.round(params.noise_level * 1000) / 10}
-        min={0}
-        max={10}
-        step={0.1}
-        onChange={val => setParams({ noise_level: val / 100 })}
-        displayValue={`${(params.noise_level * 100).toFixed(1)}%`}
-        paramKey="noise_level"
-        suffix="%"
-      />
+            {/* Noise */}
+            <SliderControl
+              label="Noise"
+              value={Math.round(params.noise_level * 1000) / 10}
+              min={0}
+              max={10}
+              step={0.1}
+              onChange={val => setParams({ noise_level: val / 100 })}
+              displayValue={`${(params.noise_level * 100).toFixed(1)}%`}
+              paramKey="noise_level"
+              suffix="%"
+            />
+          </AccordionContent>
+        </AccordionItem>
 
-      {/* Eve Attack */}
-      <SliderControl
-        label="Eve Attack"
-        value={Math.round(params.attack_prob * 100)}
-        min={0}
-        max={100}
-        step={1}
-        onChange={val => setParams({ attack_prob: val / 100 })}
-        displayValue={`${(params.attack_prob * 100).toFixed(0)}%`}
-        paramKey="attack_prob"
-        suffix="%"
-      />
+        {/* ── 3. ADVERSARY (EVE) ── */}
+        <AccordionItem value="adversary">
+          <AccordionTrigger>Adversary (Eve)</AccordionTrigger>
+          <AccordionContent className="flex flex-col gap-3 pt-2">
+            {/* Eve Attack */}
+            <SliderControl
+              label="Eve Attack"
+              value={Math.round(params.attack_prob * 100)}
+              min={0}
+              max={100}
+              step={1}
+              onChange={val => setParams({ attack_prob: val / 100 })}
+              displayValue={`${(params.attack_prob * 100).toFixed(0)}%`}
+              paramKey="attack_prob"
+              suffix="%"
+            />
 
-      {/* Strategy */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-[var(--text-muted)] 
-                           uppercase tracking-wider">
-            Strategy
-          </span>
-          <ParameterQuestion paramKey="attack_strategy" />
-        </div>
-        <div className="flex flex-col gap-1">
-          {strategies.map(s => (
-            <button
-              key={s.value}
-              onClick={() => setParams({ attack_strategy: s.value })}
-              className={`px-3 py-1.5 rounded text-xs font-mono text-left transition-colors
-                         ${params.attack_strategy === s.value
-                           ? 'bg-indigo-900/50 border border-indigo-500/50 text-indigo-400'
-                           : 'bg-[var(--panel-dark)]/10 border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                         }`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
+            {/* Strategy */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-mono text-[var(--q-text-2)] uppercase tracking-wider">
+                  Strategy
+                </span>
+                <ParameterQuestion paramKey="attack_strategy" />
+              </div>
+              <div className="relative">
+                <select
+                  value={params.attack_strategy}
+                  onChange={e => setParams({ attack_strategy: e.target.value })}
+                  className="w-full px-3 py-2 text-xs font-mono rounded-lg bg-[var(--q-surface-0)] border border-[var(--border-color)] text-[var(--q-text-1)] focus:outline-none focus:border-white/40 cursor-pointer appearance-none"
+                >
+                  {strategies.map(s => (
+                    <option key={s.value} value={s.value} className="bg-[var(--panel-bg)] text-[var(--text-primary)]">
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[var(--text-muted)]">
+                  <ChevronDown size={14} />
+                </div>
+              </div>
+            </div>
 
-      {/* WCP Controls */}
-      {sourceModel === 'realistic' && (
-        <div className="flex flex-col gap-4 pt-2 border-t border-[var(--border-color)]">
-          <div className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider">
-            Realistic Source Settings
-          </div>
-          <SliderControl
-            label="Mean Photons (μ)"
-            value={params.mean_photon_number}
-            min={0.05}
-            max={0.5}
-            step={0.05}
-            onChange={val => setParams({ mean_photon_number: val })}
-            displayValue={params.mean_photon_number.toFixed(2)}
-            tooltip="Mean photon number per pulse (μ)."
-          />
-          <div className="flex items-center justify-between py-1">
-            <span className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider">
-              Decoy States
-            </span>
-            <button
-              onClick={() => setParams({ decoy_enabled: !params.decoy_enabled })}
-              className={`px-2 py-1 rounded text-xs font-mono border transition-colors
-                         ${params.decoy_enabled
-                           ? 'bg-indigo-900/50 border-quantum-blue text-quantum-blue'
-                           : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                         }`}
-            >
-              {params.decoy_enabled ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-      )}
+            {/* Security Warning */}
+            <AnimatePresence>
+              {params.attack_prob >= 0.44 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="p-2 bg-red-950/50 border border-red-800/50 rounded text-xs text-red-400 font-mono overflow-hidden"
+                >
+                  ⚠ Attack level may breach 11% QBER threshold
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </AccordionContent>
+        </AccordionItem>
 
-      {/* Security Warning */}
-      <AnimatePresence>
-        {params.attack_prob >= 0.44 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="p-2 bg-red-950/50 border border-red-800/50 rounded text-xs text-red-400 font-mono overflow-hidden"
-          >
-            ⚠ Attack level may breach 11% QBER threshold
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* ── 4. VISUALIZATION & DETECTION ── */}
+        <AccordionItem value="visualization">
+          <AccordionTrigger>Visualization & Detection</AccordionTrigger>
+          <AccordionContent className="flex flex-col gap-2.5 pt-2">
+            {/* Sync Mode */}
+            <div className="flex items-center justify-between py-1">
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-mono text-[var(--q-text-2)] uppercase tracking-wider">
+                  Sync Mode
+                </span>
+                <ParameterQuestion paramKey="sync_mode" />
+              </div>
+              <button
+                onClick={() => setSyncMode(!syncMode)}
+                className={`px-2.5 py-1 rounded text-xs font-mono border transition-colors ${
+                  syncMode
+                    ? 'bg-white/10 border-white/30 text-white font-bold'
+                    : 'border-[var(--border-color)] text-[var(--q-text-3)] hover:text-[var(--q-text-1)]'
+                }`}
+              >
+                {syncMode ? 'ON' : 'OFF'}
+              </button>
+            </div>
+            <div className="text-xs font-mono text-[var(--q-text-3)]">
+              Links photon flight animations directly to the Inspector table.
+            </div>
+
+            {/* Detection parameters overview */}
+            <div className="pt-2 border-t border-[var(--border-color)]/40 flex flex-col gap-1.5 text-xs font-mono text-[var(--q-text-3)]">
+              <div className="flex justify-between">
+                <span>Detector:</span>
+                <span className="text-[var(--q-text-2)]">
+                  {sourceModel === 'realistic' ? 'SPAD (η=0.85)' : 'Ideal (η=1.0)'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Dark Count:</span>
+                <span className="text-[var(--q-text-2)]">
+                  {sourceModel === 'realistic' ? '1.0 × 10⁻⁵' : '0'}
+                </span>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   )
 }

@@ -48,7 +48,7 @@ export default function ExperimentsSection() {
       description: 'Place gates on quantum channel to transform photon states.',
       objective: 'Understand how quantum gates affect polarization and QBER.',
       steps: [
-        'Drag gates from sidebar onto lanes',
+        'Drag gates from sidebar onto the quantum channel',
         'Try Hadamard (H) gate first',
         'Run simulation',
         'Observe increased QBER',

@@ -193,16 +193,16 @@ export default function QuantumCanvas({ className = '' }) {
     // Label
     const labelY = (type === 'eve') ? y + r * 1.1 + 8 : y + r + 8
     ctx.fillStyle = 'var(--text-primary, #ffffff)'
-    ctx.font = 'bold 11px monospace'
+    ctx.font = 'bold 12px monospace'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'top'
     ctx.fillText(label, x, labelY)
 
-    // Sublabel
+    // Sublabel (spaced 16px below to ensure zero merging or text overlap)
     if (sublabel) {
-      ctx.fillStyle = '#aaaaaa'
-      ctx.font = '9px monospace'
-      ctx.fillText(sublabel, x, labelY + 12)
+      ctx.fillStyle = '#94a3b8'
+      ctx.font = '10px monospace'
+      ctx.fillText(sublabel, x, labelY + 16)
     }
 
     ctx.restore()
@@ -290,8 +290,8 @@ export default function QuantumCanvas({ className = '' }) {
     }
 
     // ── Distance label (top center of the envelope) ───────────
-    ctx.fillStyle = 'rgba(148, 163, 184, 0.85)'
-    ctx.font = '10px JetBrains Mono, monospace'
+    ctx.fillStyle = 'rgba(226, 232, 240, 0.85)'
+    ctx.font = '12px JetBrains Mono, monospace'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'bottom'
     ctx.fillText(
@@ -304,10 +304,19 @@ export default function QuantumCanvas({ className = '' }) {
   }, [placedGates, params.attack_prob, params.distance_km])
 
   /**
-   * Draw placed gates on channel lanes.
+   * Draw placed gates on channel lanes as precision optical components.
    */
   const drawGates = useCallback((ctx) => {
     if (!placedGates || placedGates.length === 0) return
+
+    const sublabels = {
+      H: 'HADAMARD',
+      X: 'BIT-FLIP',
+      Y: 'BIT+PHASE',
+      Z: 'PHASE-FLIP',
+      S: 'π/2 ROT',
+      T: 'π/4 ROT'
+    }
 
     placedGates.forEach(gate => {
       // Calculate pixel position
@@ -316,63 +325,121 @@ export default function QuantumCanvas({ className = '' }) {
       const laneY = LANE_Y_POSITIONS[gate.lane] ?? ENTITY_Y
 
       if (gate.type === 'clone' || gate.type === 'cnot') {
-        // Cloning probe — render as red danger symbol
-        const size = 26
+        // Cloning probe — precision optical tap / beam-sampler component
+        const size = 38
 
-        // Red pulsing background
-        ctx.fillStyle = '#ef444420'
+        // Optical stage mount
+        ctx.fillStyle = 'rgba(28, 28, 34, 0.95)'
         ctx.strokeStyle = '#ef4444'
-        ctx.lineWidth = 1.5
+        ctx.lineWidth = 2
         ctx.beginPath()
-        ctx.roundRect(gateX - size / 2, laneY - size / 2,
-          size, size, 4)
+        ctx.roundRect(gateX - size / 2, laneY - size / 2, size, size, 6)
         ctx.fill()
         ctx.stroke()
 
-        ctx.shadowBlur = 0
+        // Inner optical aperture
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.2)'
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.7)'
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.roundRect(gateX - size / 2 + 4, laneY - size / 2 + 4, size - 8, size - 8, 4)
+        ctx.fill()
+        ctx.stroke()
 
-        // Symbol
+        // Probe Symbol
         ctx.fillStyle = '#ef4444'
-        ctx.font = 'bold 11px monospace'
+        ctx.font = 'bold 16px monospace'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText(gate.type === 'clone' ? '⊗' : '⊕',
-          gateX, laneY)
+        ctx.fillText(gate.type === 'clone' ? '⊗' : '⊕', gateX, laneY)
 
-        // Warning label below
-        ctx.fillStyle = '#ef444480'
-        ctx.font = '8px monospace'
-        ctx.fillText('NO-CLONE', gateX, laneY + size / 2 + 8)
+        // Pill badge below — immune to axis collision
+        const badgeY = laneY + size / 2 + 11
+        const badgeW = 60
+        const badgeH = 14
+        ctx.fillStyle = 'rgba(24, 24, 27, 0.95)'
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)'
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.roundRect(gateX - badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, 3)
+        ctx.fill()
+        ctx.stroke()
 
-        return  // Skip general rendering for this gate
+        ctx.fillStyle = '#ef4444'
+        ctx.font = 'bold 9px monospace'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('NO-CLONE', gateX, badgeY)
+
+        // Vertical optical alignment guide
+        ctx.strokeStyle = '#ef444440'
+        ctx.lineWidth = 1
+        ctx.setLineDash([3, 3])
+        ctx.beginPath()
+        ctx.moveTo(gateX, laneY - 38)
+        ctx.lineTo(gateX, laneY + 38)
+        ctx.stroke()
+        ctx.setLineDash([])
+
+        return
       }
 
       const gateColor = gate.color || '#6366f1'
+      const size = 40
 
-      // Gate background square — solid fill, no shadow
-      const size = 32
-      ctx.fillStyle = gateColor + '40'
+      // Outer precision optical stage frame
+      ctx.fillStyle = 'rgba(28, 28, 34, 0.95)'
       ctx.strokeStyle = gateColor
-      ctx.lineWidth = 2.5
+      ctx.lineWidth = 2
       ctx.beginPath()
       ctx.roundRect(gateX - size / 2, laneY - size / 2, size, size, 6)
       ctx.fill()
       ctx.stroke()
 
-      // Gate label
+      // Optical crystal aperture
+      ctx.fillStyle = gateColor + '25'
+      ctx.strokeStyle = gateColor + '70'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.roundRect(gateX - size / 2 + 4, laneY - size / 2 + 4, size - 8, size - 8, 4)
+      ctx.fill()
+      ctx.stroke()
+
+      // Gate Symbol
       ctx.fillStyle = '#ffffff'
-      ctx.font = 'bold 14px monospace'
+      ctx.font = 'bold 16px monospace'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(gate.type, gateX, laneY)
 
-      // Vertical line through lane showing gate position
+      // Sublabel pill badge below
+      const sub = sublabels[gate.type]
+      if (sub) {
+        const bW = 60
+        const bH = 14
+        const bY = laneY + size / 2 + 11
+        ctx.fillStyle = 'rgba(24, 24, 27, 0.95)'
+        ctx.strokeStyle = gateColor + '60'
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.roundRect(gateX - bW / 2, bY - bH / 2, bW, bH, 3)
+        ctx.fill()
+        ctx.stroke()
+
+        ctx.fillStyle = '#f1f5f9'
+        ctx.font = 'bold 8.5px monospace'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(sub, gateX, bY)
+      }
+
+      // Vertical optical alignment guide
       ctx.strokeStyle = gateColor + '40'
       ctx.lineWidth = 1
       ctx.setLineDash([3, 3])
       ctx.beginPath()
-      ctx.moveTo(gateX, laneY - 30)
-      ctx.lineTo(gateX, laneY + 30)
+      ctx.moveTo(gateX, laneY - 38)
+      ctx.lineTo(gateX, laneY + 38)
       ctx.stroke()
       ctx.setLineDash([])
     })
@@ -383,11 +450,11 @@ export default function QuantumCanvas({ className = '' }) {
    */
   const drawBackground = useCallback((ctx, width, height, canvasBg) => {
     // Use CSS variable background (light or dark)
-    ctx.fillStyle = canvasBg || '#1a1a2e'
+    ctx.fillStyle = canvasBg || '#2a2a2a'
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
     // Subtle grid
-    const isLight = canvasBg && canvasBg !== '#1a1a2e'
+    const isLight = canvasBg && canvasBg !== '#2a2a2a'
     ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.04)'
     ctx.lineWidth = 0.5
     const gridSize = 40
@@ -500,7 +567,24 @@ export default function QuantumCanvas({ className = '' }) {
 
     // Helper to draw a badge card
     const drawBadge = (x, y, w, h, title, titleColor, borderColor, childrenFn) => {
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.90)'
+      // Connector line linking badge to entity node below
+      ctx.strokeStyle = borderColor
+      ctx.lineWidth = 1
+      ctx.setLineDash([2, 3])
+      ctx.beginPath()
+      ctx.moveTo(x, y + h / 2)
+      ctx.lineTo(x, ENTITY_Y - NODE_RADIUS - 4)
+      ctx.stroke()
+      ctx.setLineDash([])
+
+      // Terminal anchor dot at node
+      ctx.fillStyle = borderColor
+      ctx.beginPath()
+      ctx.arc(x, ENTITY_Y - NODE_RADIUS - 4, 2, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Card body (neutral grey surface)
+      ctx.fillStyle = 'rgba(36, 36, 36, 0.95)'
       ctx.strokeStyle = borderColor
       ctx.lineWidth = 1.5
       ctx.beginPath()
@@ -509,7 +593,7 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.stroke()
 
       // Header
-      ctx.font = 'bold 8px monospace'
+      ctx.font = 'bold 10px monospace'
       ctx.fillStyle = titleColor
       ctx.textAlign = 'center'
       ctx.textBaseline = 'top'
@@ -519,17 +603,17 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.strokeStyle = borderColor + '40'
       ctx.lineWidth = 0.75
       ctx.beginPath()
-      ctx.moveTo(x - w / 2 + 6, y - h / 2 + 16)
-      ctx.lineTo(x + w / 2 - 6, y - h / 2 + 16)
+      ctx.moveTo(x - w / 2 + 8, y - h / 2 + 18)
+      ctx.lineTo(x + w / 2 - 8, y - h / 2 + 18)
       ctx.stroke()
 
-      childrenFn(x, y - h / 2 + 18, w, h)
+      childrenFn(x, y - h / 2 + 20, w, h)
     }
 
-    // ── Alice Card (above Alice at X=ALICE_X, Y=ENTITY_Y - 90) ──
-    const cardW = 120
-    const cardH = 58
-    const aliceY = ENTITY_Y - 90
+    // ── Alice Card (above Alice at X=ALICE_X, Y=ENTITY_Y - 92) ──
+    const cardW = 186
+    const cardH = 68
+    const aliceY = ENTITY_Y - 92
     const isAliceActive = hasResults && alice?.basis
 
     drawBadge(
@@ -539,11 +623,11 @@ export default function QuantumCanvas({ className = '' }) {
       isAliceActive ? 'rgba(0, 229, 255, 0.6)' : 'rgba(148, 163, 184, 0.25)',
       (cx, topY) => {
         if (!hasResults || !alice?.basis) {
-          ctx.font = '9px monospace'
+          ctx.font = '11px monospace'
           ctx.fillStyle = '#64748b'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          ctx.fillText('AWAITING PULSE', cx, topY + 14)
+          ctx.fillText('AWAITING PULSE', cx, topY + 16)
           return
         }
 
@@ -552,31 +636,31 @@ export default function QuantumCanvas({ className = '' }) {
         const basisSymbol = isRect ? '+' : '×'
 
         // Row 1: Bit & Basis
-        ctx.font = 'bold 11px monospace'
+        ctx.font = 'bold 12px monospace'
         ctx.textAlign = 'left'
-        ctx.fillStyle = '#ffffff'
-        ctx.fillText(`Bit:`, cx - cardW / 2 + 10, topY + 6)
+        ctx.fillStyle = '#94a3b8'
+        ctx.fillText(`Bit:`, cx - 82, topY + 6)
         ctx.fillStyle = '#38bdf8'
-        ctx.fillText(`${alice.bit}`, cx - cardW / 2 + 38, topY + 6)
+        ctx.fillText(`${alice.bit}`, cx - 50, topY + 6)
 
-        ctx.fillStyle = '#ffffff'
-        ctx.fillText(`Basis:`, cx + 6, topY + 6)
+        ctx.fillStyle = '#94a3b8'
+        ctx.fillText(`Basis:`, cx + 2, topY + 6)
         ctx.fillStyle = basisColor
         ctx.fillText(`[ ${basisSymbol} ]`, cx + 50, topY + 6)
 
         // Row 2: State label and rotation angle
-        ctx.font = '10px monospace'
+        ctx.font = '11px monospace'
         ctx.fillStyle = basisColor
-        ctx.fillText(`${alice.label || ''}`, cx - cardW / 2 + 10, topY + 22)
+        ctx.fillText(`${alice.label || ''}`, cx - 82, topY + 25)
         ctx.fillStyle = '#94a3b8'
-        ctx.fillText(`Rot:`, cx + 6, topY + 22)
+        ctx.fillText(`Rot:`, cx + 2, topY + 25)
         ctx.fillStyle = '#f1f5f9'
-        ctx.fillText(`${alice.angle}°`, cx + 38, topY + 22)
+        ctx.fillText(`${alice.angle}°`, cx + 36, topY + 25)
       }
     )
 
-    // ── Bob Card (above Bob at X=BOB_X, Y=ENTITY_Y - 90) ──
-    const bobY = ENTITY_Y - 90
+    // ── Bob Card (above Bob at X=BOB_X, Y=ENTITY_Y - 92) ──
+    const bobY = ENTITY_Y - 92
     const isBobActive = hasResults && bob?.basis
 
     drawBadge(
@@ -586,11 +670,11 @@ export default function QuantumCanvas({ className = '' }) {
       isBobActive ? 'rgba(192, 132, 252, 0.6)' : 'rgba(148, 163, 184, 0.25)',
       (cx, topY) => {
         if (!hasResults || !bob?.basis) {
-          ctx.font = '9px monospace'
+          ctx.font = '11px monospace'
           ctx.fillStyle = '#64748b'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          ctx.fillText('AWAITING PHOTON', cx, topY + 14)
+          ctx.fillText('AWAITING PHOTON', cx, topY + 16)
           return
         }
 
@@ -599,26 +683,26 @@ export default function QuantumCanvas({ className = '' }) {
         const basisSymbol = isRect ? '+' : '×'
 
         // Row 1: Selected Basis
-        ctx.font = 'bold 11px monospace'
+        ctx.font = 'bold 12px monospace'
         ctx.textAlign = 'left'
-        ctx.fillStyle = '#ffffff'
-        ctx.fillText(`Basis:`, cx - cardW / 2 + 10, topY + 6)
+        ctx.fillStyle = '#94a3b8'
+        ctx.fillText(`Basis:`, cx - 82, topY + 6)
         ctx.fillStyle = basisColor
-        ctx.fillText(`[ ${basisSymbol} ]`, cx - cardW / 2 + 54, topY + 6)
+        ctx.fillText(`[ ${basisSymbol} ]`, cx - 32, topY + 6)
 
         // Row 2: Match / Status
-        ctx.font = 'bold 9px monospace'
+        ctx.font = 'bold 11px monospace'
         if (bob.status === 'detected') {
           if (bob.match) {
             ctx.fillStyle = '#22c55e'
-            ctx.fillText('MATCH ✓ (SIFTED)', cx - cardW / 2 + 10, topY + 22)
+            ctx.fillText('MATCH ✓ (SIFTED)', cx - 82, topY + 25)
           } else {
             ctx.fillStyle = '#f59e0b'
-            ctx.fillText('MISMATCH ✗', cx - cardW / 2 + 10, topY + 22)
+            ctx.fillText('MISMATCH ✗', cx - 82, topY + 25)
           }
         } else {
           ctx.fillStyle = '#38bdf8'
-          ctx.fillText('IN FLIGHT...', cx - cardW / 2 + 10, topY + 22)
+          ctx.fillText('IN FLIGHT...', cx - 82, topY + 25)
         }
       }
     )
@@ -650,7 +734,7 @@ export default function QuantumCanvas({ className = '' }) {
 
     // Read canvas background from CSS variable for light-mode support
     const computedStyle = getComputedStyle(document.documentElement)
-    const canvasBg = computedStyle.getPropertyValue('--canvas-bg').trim() || '#1a1a2e'
+    const canvasBg = computedStyle.getPropertyValue('--canvas-bg').trim() || '#2a2a2a'
     drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT, canvasBg)
     drawChannelLanes(ctx)
     drawContinuousBeam(ctx)
@@ -865,10 +949,12 @@ export default function QuantumCanvas({ className = '' }) {
         borderColor: 'var(--border-color)'
       }}
     >
-      {/* Scrollable Area */}
+      {/* Scrollable Area (only overflow when zoomed) */}
       <div
         ref={scrollContainerRef}
-        className="absolute inset-0 w-full h-full overflow-auto flex"
+        className={`absolute inset-0 w-full h-full flex ${
+          scale > 1 ? 'overflow-auto' : 'overflow-hidden'
+        }`}
       >
         <div
           className="relative m-auto"
@@ -1007,7 +1093,7 @@ export default function QuantumCanvas({ className = '' }) {
           }}
           title="Reset View"
         >
-          RESET
+          RESET VIEW
         </button>
       </div>
 
@@ -1015,10 +1101,11 @@ export default function QuantumCanvas({ className = '' }) {
       <TransmissionHUD countersRef={countersRef} />
 
       {results?.secure_threshold_breached && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-red-950/40 
-                        border border-red-500/50 rounded text-red-400 
-                        text-[10px] font-mono tracking-wider animate-pulse pointer-events-none">
-          ⚠ SECURITY THRESHOLD BREACHED
+        <div className="absolute bottom-4 right-4 px-3.5 py-2 bg-red-950/80 
+                        border border-red-500/60 rounded-lg text-red-400 
+                        text-xs font-mono font-semibold tracking-wider animate-pulse pointer-events-none flex items-center gap-2 shadow-2xl backdrop-blur-sm">
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-ping flex-shrink-0" />
+          <span>⚠ SECURITY THRESHOLD BREACHED (QBER &gt; 11%)</span>
         </div>
       )}
     </div>

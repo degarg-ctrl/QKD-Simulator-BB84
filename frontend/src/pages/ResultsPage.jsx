@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/pages/ResultsPage.jsx
  *
  * Results page for BB84 QKD Simulator.
@@ -351,8 +351,7 @@ export default function ResultsPage() {
             </table>
           </div>
           <div className="text-xs text-[var(--text-secondary)] font-mono">
-            ℹ Theoretical values computed from physics model at
-            {params.distance_km}km. Differences normal at low
+            ℹ Theoretical values computed from physics model at {params.distance_km} km. Differences normal at low
             photon counts — use n_bits ≥ 5000 for convergence.
           </div>
         </div>

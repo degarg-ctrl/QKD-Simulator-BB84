@@ -18,11 +18,11 @@ const POLL_MS = 60
 function Stat({ label, value, color, dim = false }) {
     return (
         <div className="flex items-baseline justify-between gap-3">
-            <span className="text-[9px] uppercase tracking-[0.12em]"
+            <span className="text-xs uppercase tracking-wider"
                 style={{ color: dim ? 'var(--text-subtle)' : 'var(--text-muted)' }}>
                 {label}
             </span>
-            <span className="text-[11px] font-semibold tabular-nums"
+            <span className="text-xs font-semibold font-mono tabular-nums"
                 style={{ color: color || 'var(--text-primary)' }}>
                 {value}
             </span>
@@ -76,37 +76,36 @@ export default function TransmissionHUD({ countersRef }) {
             ref={hudRef}
             drag
             dragMomentum={false}
-            initial={{ x: 20, y: 30 }}
-            className="absolute z-20 pointer-events-auto rounded-lg overflow-hidden select-none shadow-2xl"
+            className="absolute bottom-4 left-4 z-20 pointer-events-auto rounded-lg overflow-hidden select-none shadow-2xl"
             style={{
-                backgroundColor: 'color-mix(in srgb, var(--panel-bg) 92%, transparent)',
+                backgroundColor: 'color-mix(in srgb, var(--panel-bg) 94%, transparent)',
                 border: '1px solid var(--border-color)',
                 backdropFilter: 'blur(8px)',
-                minWidth: 200,
+                minWidth: 260,
             }}
         >
             {/* Draggable Header */}
             <div
-                className="px-3 pt-2 pb-1.5 flex items-center justify-between cursor-move"
+                className="px-3.5 pt-2.5 pb-2 flex items-center justify-between cursor-move"
                 style={{
                     borderBottom: '1px solid var(--border-color)',
                     backgroundColor: 'rgba(255, 255, 255, 0.03)',
                 }}
                 title="Click and drag to move panel anywhere"
             >
-                <div className="flex items-center gap-1.5">
-                    <GripHorizontal size={13} className="text-[var(--text-subtle)] hover:text-[var(--text-primary)]" />
-                    <span className="text-[9px] font-mono uppercase tracking-[0.2em] font-semibold"
+                <div className="flex items-center gap-2">
+                    <GripHorizontal size={14} className="text-[var(--text-subtle)] hover:text-[var(--text-primary)]" />
+                    <span className="text-xs font-mono uppercase tracking-wider font-semibold"
                         style={{ color: 'var(--text-primary)' }}>
                         Transmission
                     </span>
                     {!isComplete && released > 0 && (
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
+                        <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
                             title="Live playback active" />
                     )}
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-mono tabular-nums"
+                    <span className="text-xs font-mono tabular-nums"
                         style={{ color: 'var(--text-subtle)' }}>
                         {released} / {totalTarget}
                     </span>
@@ -115,10 +114,10 @@ export default function TransmissionHUD({ countersRef }) {
                             e.stopPropagation()
                             setIsCollapsed(!isCollapsed)
                         }}
-                        className="p-0.5 rounded hover:bg-white/10 text-[var(--text-muted)] transition-colors"
+                        className="p-1 rounded hover:bg-white/10 text-[var(--text-muted)] transition-colors"
                         title={isCollapsed ? 'Expand' : 'Collapse'}
                     >
-                        {isCollapsed ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
+                        {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
                     </button>
                 </div>
             </div>
@@ -126,14 +125,14 @@ export default function TransmissionHUD({ countersRef }) {
             {/* Live accounting content */}
             {!isCollapsed && (
                 <>
-                    <div className="px-3 py-2 flex flex-col gap-1 font-mono">
+                    <div className="px-3.5 py-2.5 flex flex-col gap-1.5 font-mono">
                         <Stat label="Generated" value={released} />
                         <Stat label="Fiber survived" color="#34d399" value={liveSurvived} />
                         <Stat label="Fiber lost" color="#64748b" value={liveLost} />
                         {(liveVacuum > 0 || transmission.vacuum_pulses > 0) && (
                             <Stat label="Vacuum pulses" color="#64748b" value={liveVacuum} />
                         )}
-                        <div className="my-0.5" style={{ borderTop: '1px dashed var(--border-color)' }} />
+                        <div className="my-1" style={{ borderTop: '1px dashed var(--border-color)' }} />
                         <Stat label="Detected" color="#34d399" value={liveDetected} />
                         <Stat label="Detector miss" color="#94a3b8" value={liveDetectorMiss} />
                         {(liveDarkCounts > 0 || transmission.dark_counts > 0) && (
@@ -148,14 +147,14 @@ export default function TransmissionHUD({ countersRef }) {
                                 <Stat label="PNS blocked" color="#fb7185" value={livePnsBlocked} />
                             </>
                         )}
-                        <div className="my-0.5" style={{ borderTop: '1px dashed var(--border-color)' }} />
+                        <div className="my-1" style={{ borderTop: '1px dashed var(--border-color)' }} />
                         <Stat label="Sifted" color="#22d3ee" value={liveSifted} />
                     </div>
 
                     {/* Sampling note */}
                     {isSample && (
-                        <div className="px-3 py-1" style={{ borderTop: '1px solid var(--border-color)' }}>
-                            <span className="text-[8px] font-mono" style={{ color: 'var(--text-subtle)' }}>
+                        <div className="px-3.5 py-1.5" style={{ borderTop: '1px solid var(--border-color)' }}>
+                            <span className="text-xs font-mono leading-normal" style={{ color: 'var(--text-subtle)' }}>
                                 representative playback of N={transmission.generated}
                             </span>
                         </div>
