@@ -258,12 +258,12 @@ function SidebarItem({ item, collapsed, draggable = false, isGate = false, isPro
       <AnimatePresence>
         {!collapsed && (
           <motion.span
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'auto' }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.15 }}
-            className="text-xs font-mono text-[var(--text-muted)]
-                       whitespace-nowrap overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, delay: 0.16 }}
+            className="text-xs font-mono text-[var(--text-secondary)] font-medium
+                       whitespace-nowrap truncate min-w-0 flex-1"
           >
             {item.label}
           </motion.span>
@@ -331,18 +331,16 @@ function ExperimentButton({ exp, collapsed, isActive, onClick, disabled = false 
       <AnimatePresence>
         {!collapsed && (
           <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'auto' }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.15 }}
-            className="overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, delay: 0.16 }}
+            className="overflow-hidden min-w-0 flex-1 whitespace-nowrap"
           >
-            <div className="text-xs font-mono text-[var(--text-muted)]
-                            whitespace-nowrap">
+            <div className="text-xs font-mono font-medium text-[var(--text-primary)] truncate">
               {exp.label}
             </div>
-            <div className="text-xs text-[var(--text-subtle)] 
-                            whitespace-nowrap">
+            <div className="text-[11px] text-[var(--text-muted)] truncate">
               {exp.description}
             </div>
           </motion.div>
@@ -389,7 +387,7 @@ export default function Sidebar() {
 
   return (
     <motion.div
-      animate={{ width: collapsed ? 48 : 200 }}
+      animate={{ width: collapsed ? 48 : 240 }}
       transition={{ duration: 0.2, ease: 'easeInOut' }}
       className="flex flex-col border-r 
                  flex-shrink-0 overflow-hidden relative"
@@ -403,12 +401,20 @@ export default function Sidebar() {
       <div className="flex items-center justify-between 
                       px-2 py-2 border-b border-border-subtle
                       flex-shrink-0">
-        {!collapsed && (
-          <span className="text-xs font-mono text-[var(--text-subtle)] 
-                           uppercase tracking-widest">
-            Toolbox
-          </span>
-        )}
+        <AnimatePresence>
+          {!collapsed && (
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, delay: 0.08 }}
+              className="text-xs font-mono text-[var(--text-subtle)] 
+                         uppercase tracking-widest"
+            >
+              Toolbox
+            </motion.span>
+          )}
+        </AnimatePresence>
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="w-7 h-7 rounded flex items-center justify-center
