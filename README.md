@@ -95,37 +95,40 @@ BB84 (named after its inventors Bennett and Brassard, 1984) works in six stages.
 
 ### Simulation Engine
 - Full BB84 physics pipeline: **Alice → Channel → Eve → Gates → Bob → Protocol → Metrics**
-- 8 experiment modes covering fundamental concepts to advanced security analysis
-- Ideal vs Realistic source model toggle (perfect single-photon vs WCP + Poisson distribution)
-- PNS attack simulation + Decoy State detection countermeasure
-- One-Time Pad encryption demonstration using extracted key
-- Configurable parameters: distance (0–150km), noise (0–10%), attack probability (0–1), bit count (1–10,000)
+- Event-driven per-pulse lifecycle model tracking fiber survival, detector efficiency, dark counts, and Eve interactions
+- 8 experiment modes covering fundamental concepts to advanced quantum security analysis
+- Ideal vs Realistic source model toggle (perfect single-photon vs Weak Coherent Pulse + Poisson distribution)
+- PNS attack simulation + Decoy State protocol detection countermeasure
+- Centralized, reproducible PCG64 pseudo-random number generator (`rng.py`)
+- One-Time Pad encryption demonstration using verified sifted key
+- Configurable parameters: distance (0–150 km), fiber attenuation, noise (0–10%), attack probability (0–1), bit count (1–10,000)
 
 ### Visualization & Interaction
-- Real-time photon animation at 60fps via HTML5 Canvas with polarization-angle rendering
-- Color-coded photons: blue/indigo (#6366f1) = Rectilinear (+), purple (#a855f7) = Diagonal (×)
-- Eve interception: photons split, red glow, polarization angle shifts on re-emit
-- Channel loss: photons fade to zero opacity mid-transit
-- Photon Inspector panel with sync mode (step-by-step, one photon at a time)
-- Quantum gates (H/X/Y/Z/S/T) with drag-and-drop canvas placement
-- Gate properties panel with real-time quantum state vector display
-- 3D Bloch sphere tooltip visualization
-- QBER vs Distance and SKR vs Distance interactive charts (Recharts)
+- High-performance 60fps HTML5 Canvas single-lane optical corridor
+- **Dual-Mode Animation Engine:**
+  - **Discrete Wave Mode:** Step-by-step photon wave packets with configurable flight speed and pulse inspector
+  - **Continuous Beam Mode:** High-throughput streaming representation with live photon density gradients for large photon batches
+- **Draggable Transmission HUD:** Live floating telemetry overlay displaying basis readouts, transmission metrics, and sifting counts
+- Polarization-angle rendering: Blue/indigo (`#6366f1`) = Rectilinear (+), Violet/purple (`#a855f7`) = Diagonal (×)
+- Causal visual sequence: state preparation → emission → flight → gate transformation → Eve interception → channel loss → detection
+- Interactive Quantum Gates (H, X, Y, Z, S, T) with real-time state vector displays and Bloch sphere representations
+- Multi-tab bottom dashboard: real-time transmission logging, photon inspector modal, and bitstream sifting tables
+- Collision-free, responsive QBER vs Distance and SKR vs Distance charts (Recharts)
 
 ### Educational Tools
-- Interactive Guide page with BB84 theory, formula derivations, and inline charts
-- 8 pre-configured experiments with descriptions, learning objectives, and locked parameters
-- Component tooltips on every sidebar entity and gate explaining physical meaning
-- Save/load/export/import experiment configurations via localStorage
+- Comprehensive Guide page with BB84 theory, mathematical derivations, and glossary
+- 8 pre-configured experiments with learning objectives, guided descriptions, and locked parameters
+- Component tooltips on all sidebar controls and quantum gates explaining physical meaning
+- Save, load, export, and import experiment configurations via local storage
 - Guided exercises with step-by-step verification and hint system
-- Bit stream table showing per-photon details (Alice bit/basis, Bob bit/basis, match, intercepted, lost)
+- Detailed bitstream inspection table showing per-photon details (Alice/Bob bit and basis, match status, Eve interception, channel loss)
 
-### Quality of Life
-- Dark / Light mode
-- Animated landing page with photon particle background
-- Single-command launch via `python launch.py`
-- Collapsible configuration panel, sidebar, and bottom metrics panel
-- Comprehensive in-app audit log
+### Quality of Life & Design System
+- Semantic design token palette with dark-mode scientific instrumentation aesthetic
+- Accessible UI primitives built on Radix UI (`Accordion`, `Dialog`, `Tabs`, `Slider`, `SegmentedControl`, smart `Tooltip`)
+- Single-command launcher (`python launch.py`) that starts backend, frontend, and opens the browser
+- Zero-overhead state architecture driven by Zustand
+- Fully responsive layout with collapsible controls and floating HUDs
 
 ---
 
@@ -315,8 +318,8 @@ All physics values below are enforced by [PHYSICS_CONTRACT.md](docs/PHYSICS_CONT
 ### Clone the Repository
 
 ```bash
-git clone <repo-url>
-cd qkd-simulator
+git clone https://github.com/degarg-ctrl/QKD-Simulator-BB84.git
+cd QKD-Simulator-BB84
 ```
 
 ### Backend Setup
@@ -383,71 +386,71 @@ npm run dev       # from project root — runs both via concurrently
 ```
 qkd-simulator/
 ├── launch.py                      ← Single-command launcher (starts backend + frontend)
-├── package.json                   ← Root workspace (concurrently dev script)
+├── package.json                   ← Root dev scripts
 │
 ├── backend/
 │   ├── main.py                    ← FastAPI app entry point + static file serving
 │   ├── requirements.txt           ← Python dependencies
+│   ├── requirements.lock          ← Pinned dependency lockfile
+│   ├── pyrightconfig.json         ← Pyright type checking configuration
 │   ├── routers/
 │   │   └── simulation.py          ← POST /api/simulate endpoint (full BB84 pipeline)
 │   ├── models/
-│   │   └── schemas.py             ← Pydantic v2 request/response models
-│   ├── core/                      ← Physics engine (13 modules)
-│   │   ├── alice.py               ← Bit generation, basis selection, state encoding
-│   │   ├── bob.py                 ← Basis-dependent measurement
-│   │   ├── channel.py             ← Fiber attenuation, detector efficiency, dark counts
-│   │   ├── eve.py                 ← Intercept-resend, partial, burst attack strategies
-│   │   ├── protocol.py            ← Sifting, QBER estimation, key extraction
-│   │   ├── metrics.py             ← SKR, binary entropy, efficiency, chart data
-│   │   ├── gates.py               ← H/X/Y/Z/S/T quantum gate transformations
-│   │   ├── wcp.py                 ← Weak Coherent Pulse Poisson model
-│   │   ├── pns.py                 ← Photon Number Splitting attack
-│   │   ├── decoy.py               ← Decoy state protocol (PNS detection)
-│   │   ├── experiments.py         ← 8 experiment preset configurations
-│   │   └── constants.py           ← All physical constants (single source of truth)
-│   └── tests/                     ← pytest suite + dated test runs
+│   │   └── schemas.py             ← Pydantic v2 request/response models & photon records
+│   └── core/                      ← Physics engine (13 modules)
+│       ├── alice.py               ← Bit generation, basis selection, state encoding
+│       ├── bob.py                 ← Basis-dependent measurement
+│       ├── channel.py             ← Fiber attenuation, detector efficiency, dark counts
+│       ├── eve.py                 ← Intercept-resend, partial, burst attack strategies
+│       ├── protocol.py            ← Sifting, QBER estimation, key extraction
+│       ├── metrics.py             ← SKR, binary entropy, efficiency, chart data
+│       ├── gates.py               ← H/X/Y/Z/S/T quantum gate transformations
+│       ├── wcp.py                 ← Weak Coherent Pulse Poisson model
+│       ├── pns.py                 ← Photon Number Splitting attack
+│       ├── decoy.py               ← Decoy state protocol (PNS detection)
+│       ├── experiments.py         ← 8 experiment preset configurations
+│       ├── constants.py           ← All physical constants (single source of truth)
+│       └── rng.py                 ← Centralized seedable PCG64 random number generator
 │
 ├── frontend/
 │   ├── index.html                 ← HTML entry point
 │   ├── vite.config.js             ← Vite build config with API proxy
-│   ├── package.json               ← Frontend dependencies
+│   ├── package.json               ← Frontend dependencies (React 19, Tailwind v4, Radix)
 │   └── src/
 │       ├── main.jsx               ← React root + BrowserRouter
-│       ├── index.css              ← Global styles + CSS variables for themes
-│       ├── api/
+│       ├── index.css              ← Global styles + semantic design tokens
+│       ├── services/
 │       │   └── simulatorAPI.js    ← Single API client (POST /api/simulate)
+│       ├── lib/
+│       │   └── utils.js           ← Tailwind CSS class merging helper (cn)
 │       ├── store/
-│       │   └── simulationStore.js ← Zustand state (simulation results, UI state, gates)
+│       │   └── simulationStore.js ← Zustand state (simulation results, UI state, telemetry)
 │       ├── hooks/
 │       │   ├── useSimulation.js   ← API + state orchestration hook
-│       │   └── usePhotonAnimation.js ← Canvas animation driver (60fps requestAnimationFrame)
+│       │   └── usePhotonAnimation.js ← 60fps canvas animation driver
 │       ├── pages/
-│       │   ├── LandingPage.jsx    ← Animated hero with photon particle background
-│       │   ├── SimulatorPage.jsx  ← Main layout (sidebar + canvas + config + bottom panel)
+│       │   ├── LandingPage.jsx    ← Modern hero with particle visualization
+│       │   ├── SimulatorPage.jsx  ← Main application workspace
 │       │   ├── GuidePage.jsx      ← Interactive BB84 guide with theory + glossary
 │       │   └── ResultsPage.jsx    ← Post-simulation analysis with charts + OTP demo
 │       └── components/
-│           ├── canvas/            ← QuantumCanvas, PhotonParticle (animation engine)
-│           ├── layout/            ← TopBar, UniversalTopBar, Sidebar, BottomPanel, SimulatorControls
-│           ├── controls/          ← ConfigPanel (distance, noise, attack, strategy sliders)
+│           ├── canvas/            ← QuantumCanvas, TransmissionHUD, visualEncoding.js
+│           ├── layout/            ← Sidebar, BottomPanel, SimulatorControls
+│           ├── controls/          ← ConfigPanel, DualModeSpeedControl
 │           ├── metrics/           ← MetricCard, QBERChart, SKRChart
-│           ├── gates/             ← GatePropertiesPanel, GateStateVector, GateContextMenu
-│           ├── inspector/         ← PhotonInspector (per-photon state viewer + sync mode)
-│           ├── experiments/       ← ExperimentModal, PhotonInputTable, Save/Load modals
+│           ├── gates/             ← GatePropertiesPanel, GateStateVector
+│           ├── inspector/         ← PhotonInspector (per-photon state viewer)
+│           ├── results/           ← TransmissionPanel, BitstreamTable
 │           ├── visualizations/    ← BlochSphere (3D quantum state visualization)
-│           ├── entities/          ← Entity components for sidebar items
-│           ├── results/           ← Results-specific sub-components
-│           ├── guide/             ← Guide page sub-sections
-│           └── ui/                ← SmartTooltipWrapper, GateTooltip, ParameterTooltip, etc.
+│           └── ui/                ← Button, Panel, Field, Slider, SegmentedControl, Tabs, Dialog, Accordion, Tooltip
 │
 └── docs/
     ├── PHYSICS_CONTRACT.md        ← Ground-truth physics invariants (all code must conform)
-    ├── HIGH_LEVEL_DESIGN.md       ← System architecture overview
     ├── PRD.md                     ← Product requirements document
     ├── DECISIONS.md               ← Architecture decisions with rationale
-    ├── CHANGELOG.md               ← File-level change log
-    ├── ERROR_LOG.md               ← Known bugs and resolutions
-    └── TEST_LOG.md                ← Test run summaries
+    ├── CHANGELOG.md               ← File-level audit trail of every change
+    ├── ERROR_LOG.md               ← Known bugs, root causes, and resolutions
+    └── TEST_LOG.md                ← Comprehensive test run history and verifications
 ```
 
 ---
@@ -457,11 +460,11 @@ qkd-simulator/
 | Document | Purpose |
 |:---------|:--------|
 | [PHYSICS_CONTRACT.md](docs/PHYSICS_CONTRACT.md) | Single source of truth for all physics invariants — basis systems, encoding angles, channel models, gate transformations, validation benchmarks, and authoritative constants. Any code that deviates from this document has a bug. |
-| [HIGH_LEVEL_DESIGN.md](docs/HIGH_LEVEL_DESIGN.md) | System architecture, API contract, and end-to-end data flow. |
 | [PRD.md](docs/PRD.md) | Product requirements — core features, non-functional requirements, and success criteria. |
 | [DECISIONS.md](docs/DECISIONS.md) | Every significant technology and architecture choice, with rationale and alternatives considered. |
 | [CHANGELOG.md](docs/CHANGELOG.md) | File-level audit trail of every create, modify, and delete operation. |
 | [ERROR_LOG.md](docs/ERROR_LOG.md) | Bugs encountered, root causes, resolutions, and prevention rules. |
+| [TEST_LOG.md](docs/TEST_LOG.md) | Formal record of test suites, execution dates, and verification results. |
 
 ---
 
