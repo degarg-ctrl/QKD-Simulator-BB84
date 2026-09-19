@@ -2,7 +2,7 @@
 
 > **A physics-accurate, interactive web application that simulates the BB84 quantum cryptography protocol — the world's first and most widely deployed method for generating provably secure encryption keys using the laws of quantum mechanics.**
 
-v0.4.0
+v0.5.0
 
 ---
 
@@ -469,6 +469,7 @@ qkd-simulator/
 
 | Version | Date | Highlights |
 |:--------|:-----|:-----------|
+| v0.5.0 | 2026-09-20 | Dual-mode controller, UI overhaul, decoupled docs/tests architecture, high-performance canvas engine |
 | v0.4.0 | 2026-03-30 | 3D Bloch sphere tooltips, smart tooltip positioning, navigation redesign, enhanced guide page |
 | v0.3.1 | 2026-03-29 | Guided exercises, save/load experiments, gate state vector visualization |
 | v0.3 | 2026-03-23 | Ideal vs Realistic source toggle, WCP model, PNS attack, decoy states, Experiments 7 & 8 |
