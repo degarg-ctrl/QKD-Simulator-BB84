@@ -1,6 +1,6 @@
 {
   "name": "qkd-simulator-root",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "scripts": {
     "dev:backend": "cd backend && .venv\\Scripts\\activate && uvicorn main:app --reload --port 8000",
     "dev:frontend": "cd frontend && npm run dev",

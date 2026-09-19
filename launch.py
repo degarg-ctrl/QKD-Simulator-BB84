@@ -19,7 +19,7 @@ def cleanup():
                 p.terminate()
 
 def main():
-    print("=== QKD Simulator v0.3 Launcher ===\n")
+    print("=== QKD Simulator v0.5.0 Launcher ===\n")
     root_dir = os.path.dirname(os.path.abspath(__file__))
     frontend_dir = os.path.join(root_dir, "frontend")
     backend_dir = os.path.join(root_dir, "backend")
