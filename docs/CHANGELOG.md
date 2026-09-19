@@ -1,6 +1,7 @@
 # Changelog
 Format: [YYYY-MM-DD HH:MM] | Branch | Action | filepath
 
+[2026-09-20 02:08] | main | modified | README.md
 [2026-09-20 02:04] | main | modified | README.md
 [2026-09-20 02:01] | main | created  | qkd-simulator/docs/
 [2026-09-20 02:01] | main | created  | documentation/

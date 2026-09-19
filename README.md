@@ -13,7 +13,7 @@ v0.5.0
 - [Demystifying Quantum Key Distribution](#-demystifying-quantum-key-distribution)
 - [Features at a Glance](#-features-at-a-glance)
 - [Architecture & Tech Stack](#-architecture--tech-stack)
-- [Data Flow](#-data-flow)
+- [Data Flow & Causal Quantum Lifecycle](#-data-flow--causal-quantum-lifecycle)
 - [Experiment Modes](#-experiment-modes)
 - [Physics Reference](#-physics-reference)
 - [Installation](#-installation)
@@ -89,6 +89,21 @@ BB84 (named after its inventors Bennett and Brassard, 1984) works in six stages.
 | **Decoy State Protocol** | Alice sends pulses at varying intensities. Comparing detection rates at different intensities reveals if Eve is performing PNS. | The real-world countermeasure to PNS — and the subject of Experiment 8. |
 | **OTP** (One-Time Pad) | An encryption method where the key is as long as the message and used only once. XOR encryption: `ciphertext = message ⊕ key`. | Shannon (1949) proved this is the *only* encryption scheme with perfect secrecy. BB84 provides the key. |
 
+### 🎨 Visual State Encoding Map (HTML5 Canvas Engine)
+
+Every photon in the optical corridor is dynamically mapped in `visualEncoding.js` to communicate quantum polarization, environmental interactions, and measurement outcomes:
+
+| State / Event | Basis | Polarization Vector | Color Token | Visual Representation |
+|:--------------|:------|:-------------------|:------------|:----------------------|
+| **Bit 0** | Rectilinear ($+$) | $|0\rangle = \begin{pmatrix}1 \\ 0\end{pmatrix}$ ($0^\circ$) | `#6366f1` (Indigo) | Horizontal wave oscillation |
+| **Bit 1** | Rectilinear ($+$) | $|1\rangle = \begin{pmatrix}0 \\ 1\end{pmatrix}$ ($90^\circ$) | `#6366f1` (Indigo) | Vertical wave oscillation |
+| **Bit 0** | Diagonal ($\times$) | $|+\rangle = \frac{1}{\sqrt{2}}\begin{pmatrix}1 \\ 1\end{pmatrix}$ ($45^\circ$) | `#a855f7` (Purple) | $+45^\circ$ diagonal wave oscillation |
+| **Bit 1** | Diagonal ($\times$) | $|-\rangle = \frac{1}{\sqrt{2}}\begin{pmatrix}1 \\ -1\end{pmatrix}$ ($135^\circ$) | `#a855f7` (Purple) | $-45^\circ$ diagonal wave oscillation |
+| **Eve Intercepted** | Any | Collapsed / Repreparing | `#ef4444` (Red Alert) | Pulse disruption, red halo, angular phase shift |
+| **Gate Transform** | Any | Unitary Operator $U$ | `#38bdf8` (Cyan Pulse) | Instantaneous vector rotation at gate position |
+| **Channel Loss** | Any | Attenuation / Absorption | Opacity $\to 0$ | Progressive opacity decay until disappearance |
+| **Dark Count** | — | Thermal Avalanche | `#f59e0b` (Amber Click) | Detector-side spontaneous click without incident photon |
+
 ---
 
 ## ✨ Features at a Glance
@@ -134,80 +149,152 @@ BB84 (named after its inventors Bennett and Brassard, 1984) works in six stages.
 
 ## 🏗️ Architecture & Tech Stack
 
-The simulator uses a **client-server architecture** that cleanly separates physics computation from visualization. The backend performs all quantum mechanics calculations in Python (ensuring numerical precision), while the frontend handles interactive visualization in JavaScript (ensuring smooth 60fps animation without blocking physics computations).
+The simulator uses a **client-server architecture** that cleanly separates rigorous quantum mechanics computation from interactive 60fps browser rendering. The backend performs all quantum state transformations, WCP Poisson draws, and error metrics in Python with mathematical precision, while the frontend orchestrates hardware-accelerated Canvas rendering and responsive telemetry.
+
+### System Topology & Core Abstractions (Graphify Analysis)
+
+A dependency and community analysis of the codebase reveals **58 distinct modular communities** structured around two central coordination hubs ("God Nodes"): `run_simulation()` on the backend and `useSimulationStore` on the frontend.
+
+```mermaid
+flowchart TB
+    subgraph Frontend ["Frontend Architecture (React 19 + Vite 7)"]
+        subgraph UI_Layer ["Presentation & Workspace Layer"]
+            LandingPage["LandingPage / GuidePage / ResultsPage"]
+            SimulatorPage["SimulatorPage Workspace"]
+            ConfigPanel["ConfigPanel (Radix Accordions & Sliders)"]
+            BottomPanel["BottomPanel (Telemetry, Inspector & Bitstream)"]
+            Sidebar["Sidebar (Presets, Entities, Gate Palette)"]
+        end
+
+        subgraph State_Hub ["State & Orchestration Hub (God Node)"]
+            Store["useSimulationStore (Zustand 5)"]
+            Hook["useSimulation() Hook"]
+        end
+
+        subgraph Canvas_Engine ["High-Performance Canvas Engine (60fps)"]
+            Canvas["QuantumCanvas (Single-Lane Corridor)"]
+            HUD["TransmissionHUD (Floating Telemetry)"]
+            Particles["PhotonParticle Pipeline"]
+            Encoding["visualEncoding.js (Coordinates & Polarization)"]
+        end
+
+        UI_Layer --> Store
+        Hook --> Store
+        Store --> Canvas
+        Store --> HUD
+        Canvas --> Particles
+        Particles --> Encoding
+    end
+
+    subgraph Transport ["API Boundary"]
+        Client["services/simulatorAPI.js"]
+        API["POST /api/simulate (FastAPI)"]
+        Client <==>|"JSON (SimulationRequest / SimulationResponse)"| API
+    end
+
+    subgraph Backend ["Physics Core (NumPy 2.0 + SciPy)"]
+        Router["routers/simulation.py : run_simulation() (God Node)"]
+        PRNG["rng.py : PCG64 Reproducible PRNG"]
+
+        subgraph Physics_Pipeline ["BB84 Event-Driven Transmission Pipeline"]
+            Alice["Alice : Bit/Basis Draw & State Prep"]
+            WCP["wcp.py : Weak Coherent Pulse Poisson Model"]
+            Channel["QuantumChannel : Fiber Loss, Dark Counts & Noise"]
+            Eve["Eve : Intercept-Resend & PNS Attacks"]
+            Gates["gates.py : Unitary Gate Transformations (H, X, Y, Z, S, T)"]
+            Bob["Bob : Passive/Active Measurement"]
+            Protocol["protocol.py : Sifting & Key Extraction"]
+            Metrics["metrics.py : QBER, SKR & Secrecy Capacity"]
+            Decoy["decoy.py : Decoy State Yield & Gain Analysis"]
+        end
+
+        API --> Router
+        Router --> PRNG
+        Router --> Alice
+        Alice --> WCP --> Channel --> Eve --> Gates --> Bob --> Protocol --> Metrics
+        WCP -.-> Decoy
+    end
+
+    Hook --> Client
+```
 
 ### Backend — Physics Engine
 
 | Technology | Role | Why This Choice |
 |:-----------|:-----|:----------------|
-| **Python 3.14** | Core language | Version-agnostic NumPy code; no 3.11-specific features used |
-| **FastAPI** | REST API framework | Native async, Pydantic v2 integration, auto-generated OpenAPI docs |
-| **Pydantic v2** | Request/response validation | Strict type enforcement catches invalid simulation parameters before they reach physics code |
-| **NumPy 2.0+** | Numerical computation | Vectorized array operations for efficient probability and statistics calculations |
-| **SciPy** | Statistical functions | Binary entropy, Poisson distribution for WCP model |
+| **Python 3.14** | Core language | Strict type enforcement, high performance, cross-platform reproducibility |
+| **FastAPI** | REST API framework | Native async execution, Pydantic v2 serialization, auto-generated OpenAPI documentation |
+| **Pydantic v2** | Request/response validation | Validates incoming simulation payloads before execution reaches the physics engine |
+| **NumPy 2.0+** | Numerical computation | Vectorized array operations and centralized seedable **PCG64** pseudo-random generator |
+| **SciPy** | Statistical distributions | Exact Poisson calculations for WCP models and binary entropy functions |
 
-**Why NumPy instead of Qiskit/Cirq?** BB84 is fundamentally a *classical probability simulation* — Alice and Bob make random choices, and the outcomes follow well-defined probability distributions. No quantum gate library is needed. NumPy provides the exact level of abstraction required without the overhead of a full quantum computing framework.
+> **Why NumPy over full Quantum Frameworks (Qiskit/Cirq)?**  
+> BB84 is fundamentally an *entanglement-free, classical probability protocol* with quantum state preparations and measurements. Using NumPy ensures sub-millisecond execution speeds for up to $10,000$ bits without the overhead of heavy quantum circuit compilation.
 
 ### Frontend — Interactive Visualization
 
 | Technology | Role | Why This Choice |
 |:-----------|:-----|:----------------|
-| **React 19** | UI framework | Component-based architecture for complex simulator interface |
-| **Vite 7** | Build tool | Sub-second hot module replacement during development |
-| **Tailwind CSS 4** | Styling | Rapid prototyping of responsive layouts and dark/light mode |
-| **Framer Motion** | Animations | Smooth page transitions, panel animations, and micro-interactions |
-| **Zustand 5** | State management | Flat simulation state with zero boilerplate — ideal for a single store holding all simulation results |
-| **Recharts 3** | Data visualization | QBER and SKR charts with responsive, interactive tooltips |
-| **HTML5 Canvas** | Photon animation | Direct pixel control at 60fps for 1000+ particle rendering without WebGL complexity |
-| **React Three Fiber + Drei** | 3D rendering | Bloch sphere tooltip visualization of quantum states |
-| **Radix UI** | Accessible primitives | Tooltips, sliders, tabs, dialogs, accordions with full keyboard and screen-reader support |
-| **Lucide React** | Icons | Consistent, lightweight icon system |
-| **React Router DOM 7** | Routing | Client-side navigation between Landing, Simulator, Guide, and Results views |
-
-**Why HTML5 Canvas instead of WebGL or SVG?** Photon animation requires rendering up to 1,000 moving particles with per-frame polarization angle updates at 60fps. Canvas provides direct pixel control in 2D without the shader complexity of WebGL or the DOM overhead that makes SVG slow at high particle counts.
-
-**Why Zustand instead of Redux?** The simulation state is flat — a single API response containing metrics, charts, and bit stream data. Zustand handles this with zero boilerplate, natural hook integration, and no action/reducer ceremony. Redux Toolkit would be overkill for this shape of state.
+| **React 19** | UI framework | Component-based modularity for scientific instrumentation panels |
+| **Vite 7** | Build tool | Instant hot module replacement and optimized production bundle |
+| **Tailwind CSS 4** | Styling | Semantic design token palette with optical glows and CSS variable theming |
+| **Framer Motion 12** | Animation | Smooth transitions between dashboard views and floating HUDs |
+| **Zustand 5** | State management | Centralized reactive store holding full simulation state and live telemetry with zero boilerplate |
+| **HTML5 Canvas** | Particle rendering | 60fps hardware-accelerated rendering for up to $10,000$ moving photons without DOM overhead |
+| **Radix UI** | Accessible primitives | Headless accessible components (`Accordion`, `Dialog`, `Tabs`, `Slider`, `Tooltip`) |
+| **Recharts 3** | Data visualization | Interactive SVG charts with responsive hover tooltips for QBER and SKR |
+| **React Three Fiber** | 3D rendering | Interactive 3D Bloch sphere representation of quantum state vectors |
 
 ---
 
-## 🔄 Data Flow
+## 🔄 Data Flow & Causal Quantum Lifecycle
 
-Every simulation follows this exact sequence. The numbered steps correspond to the pipeline in [simulation.py](backend/routers/simulation.py):
+Every simulation cycle strictly executes in an authentic causal order:  
+$$\text{Prepare State} \longrightarrow \text{Poisson Pulse} \longrightarrow \text{Fiber Flight} \longrightarrow \text{Eve Interaction} \longrightarrow \text{Gate Transformation} \longrightarrow \text{Bob Detection} \longrightarrow \text{Classical Sifting}$$
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    FRONTEND (React)                      │
-│                                                          │
-│  1. User configures params in ConfigPanel                │
-│  2. User clicks "Run Simulation"                         │
-│  3. useSimulation hook → simulatorAPI.runSimulation()     │
-│                          │                                │
-│                          │ POST /api/simulate             │
-│                          ▼                                │
-├──────────────────────────────────────────────────────────┤
-│                 BACKEND (FastAPI + Python)                │
-│                                                          │
-│  4. Pydantic v2 validates request (SimulationRequest)     │
-│  5. Alice generates bits + bases + encodes states         │
-│  6. (If WCP) Poisson photon counts applied to states      │
-│  7. QuantumChannel transmits (attenuation, noise, darks)  │
-│  8. Eve intercepts (strategy: intercept-resend/PNS/etc.)  │
-│  9. (If gates) Quantum gates applied per lane              │
-│ 10. Bob measures received states                          │
-│ 11. BB84Protocol: sift → estimate QBER → extract key      │
-│ 12. Metrics: SKR, efficiency, chart data                  │
-│ 13. Return SimulationResponse (JSON)                      │
-│                          │                                │
-│                          ▼                                │
-├──────────────────────────────────────────────────────────┤
-│                    FRONTEND (React)                       │
-│                                                          │
-│ 14. Zustand store updated with full response              │
-│ 15. BottomPanel renders metric cards + charts             │
-│ 16. usePhotonAnimation reads bit_stream from store        │
-│ 17. QuantumCanvas animates photons with polarization      │
-│ 18. Bit Stream table renders per-photon data              │
-└──────────────────────────────────────────────────────────┘
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Alice as Alice (Sender)
+    participant Channel as Quantum Fiber Channel
+    actor Eve as Eve (Eavesdropper)
+    participant Gate as Unitary Gates
+    actor Bob as Bob (Receiver)
+    participant Sifting as Classical Channel (Public)
+
+    Alice->>Alice: 1. Generate bit b ∈ {0,1} & basis θ ∈ {+, ×}
+    Alice->>Alice: 2. Encode polarization state |ψ⟩
+    Alice->>Channel: 3. Emit pulse (Single-Photon or WCP Poisson μ)
+    
+    alt In-Flight Interception
+        Channel->>Eve: Pulse reaches Eve at distance d_eve
+        Eve->>Eve: Attack (Intercept-Resend / PNS split)
+        Eve->>Channel: Forward modified pulse |ψ'⟩
+    else Direct Transmission
+        Channel->>Channel: Fiber attenuation P_survive = 10^(-0.2·d/10) + Phase Noise
+    end
+
+    Channel->>Gate: Pulse traverses optical gate region
+    Gate->>Gate: Apply operator U (H, X, Y, Z, S, T)
+    Gate->>Bob: Transmitted pulse reaches detector
+
+    Bob->>Bob: 4. Choose measurement basis θ_B ∈ {+, ×}
+    Bob->>Bob: 5. Detect click (Efficiency η = 0.85 + Dark Count P_dark = 10^-5)
+
+    Note over Alice,Bob: Quantum Phase Complete — Public Sifting & Error Correction
+
+    Alice->>Sifting: Announce basis sequence {θ_A}
+    Bob->>Sifting: Announce basis sequence {θ_B} & valid detection slots
+    Sifting->>Sifting: 6. Sift: Keep matching bases θ_A == θ_B (~50% retention)
+    Sifting->>Sifting: 7. Security Audit: Sample sifted key & compute QBER
+    
+    alt QBER < 11% (Secure Channel)
+        Sifting-->>Alice: Channel Certified: Extract Secret Key (SKR > 0)
+        Sifting-->>Bob: Channel Certified: Extract Secret Key (SKR > 0)
+    else QBER ≥ 11% (Eavesdropper Detected)
+        Sifting-->>Alice: ABORT: Error threshold breached, discard key (SKR = 0)
+        Sifting-->>Bob: ABORT: Error threshold breached, discard key (SKR = 0)
+    end
 ```
 
 ### API Contract
