@@ -476,9 +476,3 @@ qkd-simulator/
 | v0.1 | 2026-03-21 | Initial release — physics-accurate BB84 simulation, photon animation, metrics, guide page |
 
 See [CHANGELOG.md](docs/CHANGELOG.md) for the complete file-level history.
-
----
-
-<p align="center">
-  <em>Built with ⚛️ at SRM Institute of Science & Technology for QtHack04</em>
-</p>
