@@ -20,10 +20,10 @@ export default function UniversalTopBar() {
   ]
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 h-12 flex-shrink-0"
+    <div className="flex items-center justify-between px-3 py-1.5 h-12 flex-shrink-0 z-30 select-none"
          style={{
-           backgroundColor: 'var(--panel-bg)',
-           borderBottom: '1px solid var(--border-color)'
+           backgroundColor: 'var(--q-surface-1)',
+           borderBottom: '1px solid var(--q-border)'
          }}>
       
       {/* Left: Menu + Branding */}
@@ -31,26 +31,25 @@ export default function UniversalTopBar() {
         {/* Hamburger Menu */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="p-1.5 rounded hover:bg-white/5 transition-colors"
-          style={{ color: 'var(--text-primary)' }}
+          className="p-1.5 rounded transition-colors text-[var(--q-text-2)] hover:text-[var(--q-text-1)] hover:bg-[var(--q-surface-active)]"
           aria-label="Menu"
         >
-          <Menu size={18} />
+          <Menu size={17} />
         </button>
 
         {/* QKD Simulator Branding (clickable to home) */}
         <button
           onClick={() => setActiveView('landing')}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 hover:opacity-85 transition-opacity"
         >
-          <span className="font-mono text-sm text-[var(--text-primary)] tracking-wider font-semibold">
-            QKD Simulator
+          <span className="font-body text-sm tracking-wide font-bold text-[var(--q-text-1)]">
+            QKDSimFlow
           </span>
-          <span className="px-1.5 py-0.5 rounded text-xs font-mono"
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-body font-bold uppercase tracking-wider"
                 style={{
-                  backgroundColor: 'rgba(0, 204, 255, 0.15)',
-                  border: '1px solid rgba(0, 204, 255, 0.5)',
-                  color: '#00c8ff'
+                  backgroundColor: 'var(--q-surface-2)',
+                  border: '1px solid var(--q-border)',
+                  color: 'var(--q-accent)'
                 }}>
             BB84
           </span>
@@ -58,24 +57,23 @@ export default function UniversalTopBar() {
       </div>
 
       {/* Right: Theme Toggle + Logo */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="px-2 py-1 rounded text-xs font-mono border transition-colors flex items-center justify-center w-7 h-7"
+          className="p-1 rounded text-xs border transition-colors flex items-center justify-center w-7 h-7 text-[var(--q-text-3)] hover:text-[var(--q-text-1)] hover:bg-[var(--q-surface-active)]"
           style={{
-            borderColor: 'var(--border-color)',
-            color: 'var(--text-muted)',
-            backgroundColor: 'transparent'
+            borderColor: 'var(--q-border)',
+            backgroundColor: 'var(--q-surface-2)'
           }}
           title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
         >
-          {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
         </button>
         
         <img 
           src="/srmist-logo.png" 
           alt="SRMIST Logo" 
-          className="h-10 object-contain"
+          className="h-8 object-contain ml-1 opacity-90 hover:opacity-100 transition-opacity"
         />
       </div>
 
@@ -115,7 +113,7 @@ export default function UniversalTopBar() {
                       setActiveView(item.id)
                       setMenuOpen(false)
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-mono transition-colors ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-body font-medium transition-colors ${
                       activeView === item.id
                         ? 'bg-cyan-500/20 text-cyan-400'
                         : 'text-[var(--text-primary)] hover:bg-white/5'
