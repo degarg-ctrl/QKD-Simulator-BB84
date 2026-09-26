@@ -21,10 +21,10 @@ export default function SimulatorPage() {
   // Landing Page
   if (activeView === 'landing') {
     return (
-      <div className="h-screen flex flex-col overflow-hidden"
+      <div className="h-full w-full flex flex-col overflow-hidden"
            style={{ backgroundColor: 'var(--canvas-bg)' }}>
         <UniversalTopBar />
-        <div className="flex-1 overflow-y-auto">
+        <div id="landing-scroll-container" className="flex-1 overflow-y-auto overflow-x-hidden">
           <LandingPage />
         </div>
       </div>
@@ -34,7 +34,7 @@ export default function SimulatorPage() {
   // Guide Page (About)
   if (activeView === 'guide') {
     return (
-      <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--canvas-bg)' }}>
+      <div className="h-full w-full flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--canvas-bg)' }}>
         <UniversalTopBar />
         <div className="flex-1 overflow-hidden">
           <GuidePage />
@@ -47,7 +47,7 @@ export default function SimulatorPage() {
   // Results Page
   if (activeView === 'results') {
     return (
-      <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--canvas-bg)' }}>
+      <div className="h-full w-full flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--canvas-bg)' }}>
         <SimulatorControls />
         <div className="flex-1 overflow-hidden">
           <ResultsPage />
@@ -59,7 +59,7 @@ export default function SimulatorPage() {
 
   // Simulator Page
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--canvas-bg)' }}>
+    <div className="h-full w-full flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--canvas-bg)' }}>
       <SimulatorControls />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
