@@ -125,10 +125,10 @@ export default function ExperimentsSection() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-body">
       <div>
-        <h2 className="text-2xl font-bold font-mono mb-4" style={{ color: 'var(--text-primary)' }}>Guided Experiments</h2>
-        <p className="leading-relaxed text-sm" style={{ color: 'var(--text-secondary)' }}>
+        <h2 className="text-3xl font-serif font-semibold tracking-tight mb-4" style={{ color: 'var(--text-primary)' }}>Guided Experiments</h2>
+        <p className="leading-relaxed text-sm font-body" style={{ color: 'var(--text-secondary)' }}>
           Learn QKD concepts through hands-on experiments. Each experiment focuses on a specific aspect 
           of quantum key distribution and includes step-by-step instructions.
         </p>
@@ -141,29 +141,29 @@ export default function ExperimentsSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="border rounded-lg p-6"
+            className="border rounded-lg p-6 font-body"
             style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}
           >
             {/* Header */}
             <div className="mb-4">
-              <h3 className="text-xl font-semibold font-mono mb-1" style={{ color: 'var(--text-primary)' }}>{exp.name}</h3>
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{exp.description}</p>
+              <h3 className="text-xl font-serif font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{exp.name}</h3>
+              <p className="text-sm font-body" style={{ color: 'var(--text-muted)' }}>{exp.description}</p>
             </div>
 
             {/* Objective */}
             <div className="mb-4 rounded p-4 border"
                  style={{ backgroundColor: 'rgba(0, 204, 255, 0.08)', borderColor: 'rgba(0, 204, 255, 0.25)' }}>
-              <div className="text-cyan-400 text-xs font-semibold mb-1 font-mono uppercase tracking-wider">OBJECTIVE</div>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{exp.objective}</p>
+              <div className="text-cyan-400 text-xs font-semibold mb-1 font-body uppercase tracking-wider">OBJECTIVE</div>
+              <p className="text-sm font-body" style={{ color: 'var(--text-secondary)' }}>{exp.objective}</p>
             </div>
 
             {/* Steps */}
             <div className="mb-4">
-              <div className="font-semibold text-sm mb-3 font-mono" style={{ color: 'var(--text-primary)' }}>Steps:</div>
+              <div className="font-semibold text-sm mb-3 font-body" style={{ color: 'var(--text-primary)' }}>Steps:</div>
               <ol className="space-y-2">
                 {exp.steps.map((step, idx) => (
-                  <li key={idx} className="flex gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="text-cyan-400 font-bold font-mono">{idx + 1}.</span>
+                  <li key={idx} className="flex gap-3 text-sm font-body" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="text-cyan-400 font-bold font-mono tabular-nums">{idx + 1}.</span>
                     <span>{step}</span>
                   </li>
                 ))}
@@ -172,8 +172,8 @@ export default function ExperimentsSection() {
 
             {/* Expected Results */}
             <div className="mb-4">
-              <div className="font-semibold text-sm mb-2 font-mono" style={{ color: 'var(--text-primary)' }}>Expected Results:</div>
-              <p className="text-sm p-3 rounded border"
+              <div className="font-semibold text-sm mb-2 font-body" style={{ color: 'var(--text-primary)' }}>Expected Results:</div>
+              <p className="text-sm p-3 rounded border font-body"
                  style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--text-secondary)' }}>
                 {exp.expectedResults}
               </p>
@@ -181,10 +181,10 @@ export default function ExperimentsSection() {
 
             {/* What to Observe */}
             <div>
-              <div className="font-semibold text-sm mb-2 font-mono" style={{ color: 'var(--text-primary)' }}>What to Observe:</div>
+              <div className="font-semibold text-sm mb-2 font-body" style={{ color: 'var(--text-primary)' }}>What to Observe:</div>
               <ul className="space-y-1">
                 {exp.whatToObserve.map((item, idx) => (
-                  <li key={idx} className="flex gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <li key={idx} className="flex gap-2 text-sm font-body" style={{ color: 'var(--text-secondary)' }}>
                     <span className="text-cyan-500">•</span>
                     <span>{item}</span>
                   </li>
@@ -196,9 +196,9 @@ export default function ExperimentsSection() {
       </div>
 
       {/* General Tips */}
-      <div className="border rounded-lg p-6"
+      <div className="border rounded-lg p-6 font-body"
            style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-xl font-semibold font-mono mb-4" style={{ color: 'var(--text-primary)' }}>General Tips</h3>
+        <h3 className="text-xl font-serif font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>General Tips</h3>
         <ul className="space-y-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
           <li className="flex gap-3">
             <span className="text-cyan-400 font-bold">•</span>

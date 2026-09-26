@@ -4,8 +4,8 @@ export default function PNSAttackSection() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold font-mono mb-4" style={{ color: 'var(--text-primary)' }}>Photon Number Splitting (PNS) Attack</h2>
-        <p className="leading-relaxed text-sm" style={{ color: 'var(--text-secondary)' }}>
+        <h2 className="text-2xl font-bold font-serif mb-4" style={{ color: 'var(--text-primary)' }}>Photon Number Splitting (PNS) Attack</h2>
+        <p className="leading-relaxed text-sm font-body" style={{ color: 'var(--text-secondary)' }}>
           The PNS attack exploits a fundamental limitation of practical QKD implementations: 
           weak coherent pulses (WCP) can contain multiple photons instead of exactly one.
         </p>
@@ -14,7 +14,7 @@ export default function PNSAttackSection() {
       {/* The Problem */}
       <div className="border rounded-lg p-6"
            style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-xl font-semibold font-mono mb-4" style={{ color: 'var(--text-primary)' }}>The Problem: Multi-Photon Pulses</h3>
+        <h3 className="text-xl font-serif font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>The Problem: Multi-Photon Pulses</h3>
         <div className="space-y-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
           <p>
             <strong className="text-cyan-400">Ideal QKD:</strong> Alice sends exactly one photon per bit. 
@@ -38,7 +38,7 @@ export default function PNSAttackSection() {
       {/* The Attack */}
       <div className="border rounded-lg p-6"
            style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-xl font-semibold font-mono mb-4" style={{ color: 'var(--text-primary)' }}>How the Attack Works</h3>
+        <h3 className="text-xl font-serif font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>How the Attack Works</h3>
         <div className="space-y-4">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0 w-8 h-8 bg-cyan-600 rounded-full flex items-center justify-center text-white font-bold font-mono">
@@ -97,7 +97,7 @@ export default function PNSAttackSection() {
       {/* Why It's Dangerous */}
       <div className="border rounded-lg p-6"
            style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
-        <h3 className="text-xl font-semibold font-mono text-red-400 mb-4">Why This Is Dangerous</h3>
+        <h3 className="text-xl font-serif font-semibold text-red-400 mb-4">Why This Is Dangerous</h3>
         <ul className="space-y-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
           <li className="flex gap-3">
             <span className="text-red-400 font-bold">•</span>
@@ -121,7 +121,7 @@ export default function PNSAttackSection() {
       {/* The Solution: Decoy States */}
       <div className="border rounded-lg p-6"
            style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-xl font-semibold font-mono mb-4" style={{ color: 'var(--text-primary)' }}>The Solution: Decoy State Protocol</h3>
+        <h3 className="text-xl font-serif font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>The Solution: Decoy State Protocol</h3>
         <div className="space-y-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
           <p>
             The decoy state protocol (2003) defeats PNS attacks by randomly varying the mean photon number μ.
@@ -156,7 +156,7 @@ export default function PNSAttackSection() {
       {/* In the Simulator */}
       <div className="border rounded-lg p-6"
            style={{ backgroundColor: 'rgba(0, 204, 255, 0.08)', borderColor: 'rgba(0, 204, 255, 0.25)' }}>
-        <h3 className="text-lg font-semibold text-cyan-400 font-mono mb-3">Try It in the Simulator</h3>
+        <h3 className="text-lg font-serif font-semibold text-cyan-400 mb-3">Try It in the Simulator</h3>
         <ol className="space-y-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
           <li className="flex gap-3">
             <span className="text-cyan-400 font-bold font-mono">1.</span>
@@ -184,10 +184,10 @@ export default function PNSAttackSection() {
       {/* Mathematical Details */}
       <div className="border rounded-lg p-6"
            style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-xl font-semibold font-mono mb-4" style={{ color: 'var(--text-primary)' }}>Mathematical Details</h3>
+        <h3 className="text-xl font-serif font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Mathematical Details</h3>
         <div className="space-y-4">
           <div>
-            <h4 className="text-cyan-400 font-semibold mb-2 font-mono text-sm">Multi-Photon Probability</h4>
+            <h4 className="text-cyan-400 font-semibold mb-2 font-body text-sm uppercase tracking-wider">Multi-Photon Probability</h4>
             <div className="p-3 rounded font-mono text-sm border"
                  style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
               P(n ≥ 2) = 1 - e^(-μ) - μe^(-μ)
@@ -199,7 +199,7 @@ export default function PNSAttackSection() {
           </div>
 
           <div>
-            <h4 className="text-cyan-400 font-semibold mb-2 font-mono text-sm">Information Leakage</h4>
+            <h4 className="text-cyan-400 font-semibold mb-2 font-body text-sm uppercase tracking-wider">Information Leakage</h4>
             <div className="p-3 rounded font-mono text-sm border"
                  style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
               I(Eve) ≈ P(n ≥ 2) × 1 bit
