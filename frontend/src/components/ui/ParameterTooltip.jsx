@@ -6,7 +6,7 @@ export default function ParameterTooltip({
   impact
 }) {
   return (
-    <div className="rounded-lg shadow-2xl w-72 overflow-hidden border"
+    <div className="rounded-lg shadow-2xl w-72 overflow-hidden border font-body"
          style={{ backgroundColor: 'var(--tooltip-bg, var(--panel-bg))', borderColor: 'var(--border-color)' }}>
       {/* Header */}
       <div className="px-4 py-3 border-b"

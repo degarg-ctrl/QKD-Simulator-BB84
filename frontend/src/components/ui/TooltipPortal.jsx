@@ -86,7 +86,7 @@ export function TooltipPortal({
                      whitespace-pre-line"
         >
           {color && (
-            <div className="font-mono font-bold mb-1.5 text-xs"
+            <div className="font-body font-semibold mb-1.5 text-xs"
                  style={{ color }}>
               {typeof children === 'string' ? children : ''}
             </div>
