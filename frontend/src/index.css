@@ -15,78 +15,171 @@
   :root {
     color-scheme: dark;
 
-    /* ── Semantic Surfaces (Clean Neutral Dark Grey) ── */
-    --q-surface-0: #1e1e1e; /* Workspace floor / dark base */
-    --q-surface-1: #242424; /* Primary panels & toolbars */
-    --q-surface-2: #2f2f35; /* Raised cards & overlays */
+    /* ── Precision Optics Bench Surfaces (Strictly Neutral Matte) ── */
+    --q-surface-0: #131317; /* Chassis base & viewport substrate */
+    --q-surface-1: #1a1a1e; /* Primary instrumentation panels & toolbars */
+    --q-surface-2: #222227; /* Sub-panels, parameter cards & drawers */
+    --q-surface-active: #282830; /* Recessed inputs & active wells */
 
-    /* ── Typography & Text Hierarchy ── */
-    --q-text-1: #ffffff; /* Primary data & high-contrast headers */
-    --q-text-2: #d1d5db; /* Standard body text & labels */
-    --q-text-3: #9ca3af; /* Muted hints & auxiliary info */
-    --q-text-4: #6b7280; /* Subtle captions & inactive states */
+    /* ── High-Contrast Typography & Text Hierarchy ── */
+    --q-text-1: #f1f1f4; /* Primary technical data & headings */
+    --q-text-2: #d1d1d8; /* Standard body text & specifications */
+    --q-text-3: #9e9ea8; /* Secondary units, labels & telemetry */
+    --q-text-4: #5c5c66; /* Coordinate grids & muted caption marks */
 
-    /* ── Semantic Accents ── */
-    --q-accent: #00B8E6;
-    --q-accent-weak: rgba(0, 184, 230, 0.15);
-    --q-accent-strong: #00d4ff;
+    /* ── Mechanical Demarcation Lines (1px structural borders) ── */
+    --q-border-subtle: #282830;
+    --q-border: #34343d;
+    --q-border-strong: #42424e;
 
-    /* ── Outcome States ── */
-    --q-secure: #22c55e;
-    --q-warn: #f59e0b;
-    --q-danger: #ef4444;
-    --q-inactive: #6b7280;
+    /* ── Functional Telemetry Accents (Precision Instrument Gold/Amber) ── */
+    --q-accent: #f59e0b;
+    --q-accent-weak: rgba(245, 158, 11, 0.12);
+    --q-accent-strong: #d97706;
+    --q-accent-cyan: #10b981; /* Map legacy cyan references to clean precision emerald */
 
-    /* ── Physics Tokens (Mapped directly from visualEncoding.js contract) ── */
-    --q-alice: #00e5ff;
-    --q-bob: #c084fc;
-    --q-eve: #f59e0b;
-    --q-basis-rect: #00e5ff;
-    --q-basis-diag: #d946ef;
-    --q-probe: #ef4444;
-    --q-gate-h: #6366f1;
-    --q-gate-x: #f59e0b;
-    --q-gate-y: #ec4899;
-    --q-gate-z: #14b8a6;
-    --q-gate-s: #8b5cf6;
-    --q-gate-t: #06b6d4;
+    /* ── Protocol & Outcome Indicators ── */
+    --q-secure: #10b981;  /* Valid coincidence / threshold safe (< 11%) */
+    --q-warn: #f59e0b;    /* Eavesdropping alert / thermal settling */
+    --q-danger: #e05252;  /* Security abort threshold breached (≥ 11%) */
+    --q-inactive: #5c5c66;
 
-    /* ── Base Grey Surfaces (Strictly Neutral) ── */
+    /* ── Physics Tokens (visualEncoding.js parity - No bluish dominance) ── */
+    --q-alice: #10b981;       /* Alice Laser Source (Precision Emerald) */
+    --q-bob: #c084fc;         /* Bob SPAD Receiver (Violet) */
+    --q-eve: #e05252;         /* Eve Eavesdropper Beam-Tap (Crimson) */
+    --q-basis-rect: #10b981;  /* 0° and 90° (+ Basis: Emerald) */
+    --q-basis-diag: #c084fc;  /* 45° and 135° (× Basis: Violet) */
+    --q-probe: #e05252;       /* Cloning & CNOT probe */
+    --q-gate-h: #8b5cf6;      /* Hadamard */
+    --q-gate-x: #f59e0b;      /* Pauli-X */
+    --q-gate-y: #ec4899;      /* Pauli-Y */
+    --q-gate-z: #10b981;      /* Pauli-Z */
+    --q-gate-s: #a855f7;      /* Phase S */
+    --q-gate-t: #eab308;      /* Phase T */
+
+    /* ── Backward Compatibility Aliases ── */
     --accent: var(--q-accent);
     --success: var(--q-secure);
     --warning: var(--q-warn);
     --danger: var(--q-danger);
     --neutral: var(--q-text-3);
-    --bg-primary: #2a2a2a;
-    --bg-secondary: #333338;
-    --bg-panel: #242424;
-    --bg-dark: #1e1e1e;
-    --canvas-bg: #2a2a2a;
-    --panel-bg: #242424;
-    --panel-dark: #1e1e1e;
-    --border-color: rgba(255, 255, 255, 0.15);
-    --border-white: rgba(255, 255, 255, 0.15);
+    --bg-primary: #111115;
+    --bg-secondary: #17171d;
+    --bg-panel: #17171d;
+    --bg-dark: #0e0e12;
+    --canvas-bg: #111115;
+    --panel-bg: #17171d;
+    --panel-dark: #0e0e12;
+    --border-color: #2e2e38;
+    --border-white: #2e2e38;
     --text-primary: var(--q-text-1);
     --text-secondary: var(--q-text-2);
     --text-muted: var(--q-text-3);
     --text-subtle: var(--q-text-4);
-    --card-bg: #2f2f35;
-    --card-border: rgba(255, 255, 255, 0.1);
-    --code-bg: #1e1e1e;
-    --input-bg: #333338;
-    --input-border: rgba(255, 255, 255, 0.15);
-    --panel-border: rgba(255, 255, 255, 0.1);
-    --tooltip-bg: #242424;
-    --scrollbar-thumb: rgba(255, 255, 255, 0.15);
-    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.25);
-    --scrollbar-thumb-active: rgba(255, 255, 255, 0.4);
+    --card-bg: #1c1c23;
+    --card-border: #2e2e38;
+    --code-bg: #0e0e12;
+    --input-bg: #15151b;
+    --input-border: #2e2e38;
+    --panel-border: #2e2e38;
+    --tooltip-bg: #17171d;
+    --scrollbar-thumb: #2e2e38;
+    --scrollbar-thumb-hover: #3d3d4a;
+    --scrollbar-thumb-active: #525263;
+
+    /* ── Stylish Serif & Calligraphic Typography Tokens ── */
+    --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+    --font-display: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+    --font-calligraphy: 'Italiana', 'Instrument Serif', 'Cormorant Garamond', Georgia, serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
   }
 
   body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body);
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: var(--font-serif);
+    letter-spacing: -0.015em;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  .font-calligraphy {
+    font-family: var(--font-calligraphy);
+    font-style: italic;
+    letter-spacing: 0.01em;
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+    font-feature-settings: 'tnum' on, 'zero' on;
+  }
+
+  .serif-heading {
+    font-family: var(--font-serif);
+    letter-spacing: -0.015em;
+  }
+
+  .calligraphy-accent {
+    font-family: var(--font-calligraphy);
+    font-style: italic;
+  }
+
+  .label-upper {
+    font-family: var(--font-body);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .numeric {
+    font-family: var(--font-mono);
+    font-feature-settings: 'tnum' on, 'zero' on;
+  }
+}
+
+/* ── STRICT ROOT LOCK (Eliminates all outer window-level double scrollbars) ── */
+html {
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body {
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  inset: 0 !important;
+}
+
+#root {
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 /* Global expanding scrollbar without layout shift */
