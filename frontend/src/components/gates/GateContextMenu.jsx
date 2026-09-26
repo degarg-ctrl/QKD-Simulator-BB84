@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function GateContextMenu({ position, gate, onDelete, onCopy, onViewMatrix, onClose }) {
+export default function GateContextMenu({ position, _gate, onDelete, onCopy, onViewMatrix, onClose }) {
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function GateContextMenu({ position, gate, onDelete, onCopy, onVi
             onClose();
           }}
           className={`
-            w-full px-4 py-2 text-left text-sm flex items-center gap-2 font-mono transition-colors
+            w-full px-4 py-2 text-left text-sm flex items-center gap-2 font-body font-medium transition-colors
             hover:bg-white/10
             ${item.danger ? 'text-red-400' : ''}
           `}
