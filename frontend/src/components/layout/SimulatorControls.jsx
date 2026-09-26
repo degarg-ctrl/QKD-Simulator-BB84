@@ -19,9 +19,10 @@ import LoadExperimentModal from '../experiments/LoadExperimentModal'
 import useSimulationStore from '../../store/simulationStore'
 import Slider from '../ui/Slider'
 
-const BTN = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs ' +
-  'font-medium border transition-colors disabled:opacity-40 ' +
-  'disabled:cursor-not-allowed'
+const BTN = 'flex items-center gap-1.5 px-2.5 py-1 rounded text-xs ' +
+  'font-body font-semibold border border-[var(--q-border)] bg-[var(--q-surface-2)] ' +
+  'text-[var(--q-text-2)] hover:text-[var(--q-text-1)] hover:bg-[var(--q-surface-active)] ' +
+  'transition-colors disabled:opacity-40 disabled:cursor-not-allowed'
 
 export default function SimulatorControls() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -32,13 +33,25 @@ export default function SimulatorControls() {
     results, reset, placedGates, clearGates,
     openInspector, inspector, activeView, setActiveView,
     theme, setTheme,
-    animation, togglePause, setAnimationSpeed,
+    togglePause,
     setSimulationMode, setPlaybackSlider,
   } = useSimulationStore()
 
+  const animMode = useSimulationStore((s) => s.animation.mode)
+  const animSpeed = useSimulationStore((s) => s.animation.speed)
+  const animBeamRate = useSimulationStore((s) => s.animation.beamRate)
+  const animSliderPos = useSimulationStore((s) => s.animation.sliderPos)
+  const animIsPaused = useSimulationStore((s) => s.animation.isPaused)
+  const animation = {
+    mode: animMode,
+    speed: animSpeed,
+    beamRate: animBeamRate,
+    sliderPos: animSliderPos,
+    isPaused: animIsPaused,
+  }
+
   const isBreached = results?.secure_threshold_breached ?? false
   const hasResults = results !== null
-  const currentSpeed = animation.speed ?? 1.0
 
   // Keyboard shortcut: Spacebar toggles play/pause
   useEffect(() => {
@@ -63,10 +76,10 @@ export default function SimulatorControls() {
   return (
     <>
       <header
-        className="relative flex items-center justify-between px-3 py-1.5 h-13 flex-shrink-0 z-30 select-none gap-2"
+        className="relative flex items-center justify-between px-3 py-1.5 h-12 flex-shrink-0 z-30 select-none gap-2"
         style={{
-          backgroundColor: 'var(--panel-bg)',
-          borderBottom: '1px solid var(--border-color)'
+          backgroundColor: 'var(--q-surface-1)',
+          borderBottom: '1px solid var(--q-border)'
         }}
       >
         {/* ── Top Left: Nav Menu + Branding + Security Status ── */}
@@ -74,28 +87,28 @@ export default function SimulatorControls() {
           {/* Hamburger Menu */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-1.5 rounded hover:bg-white/5 transition-colors text-[var(--text-primary)]"
+            className="p-1.5 rounded transition-colors text-[var(--q-text-2)] hover:text-[var(--q-text-1)] hover:bg-[var(--q-surface-active)]"
             aria-label="Navigation Menu"
             title="Open navigation menu"
           >
-            <Menu size={18} />
+            <Menu size={17} />
           </button>
 
           {/* QKD Simulator Branding */}
           <button
             onClick={() => setActiveView('landing')}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-2 hover:opacity-85 transition-opacity"
             title="Back to Landing Page"
           >
-            <span className="font-mono text-base text-[var(--text-primary)] tracking-wider font-semibold whitespace-nowrap">
-              QKD Simulator
+            <span className="font-body text-sm tracking-wide font-bold text-[var(--q-text-1)] whitespace-nowrap">
+              QKDSimFlow
             </span>
             <span
-              className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider"
+              className="px-1.5 py-0.5 rounded text-[10px] font-body font-bold uppercase tracking-wider"
               style={{
-                backgroundColor: 'rgba(0, 204, 255, 0.15)',
-                border: '1px solid rgba(0, 204, 255, 0.5)',
-                color: '#00c8ff'
+                backgroundColor: 'var(--q-surface-2)',
+                border: '1px solid var(--q-border)',
+                color: 'var(--q-accent)'
               }}
             >
               BB84
@@ -103,67 +116,67 @@ export default function SimulatorControls() {
           </button>
 
           {/* Divider */}
-          <div className="h-4 w-[1px] bg-[var(--border-color)] mx-0.5" />
+          <div className="h-4 w-[1px] bg-[var(--q-border)] mx-0.5" />
 
-            {/* Security Status Indicator */}
-            {(() => {
-              const statusConfig = isLoading
-                ? { label: 'SIMULATING', dot: '#F59E0B', text: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)', border: 'rgba(245, 158, 11, 0.3)', pulse: true }
-                : hasResults && isBreached
-                ? { label: 'BREACH DETECTED', dot: '#EF4444', text: '#EF4444', bg: 'rgba(239, 68, 68, 0.1)', border: 'rgba(239, 68, 68, 0.3)', pulse: true }
-                : hasResults
-                ? { label: 'SECURE', dot: '#22C55E', text: '#22C55E', bg: 'rgba(34, 197, 94, 0.1)', border: 'rgba(34, 197, 94, 0.3)', pulse: false }
-                : { label: 'READY', dot: 'var(--text-subtle)', text: 'var(--text-muted)', bg: 'rgba(255, 255, 255, 0.04)', border: 'var(--border-color)', pulse: false }
+          {/* Security Status Indicator */}
+          {(() => {
+            const statusConfig = isLoading
+              ? { label: 'SIMULATING', dot: 'var(--q-warn)', text: 'var(--q-warn)', bg: 'rgba(245, 158, 11, 0.08)', border: 'rgba(245, 158, 11, 0.35)', pulse: true }
+              : hasResults && isBreached
+              ? { label: 'BREACH DETECTED', dot: 'var(--q-danger)', text: 'var(--q-danger)', bg: 'rgba(224, 82, 82, 0.08)', border: 'rgba(224, 82, 82, 0.35)', pulse: true }
+              : hasResults
+              ? { label: 'SECURE', dot: 'var(--q-secure)', text: 'var(--q-secure)', bg: 'rgba(16, 185, 129, 0.08)', border: 'rgba(16, 185, 129, 0.35)', pulse: false }
+              : { label: 'READY', dot: 'var(--q-text-4)', text: 'var(--q-text-3)', bg: 'var(--q-surface-2)', border: 'var(--q-border)', pulse: false }
 
-              return (
+            return (
+              <div
+                className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-body font-semibold select-none ${statusConfig.pulse ? 'animate-pulse' : ''}`}
+                style={{ backgroundColor: statusConfig.bg, border: `1px solid ${statusConfig.border}` }}
+              >
                 <div
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono font-semibold select-none ${statusConfig.pulse ? 'animate-pulse' : ''}`}
-                  style={{ backgroundColor: statusConfig.bg, border: `1px solid ${statusConfig.border}` }}
-                >
-                  <div
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: statusConfig.dot }}
-                  />
-                  <span style={{ color: statusConfig.text }}>{statusConfig.label}</span>
-                </div>
-              )
-            })()}
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: statusConfig.dot }}
+                />
+                <span style={{ color: statusConfig.text }}>{statusConfig.label}</span>
+              </div>
+            )
+          })()}
         </div>
 
-        {/* ── Top Middle: Anchored Center Playback & Mode Control (fixed width, integrated) ── */}
-        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center gap-3 px-2 z-20 w-[280px]">
+        {/* ── Top Middle: Anchored Center Playback & Mode Control ── */}
+        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center gap-3 px-2 z-20 w-[300px]">
           {/* Circular Play / Pause Button */}
           <button
             onClick={togglePause}
             disabled={!hasResults}
-            className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${
+            className={`flex items-center justify-center w-7 h-7 rounded-full border transition-all ${
               !hasResults
-                ? 'opacity-40 cursor-not-allowed bg-white/5 text-[var(--text-muted)]'
+                ? 'opacity-35 cursor-not-allowed bg-[var(--q-surface-2)] border-[var(--q-border)] text-[var(--q-text-4)]'
                 : animation.isPaused
-                ? 'bg-emerald-500 text-black hover:bg-emerald-400 hover:scale-105'
-                : 'bg-white/10 text-[var(--text-primary)] hover:bg-white/20 hover:scale-105'
+                ? 'bg-[var(--q-secure)] border-[var(--q-secure)] text-[#131317] hover:brightness-110 active:scale-95'
+                : 'bg-[var(--q-surface-2)] border-[var(--q-border-strong)] text-[var(--q-text-1)] hover:bg-[var(--q-surface-active)] active:scale-95'
             }`}
             title={!hasResults ? 'Run simulation first' : animation.isPaused ? 'Resume [Space]' : 'Pause [Space]'}
           >
             {animation.isPaused ? (
-              <Play size={14} fill="currentColor" className="ml-0.5" />
+              <Play size={13} fill="currentColor" className="ml-0.5" />
             ) : (
-              <Pause size={14} fill="currentColor" />
+              <Pause size={13} fill="currentColor" />
             )}
           </button>
 
           {/* Unified Dual-Mode Slider */}
-          <div className="flex flex-col gap-0.5 w-44">
+          <div className="flex flex-col gap-0.5 w-48">
             {/* Speed Readout Header */}
-            <div className="flex items-center justify-between text-xs font-mono leading-none">
-              <span className="text-[var(--text-muted)] uppercase tracking-wider">
+            <div className="flex items-center justify-between text-xs font-body leading-none">
+              <span className="text-[var(--q-text-3)] text-[10px] uppercase tracking-wider font-medium">
                 {animation.mode === 'waves' ? 'Waves' : 'Beam'}:
               </span>
-              <span className="font-bold text-[var(--text-primary)]">
+              <span className="font-bold font-mono tabular-nums text-[var(--q-text-1)] text-[11px]">
                 {animation.mode === 'waves' ? (
                   <>
                     <span className="text-cyan-400">{animation.speed.toFixed(1)}×</span>
-                    <span className="text-[var(--text-muted)] text-[11px] ml-1">
+                    <span className="text-[var(--q-text-4)] text-[10px] ml-1">
                       ({(1.5 / Math.max(0.1, animation.speed)).toFixed(2)}s)
                     </span>
                   </>
@@ -176,7 +189,7 @@ export default function SimulatorControls() {
             </div>
 
             {/* Slider Input */}
-            <div className="relative flex items-center h-4">
+            <div className="relative flex items-center h-3.5">
               <Slider
                 min={0}
                 max={100}
@@ -188,27 +201,27 @@ export default function SimulatorControls() {
               />
             </div>
 
-            {/* Mode Indicators / Buttons */}
-            <div className="flex items-center justify-between text-[11px] font-mono leading-none px-0.5">
+            {/* Mode Switcher */}
+            <div className="flex items-center justify-between text-[10px] font-body leading-none px-0.5">
               <button
                 type="button"
                 onClick={() => setSimulationMode('waves')}
-                className={`transition-colors uppercase font-semibold ${
+                className={`transition-colors uppercase font-medium ${
                   animation.mode === 'waves'
                     ? 'text-cyan-400 font-bold'
-                    : 'text-[var(--text-muted)] hover:text-white'
+                    : 'text-[var(--q-text-4)] hover:text-[var(--q-text-2)]'
                 }`}
-                title="Waves mode: discrete photons with ~1.5s baseline delay"
+                title="Waves mode: discrete photons with calibrated baseline delay"
               >
                 ● waves
               </button>
               <button
                 type="button"
                 onClick={() => setSimulationMode('beam')}
-                className={`transition-colors uppercase font-semibold ${
+                className={`transition-colors uppercase font-medium ${
                   animation.mode === 'beam'
                     ? 'text-fuchsia-400 font-bold'
-                    : 'text-[var(--text-muted)] hover:text-white'
+                    : 'text-[var(--q-text-4)] hover:text-[var(--q-text-2)]'
                 }`}
                 title="Beam mode: continuous flowing optical laser beam"
               >
@@ -222,8 +235,8 @@ export default function SimulatorControls() {
         <div className="flex items-center gap-1.5 min-w-0 flex-shrink-0 z-10 ml-auto">
           {/* View Mode Toggle: SIM vs RESULTS */}
           <div
-            className="flex items-center gap-0.5 rounded p-0.5"
-            style={{ border: '1px solid var(--border-color)' }}
+            className="flex items-center gap-0.5 rounded p-0.5 bg-[var(--q-surface-2)]"
+            style={{ border: '1px solid var(--q-border)' }}
           >
             {[
               { id: 'simulator', label: 'SIM' },
@@ -232,10 +245,10 @@ export default function SimulatorControls() {
               <button
                 key={view.id}
                 onClick={() => setActiveView(view.id)}
-                className={`px-2.5 py-1 text-xs font-mono font-semibold rounded transition-colors ${
+                className={`px-2 py-0.5 text-xs font-body font-semibold rounded transition-colors ${
                   activeView === view.id
-                    ? 'bg-white/15 text-white shadow-sm border border-white/20'
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)] border border-transparent'
+                    ? 'bg-[var(--q-surface-active)] text-[var(--q-text-1)] border border-[var(--q-border-strong)]'
+                    : 'text-[var(--q-text-3)] hover:text-[var(--q-text-2)] border border-transparent'
                 }`}
               >
                 {view.label}
@@ -247,18 +260,16 @@ export default function SimulatorControls() {
           <button
             onClick={reset}
             disabled={isLoading || !hasResults}
-            className={`${BTN} text-[var(--text-muted)] hover:text-[var(--text-primary)]`}
-            style={{ borderColor: 'var(--border-color)' }}
+            className={`${BTN}`}
             title="Reset simulation parameters and canvas"
           >
-            <RotateCcw size={12} /> RESET SIM
+            <RotateCcw size={12} /> RESET
           </button>
 
           {/* Save Experiment */}
           <button
             onClick={() => setSaveModalOpen(true)}
-            className={`${BTN} text-[var(--text-muted)] hover:text-[var(--text-primary)]`}
-            style={{ borderColor: 'var(--border-color)' }}
+            className={`${BTN}`}
             title="Save experiment run"
           >
             <Save size={12} /> SAVE
@@ -267,8 +278,7 @@ export default function SimulatorControls() {
           {/* Load Experiment */}
           <button
             onClick={() => setLoadModalOpen(true)}
-            className={`${BTN} text-[var(--text-muted)] hover:text-[var(--text-primary)]`}
-            style={{ borderColor: 'var(--border-color)' }}
+            className={`${BTN}`}
             title="Load saved experiment"
           >
             <FolderOpen size={12} /> LOAD
@@ -278,8 +288,7 @@ export default function SimulatorControls() {
           {placedGates.length > 0 && (
             <button
               onClick={clearGates}
-              className={`${BTN} text-[var(--text-muted)] hover:text-[#EF4444]`}
-              style={{ borderColor: 'var(--border-color)' }}
+              className={`${BTN} text-[var(--q-danger)] hover:text-red-400`}
               title="Clear placed gates"
             >
               <X size={12} /> GATES ({placedGates.length})
@@ -290,12 +299,7 @@ export default function SimulatorControls() {
           {results && (results.event_stream?.length > 0 || results.bit_stream?.length > 0) && (
             <button
               onClick={openInspector}
-              className={BTN}
-              style={{
-                borderColor: inspector.isOpen ? 'rgba(255, 255, 255, 0.4)' : 'var(--border-color)',
-                color: inspector.isOpen ? '#ffffff' : 'var(--text-muted)',
-                backgroundColor: inspector.isOpen ? 'rgba(255, 255, 255, 0.1)' : 'transparent'
-              }}
+              className={`${BTN} ${inspector.isOpen ? 'border-[var(--q-border-strong)] text-[var(--q-text-1)] bg-[var(--q-surface-active)]' : ''}`}
               title="Inspect individual photon polarization states"
             >
               <Search size={12} /> INSPECT
@@ -306,8 +310,8 @@ export default function SimulatorControls() {
           <button
             onClick={runSimulation}
             disabled={isLoading}
-            className="px-3.5 py-1.5 text-xs font-mono font-bold rounded text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm hover:brightness-110 active:scale-95"
-            style={{ backgroundColor: isLoading ? '#555555' : '#00aacc' }}
+            className="px-3.5 py-1 text-xs font-body font-bold rounded text-[#131317] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 active:scale-95"
+            style={{ backgroundColor: isLoading ? 'var(--q-text-4)' : 'var(--q-accent)' }}
             title="Execute QKD BB84 simulation"
           >
             {isLoading ? 'RUNNING…' : 'RUN'}
@@ -316,11 +320,10 @@ export default function SimulatorControls() {
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-1.5 rounded text-xs font-mono border transition-colors flex items-center justify-center w-7 h-7"
+            className="p-1 rounded text-xs border transition-colors flex items-center justify-center w-7 h-7 text-[var(--q-text-3)] hover:text-[var(--q-text-1)] hover:bg-[var(--q-surface-active)]"
             style={{
-              borderColor: 'var(--border-color)',
-              color: 'var(--text-muted)',
-              backgroundColor: 'transparent'
+              borderColor: 'var(--q-border)',
+              backgroundColor: 'var(--q-surface-2)'
             }}
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
@@ -363,7 +366,7 @@ export default function SimulatorControls() {
                 minWidth: '210px'
               }}
             >
-              <div className="px-4 py-2 text-[10px] font-mono text-[var(--text-subtle)] uppercase tracking-wider border-b border-[var(--border-color)]">
+              <div className="px-4 py-2 text-[10px] font-body font-semibold text-[var(--text-subtle)] uppercase tracking-wider border-b border-[var(--border-color)]">
                 Navigation
               </div>
               {navMenuItems.map((item) => {
@@ -376,7 +379,7 @@ export default function SimulatorControls() {
                       setActiveView(item.id)
                       setMenuOpen(false)
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-mono transition-colors ${
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-body font-medium transition-colors ${
                       isActive
                         ? 'bg-white/10 text-white font-semibold'
                         : 'text-[var(--text-primary)] hover:bg-white/5'

@@ -6,7 +6,6 @@
  * No local state — single source of truth is the store.
  */
 
-import { useState } from 'react'
 import ParameterTooltip from '../ui/ParameterTooltip'
 import SmartTooltipWrapper from '../ui/SmartTooltipWrapper'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -105,8 +104,7 @@ function SliderControl({ label, value, min, max, step,
     <div className="flex flex-col gap-2" id={`control-${label.toLowerCase().replace(' ', '-')}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="text-sm font-mono text-[var(--text-secondary)] 
-                           uppercase tracking-wider">
+          <span className="text-xs font-body font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
             {label}
           </span>
           <ParameterQuestion paramKey={paramKey} />
@@ -119,7 +117,7 @@ function SliderControl({ label, value, min, max, step,
           step={step}
           onChange={onChange}
           suffix={suffix}
-          color="#00aacc"
+          color="var(--q-accent-cyan, #38bdf8)"
         />
       </div>
       <div className="py-1">
@@ -168,7 +166,7 @@ function PhotonCountControl({ value, onChange, paramKey }) {
     <div className="flex flex-col gap-2" id="control-photons">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="text-sm font-mono text-[var(--text-secondary)] uppercase tracking-wider">
+          <span className="text-xs font-body font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
             Photons
           </span>
           <ParameterQuestion paramKey={paramKey} />
@@ -180,7 +178,7 @@ function PhotonCountControl({ value, onChange, paramKey }) {
           max={10000}
           step={value <= 10 ? 1 : value <= 100 ? 10 : 100}
           onChange={onChange}
-          color="#00e5ff"
+          color="var(--q-accent-cyan, #38bdf8)"
         />
       </div>
 
@@ -219,21 +217,24 @@ export default function ConfigPanel({ className = '' }) {
 
   return (
     <div
-      className={`flex flex-col gap-3 p-3 rounded-lg ${className}`}
+      className={`flex flex-col gap-3 p-3 rounded select-none ${className}`}
       style={{
-        backgroundColor: 'var(--panel-bg)',
-        border: '1px solid var(--border-color)'
+        backgroundColor: 'var(--q-surface-1, #1a1a1e)',
+        border: '1px solid var(--q-border, #34343d)'
       }}
     >
       {/* Panel header */}
-      <div className="flex items-center justify-between pb-2 border-b border-[var(--border-color)]">
+      <div
+        className="flex items-center justify-between pb-2 border-b"
+        style={{ borderColor: 'var(--q-border-subtle, #282830)' }}
+      >
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[var(--text-muted)]" />
-          <span className="text-sm font-mono text-[var(--q-text-1)] uppercase tracking-wider font-semibold">
+          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--q-accent-cyan, #38bdf8)' }} />
+          <span className="text-xs font-body text-[var(--q-text-bright,#f1f5f9)] uppercase tracking-wider font-semibold">
             Parameters
           </span>
         </div>
-        <span className="text-xs font-mono text-[var(--q-text-3)]">
+        <span className="text-[11px] font-body text-[var(--q-text-dim,#64748b)] font-medium">
           BB84 Protocol
         </span>
       </div>
@@ -252,12 +253,12 @@ export default function ConfigPanel({ className = '' }) {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-mono text-[var(--q-text-2)] uppercase tracking-wider">
+                  <span className="text-xs font-body font-semibold text-[var(--q-text-2)] uppercase tracking-wider">
                     Source Model
                   </span>
                   <ParameterQuestion paramKey="source_model" />
                 </div>
-                <span className="text-xs font-mono text-[var(--q-text-3)]">
+                <span className="text-xs font-body font-medium text-[var(--q-text-3)]">
                   {sourceModel === 'ideal' ? 'Ideal Source' : 'WCP Laser'}
                 </span>
               </div>
@@ -271,7 +272,7 @@ export default function ConfigPanel({ className = '' }) {
                 onChange={setSourceModel}
                 className="w-full"
               />
-              <div className="p-2.5 rounded-md bg-[var(--q-surface-0)] border border-[var(--border-color)]/70 text-xs font-mono text-[var(--q-text-2)] leading-relaxed">
+              <div className="p-2.5 rounded-md bg-[var(--q-surface-0)] border border-[var(--border-color)]/70 text-xs font-body text-[var(--q-text-2)] leading-relaxed">
                 {sourceModel === 'ideal'
                   ? 'Standard BB84 · Pure single-photon state preparation'
                   : `WCP Laser Source · Poisson distribution (μ = ${params.mean_photon_number.toFixed(2)})`}
@@ -298,12 +299,12 @@ export default function ConfigPanel({ className = '' }) {
                   displayValue={params.mean_photon_number.toFixed(2)}
                 />
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-sm font-mono text-[var(--q-text-2)] uppercase tracking-wider">
+                  <span className="text-xs font-body font-semibold text-[var(--q-text-2)] uppercase tracking-wider">
                     Decoy States
                   </span>
                   <button
                     onClick={() => setParams({ decoy_enabled: !params.decoy_enabled })}
-                    className={`px-2.5 py-1 rounded text-xs font-mono border transition-colors ${
+                    className={`px-2.5 py-1 rounded text-xs font-body font-semibold border transition-colors ${
                       params.decoy_enabled
                         ? 'bg-white/10 border-white/30 text-white font-bold'
                         : 'border-[var(--border-color)] text-[var(--q-text-3)] hover:text-[var(--q-text-1)]'
@@ -369,7 +370,7 @@ export default function ConfigPanel({ className = '' }) {
             {/* Strategy */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-mono text-[var(--q-text-2)] uppercase tracking-wider">
+                <span className="text-xs font-body font-semibold text-[var(--q-text-2)] uppercase tracking-wider">
                   Strategy
                 </span>
                 <ParameterQuestion paramKey="attack_strategy" />
@@ -378,7 +379,7 @@ export default function ConfigPanel({ className = '' }) {
                 <select
                   value={params.attack_strategy}
                   onChange={e => setParams({ attack_strategy: e.target.value })}
-                  className="w-full px-3 py-2 text-xs font-mono rounded-lg bg-[var(--q-surface-0)] border border-[var(--border-color)] text-[var(--q-text-1)] focus:outline-none focus:border-white/40 cursor-pointer appearance-none"
+                  className="w-full px-3 py-2 text-xs font-body font-medium rounded-lg bg-[var(--q-surface-0)] border border-[var(--border-color)] text-[var(--q-text-1)] focus:outline-none focus:border-white/40 cursor-pointer appearance-none"
                 >
                   {strategies.map(s => (
                     <option key={s.value} value={s.value} className="bg-[var(--panel-bg)] text-[var(--text-primary)]">
@@ -399,7 +400,7 @@ export default function ConfigPanel({ className = '' }) {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="p-2 bg-red-950/50 border border-red-800/50 rounded text-xs text-red-400 font-mono overflow-hidden"
+                  className="p-2 bg-red-950/50 border border-red-800/50 rounded text-xs text-red-400 font-body font-medium overflow-hidden"
                 >
                   ⚠ Attack level may breach 11% QBER threshold
                 </motion.div>
@@ -415,14 +416,14 @@ export default function ConfigPanel({ className = '' }) {
             {/* Sync Mode */}
             <div className="flex items-center justify-between py-1">
               <div className="flex items-center gap-1">
-                <span className="text-sm font-mono text-[var(--q-text-2)] uppercase tracking-wider">
+                <span className="text-xs font-body font-semibold text-[var(--q-text-2)] uppercase tracking-wider">
                   Sync Mode
                 </span>
                 <ParameterQuestion paramKey="sync_mode" />
               </div>
               <button
                 onClick={() => setSyncMode(!syncMode)}
-                className={`px-2.5 py-1 rounded text-xs font-mono border transition-colors ${
+                className={`px-2.5 py-1 rounded text-xs font-body font-semibold border transition-colors ${
                   syncMode
                     ? 'bg-white/10 border-white/30 text-white font-bold'
                     : 'border-[var(--border-color)] text-[var(--q-text-3)] hover:text-[var(--q-text-1)]'
@@ -431,21 +432,21 @@ export default function ConfigPanel({ className = '' }) {
                 {syncMode ? 'ON' : 'OFF'}
               </button>
             </div>
-            <div className="text-xs font-mono text-[var(--q-text-3)]">
+            <div className="text-xs font-body text-[var(--q-text-3)]">
               Links photon flight animations directly to the Inspector table.
             </div>
 
             {/* Detection parameters overview */}
-            <div className="pt-2 border-t border-[var(--border-color)]/40 flex flex-col gap-1.5 text-xs font-mono text-[var(--q-text-3)]">
+            <div className="pt-2 border-t border-[var(--border-color)]/40 flex flex-col gap-1.5 text-xs font-body text-[var(--q-text-3)]">
               <div className="flex justify-between">
                 <span>Detector:</span>
-                <span className="text-[var(--q-text-2)]">
+                <span className="text-[var(--q-text-2)] font-mono tabular-nums">
                   {sourceModel === 'realistic' ? 'SPAD (η=0.85)' : 'Ideal (η=1.0)'}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Dark Count:</span>
-                <span className="text-[var(--q-text-2)]">
+                <span className="text-[var(--q-text-2)] font-mono tabular-nums">
                   {sourceModel === 'realistic' ? '1.0 × 10⁻⁵' : '0'}
                 </span>
               </div>
