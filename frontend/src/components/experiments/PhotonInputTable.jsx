@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Photon input table for Exp 2 and Exp 4.
  * User configures up to 300 photons manually (large enough for the
  * sifted key to reach the minimum QBER sample; audit fix C1).
@@ -62,27 +62,31 @@ export default function PhotonInputTable({
   }, [photons.length, onChange])
 
   const randomizeAll = useCallback(() => {
-    const next = photons.map(() => ({
-      bit: Math.random() < 0.5 ? 0 : 1,
-      basis: Math.random() < 0.5 ? '+' : 'x'
-    }))
-    setPhotons(next)
-    onChange(next.map(p => p.bit), next.map(p => p.basis))
-  }, [photons.length, onChange])
+    setPhotons(prev => {
+      const next = prev.map(() => ({
+        bit: Math.random() < 0.5 ? 0 : 1,
+        basis: Math.random() < 0.5 ? '+' : 'x'
+      }))
+      onChange(next.map(p => p.bit), next.map(p => p.basis))
+      return next
+    })
+  }, [onChange])
 
   const clearAll = useCallback(() => {
-    const next = photons.map(() => ({ ...DEFAULT_PHOTON }))
-    setPhotons(next)
-    onChange(next.map(p => p.bit), next.map(p => p.basis))
-  }, [photons.length, onChange])
+    setPhotons(prev => {
+      const next = prev.map(() => ({ ...DEFAULT_PHOTON }))
+      onChange(next.map(p => p.bit), next.map(p => p.basis))
+      return next
+    })
+  }, [onChange])
 
   return (
     <div className="flex flex-col gap-3">
       {/* Table */}
       <div className="overflow-auto max-h-64 rounded-lg border"
         style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
-        <table className="w-full text-xs font-mono">
-          <thead className="sticky top-0" style={{ backgroundColor: 'var(--panel-dark)' }}>
+        <table className="w-full text-xs">
+          <thead className="sticky top-0 font-body font-semibold text-[11px] uppercase tracking-wider" style={{ backgroundColor: 'var(--panel-dark)' }}>
             <tr className="border-b" style={{ borderColor: 'var(--border-color)' }}>
               <th className="text-left px-3 py-2 w-8" style={{ color: 'var(--text-subtle)' }}>#</th>
               <th className="text-left px-3 py-2" style={{ color: 'var(--text-subtle)' }}>
@@ -195,7 +199,7 @@ export default function PhotonInputTable({
           onClick={addPhoton}
           disabled={photons.length >= maxPhotons}
           className="flex items-center gap-1 px-3 py-1.5 
-                     text-xs font-mono border rounded
+                     text-xs font-body font-medium border rounded
                      disabled:opacity-30 transition-colors"
           style={{
             borderColor: 'var(--border-color)',
@@ -203,14 +207,14 @@ export default function PhotonInputTable({
           }}
         >
           + Add Photon
-          <span style={{ color: 'var(--text-subtle)' }}>
+          <span className="font-mono tabular-nums" style={{ color: 'var(--text-subtle)' }}>
             ({photons.length}/{maxPhotons})
           </span>
         </button>
         <div className="flex gap-2">
           <button
             onClick={randomizeAll}
-            className="px-3 py-1.5 text-xs font-mono border rounded transition-colors"
+            className="px-3 py-1.5 text-xs font-body font-medium border rounded transition-colors"
             style={{
               borderColor: 'var(--border-color)',
               color: 'var(--text-muted)'
@@ -220,7 +224,7 @@ export default function PhotonInputTable({
           </button>
           <button
             onClick={clearAll}
-            className="px-3 py-1.5 text-xs font-mono border rounded transition-colors hover:text-red-400"
+            className="px-3 py-1.5 text-xs font-body font-medium border rounded transition-colors hover:text-red-400"
             style={{
               borderColor: 'var(--border-color)',
               color: 'var(--text-muted)'
