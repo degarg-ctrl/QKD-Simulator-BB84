@@ -10,6 +10,21 @@ import {
   Tooltip, ReferenceLine, ReferenceDot, ResponsiveContainer
 } from 'recharts'
 
+function QBERTooltip({ active, payload, label }) {
+  if (active && payload?.length) {
+    return (
+      <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded 
+                      p-2 text-xs font-body">
+        <p className="text-[var(--text-muted)]"><span className="font-mono tabular-nums">{label}</span> km</p>
+        <p className="text-indigo-400">
+          QBER: <span className="font-mono tabular-nums">{payload[0]?.value?.toFixed(2)}%</span>
+        </p>
+      </div>
+    )
+  }
+  return null
+}
+
 export default function QBERChart({ data = [], currentQBER = null, distance = null }) {
   // data shape: [{distance: float, qber: float}, ...]
   // Convert qber to percentage for display
@@ -18,31 +33,16 @@ export default function QBERChart({ data = [], currentQBER = null, distance = nu
     qber: parseFloat((d.qber * 100).toFixed(2))
   }))
 
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload?.length) {
-      return (
-        <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded 
-                        p-2 text-xs font-mono">
-          <p className="text-[var(--text-muted)]">{`${label} km`}</p>
-          <p className="text-indigo-400">
-            {`QBER: ${payload[0]?.value?.toFixed(2)}%`}
-          </p>
-        </div>
-      )
-    }
-    return null
-  }
-
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-mono font-semibold text-[var(--q-text-2)] 
+        <span className="text-xs font-body font-semibold text-[var(--q-text-2)] 
                          uppercase tracking-wider">
           QBER vs Distance (km)
         </span>
         {currentQBER !== null && currentQBER !== undefined && (
-          <span className="text-xs font-mono font-semibold text-indigo-400">
-            Simulated: {(currentQBER * 100).toFixed(2)}%
+          <span className="text-xs font-body font-semibold text-indigo-400">
+            Simulated: <span className="font-mono tabular-nums">{(currentQBER * 100).toFixed(2)}%</span>
           </span>
         )}
       </div>
@@ -60,7 +60,7 @@ export default function QBERChart({ data = [], currentQBER = null, distance = nu
             tick={{ fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'monospace' }}
             tickFormatter={v => `${v}%`}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<QBERTooltip />} />
           <ReferenceLine
             y={11}
             stroke="#ef4444"

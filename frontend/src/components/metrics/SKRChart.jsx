@@ -10,37 +10,37 @@ import {
   Tooltip, ReferenceDot, ResponsiveContainer
 } from 'recharts'
 
+function SKRTooltip({ active, payload, label }) {
+  if (active && payload?.length) {
+    return (
+      <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded 
+                      p-2 text-xs font-body">
+        <p className="text-[var(--text-muted)]"><span className="font-mono tabular-nums">{label}</span> km</p>
+        <p className="text-green-400">
+          SKR: <span className="font-mono tabular-nums">{payload[0]?.value?.toFixed(4)}</span>
+        </p>
+      </div>
+    )
+  }
+  return null
+}
+
 export default function SKRChart({ data = [], currentSKR = null, distance = null }) {
   const chartData = data.map(d => ({
     distance: Math.round(d.distance),
     skr: parseFloat(d.skr.toFixed(4))
   }))
 
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload?.length) {
-      return (
-        <div className="bg-[var(--panel-bg)] border border-[var(--border-color)] rounded 
-                        p-2 text-xs font-mono">
-          <p className="text-[var(--text-muted)]">{`${label} km`}</p>
-          <p className="text-green-400">
-            {`SKR: ${payload[0]?.value?.toFixed(4)}`}
-          </p>
-        </div>
-      )
-    }
-    return null
-  }
-
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-mono font-semibold text-[var(--q-text-2)] 
+        <span className="text-xs font-body font-semibold text-[var(--q-text-2)] 
                          uppercase tracking-wider">
           SKR vs Distance (km)
         </span>
         {currentSKR !== null && (
-          <span className="text-xs font-mono font-semibold text-emerald-400">
-            Simulated: {currentSKR.toFixed(4)}
+          <span className="text-xs font-body font-semibold text-emerald-400">
+            Simulated: <span className="font-mono tabular-nums">{currentSKR.toFixed(4)}</span>
           </span>
         )}
       </div>
@@ -57,7 +57,7 @@ export default function SKRChart({ data = [], currentSKR = null, distance = null
             stroke="var(--text-muted)"
             tick={{ fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'monospace' }}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<SKRTooltip />} />
           <Line
             type="monotone"
             dataKey="skr"
