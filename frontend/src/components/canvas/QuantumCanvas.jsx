@@ -22,6 +22,7 @@ import { usePhotonAnimation } from '../../hooks/usePhotonAnimation'
 import GateStateVector from '../gates/GateStateVector'
 import GateContextMenu from '../gates/GateContextMenu'
 import TransmissionHUD from './TransmissionHUD'
+import NodeTelemetryHUD from './NodeTelemetryHUD'
 import {
   CANVAS_WIDTH, CANVAS_HEIGHT, ALICE_X, BOB_X, EVE_X, ENTITY_Y,
   LANE_Y_POSITIONS, COLORS, PALETTE, NODE_RADIUS,
@@ -31,16 +32,21 @@ import {
 // ./visualEncoding (single source of truth, shared with
 // PhotonParticle and the animation scheduler).
 
+const GATE_COLORS = {
+  H: '#6366f1', X: '#f59e0b', Y: '#ec4899',
+  Z: '#14b8a6', S: '#8b5cf6', T: '#06b6d4'
+}
+
 export default function QuantumCanvas({ className = '' }) {
 
   const canvasRef = useRef(null)
   const scrollContainerRef = useRef(null)
   const wrapperRef = useRef(null)
   const [contextMenu, setContextMenu] = useState(null)
-  const [showStateVectors, setShowStateVectors] = useState(true)
   const [hoveredGateId, setHoveredGateId] = useState(null)
+  const showStateVectors = true
 
-  const { results, animation, params, addGate, placedGates, removeGate, setSelectedGate, deleteGate, copyGate, viewResetSignal } = useSimulationStore()
+  const { results, params, addGate, placedGates, removeGate, setSelectedGate, deleteGate, copyGate, viewResetSignal } = useSimulationStore()
 
   // Viewport & Pan states
   const [scale, setScale] = useState(1)
@@ -55,94 +61,96 @@ export default function QuantumCanvas({ className = '' }) {
   const aspectRatio = CANVAS_HEIGHT / CANVAS_WIDTH
   const zoomedHeight = zoomedWidth * aspectRatio
 
-  const GATE_COLORS = {
-    H: '#6366f1', X: '#f59e0b', Y: '#ec4899',
-    Z: '#14b8a6', S: '#8b5cf6', T: '#06b6d4'
-  }
 
   /**
-   * Draw a single entity node (Alice, Bob, or Eve).
+   * Draw a single entity node (Alice, Bob, or Eve) as a precision optical module.
    */
   const drawEntityNode = useCallback((ctx, x, y, label, color, sublabel = '', type = 'default') => {
     ctx.save()
 
     const r = NODE_RADIUS
-    // Slow time-based pulse for active nodes (subtle, non-flashy)
-    const t = Date.now() / 1000
-    const pulse = 0.5 + 0.5 * Math.sin(t * 2.2)
 
     if (type === 'alice') {
-      // Laser source — rectangle housing + emission triangle
+      // Precision Laser Diode Housing
       const w = r * 2.2, h = r * 1.4
-      ctx.fillStyle = color + '25'
+      // Base chassis
+      ctx.fillStyle = '#1a1a1e'
       ctx.strokeStyle = color
-      ctx.lineWidth = 2
+      ctx.lineWidth = 1.5
       ctx.beginPath()
-      ctx.roundRect(x - w / 2, y - h / 2, w, h, 4)
+      ctx.roundRect(x - w / 2, y - h / 2, w, h, 2)
       ctx.fill()
       ctx.stroke()
-      // Source aperture: soft pulsing emission glow at the output
-      const apertureX = x + w / 2 + 10
-      const glow = ctx.createRadialGradient(
-        apertureX, y, 0, apertureX, y, 14 + pulse * 6)
-      glow.addColorStop(0, color + '55')
-      glow.addColorStop(1, color + '00')
-      ctx.fillStyle = glow
+
+      // Optical bench mounting screws
+      ctx.fillStyle = '#34343d'
+      ctx.fillRect(x - w / 2 + 3, y - h / 2 + 3, 3, 3)
+      ctx.fillRect(x - w / 2 + 3, y + h / 2 - 6, 3, 3)
+
+      // FC/PC optical collimator nozzle collar
+      ctx.fillStyle = '#282830'
+      ctx.strokeStyle = color
+      ctx.lineWidth = 1
       ctx.beginPath()
-      ctx.arc(apertureX, y, 14 + pulse * 6, 0, Math.PI * 2)
+      ctx.roundRect(x + w / 2, y - 6, 8, 12, 1)
       ctx.fill()
-      // Emission triangle on right side
-      ctx.fillStyle = color + '50'
-      ctx.beginPath()
-      ctx.moveTo(x + w / 2, y - 6)
-      ctx.lineTo(x + w / 2 + 10, y)
-      ctx.lineTo(x + w / 2, y + 6)
-      ctx.closePath()
-      ctx.fill()
+      ctx.stroke()
+
+      // Optical aperture port
+      ctx.fillStyle = color
+      ctx.fillRect(x + w / 2 + 8, y - 3, 3, 6)
+
       // Laser text
       ctx.fillStyle = color
       ctx.font = 'bold 10px monospace'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText('SRC', x, y)
+      ctx.fillText('TX', x - 2, y)
     } else if (type === 'bob') {
-      // Detector — funnel/trapezoid shape
+      // Precision SPAD Detector Housing
       const w = r * 2.2, h = r * 1.4
-      ctx.fillStyle = color + '25'
+      ctx.fillStyle = '#1a1a1e'
       ctx.strokeStyle = color
-      ctx.lineWidth = 2
+      ctx.lineWidth = 1.5
       ctx.beginPath()
-      // Funnel — wider on left (receiving), narrow on right (sensing)
+      // Trapezoid housing
       ctx.moveTo(x - w / 2, y - h / 2)
-      ctx.lineTo(x + w / 2, y - h / 4)
-      ctx.lineTo(x + w / 2, y + h / 4)
+      ctx.lineTo(x + w / 2, y - h / 3)
+      ctx.lineTo(x + w / 2, y + h / 3)
       ctx.lineTo(x - w / 2, y + h / 2)
       ctx.closePath()
       ctx.fill()
       ctx.stroke()
-      // Detector arc: subtle pulsing sensing region on the left face
-      const senseX = x - w / 2
-      const arc = ctx.createRadialGradient(
-        senseX, y, 0, senseX, y, 12 + pulse * 5)
-      arc.addColorStop(0, color + '44')
-      arc.addColorStop(1, color + '00')
-      ctx.fillStyle = arc
+
+      // Optical input window / bandpass filter plate
+      ctx.fillStyle = '#282830'
+      ctx.strokeStyle = color
+      ctx.lineWidth = 1
       ctx.beginPath()
-      ctx.arc(senseX, y, 12 + pulse * 5, 0, Math.PI * 2)
+      ctx.roundRect(x - w / 2 - 6, y - 9, 6, 18, 1)
       ctx.fill()
+      ctx.stroke()
+
+      // Active area grid tick
+      ctx.strokeStyle = color + '80'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(x - w / 2, y - 5)
+      ctx.lineTo(x - w / 2, y + 5)
+      ctx.stroke()
 
       // Detector text
       ctx.fillStyle = color
       ctx.font = 'bold 10px monospace'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText('DET', x, y)
+      ctx.fillText('RX', x + 2, y)
     } else if (type === 'eve') {
-      // Spy tap — diamond/rhombus shape
+      // Optical Tap / Beam Splitter Mount
       const s = r * 1.1
-      ctx.fillStyle = color + '20'
+      ctx.fillStyle = '#1a1a1e'
       ctx.strokeStyle = color
-      ctx.lineWidth = 2
+      ctx.lineWidth = 1.5
       ctx.beginPath()
       ctx.moveTo(x, y - s)     // top
       ctx.lineTo(x + s, y)     // right
@@ -151,24 +159,31 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.closePath()
       ctx.fill()
       ctx.stroke()
-      // Tap icon — crosshair lines
-      ctx.strokeStyle = color + '60'
+
+      // Internal beam splitter 45° reflection plane
+      ctx.strokeStyle = color + '90'
+      ctx.lineWidth = 1
+      ctx.setLineDash([2, 2])
+      ctx.beginPath()
+      ctx.moveTo(x - s * 0.5, y + s * 0.5)
+      ctx.lineTo(x + s * 0.5, y - s * 0.5)
+      ctx.stroke()
+      ctx.setLineDash([])
+
+      // Tap sensor port upward indicator
+      ctx.strokeStyle = color
       ctx.lineWidth = 1
       ctx.beginPath()
-      ctx.moveTo(x - s * 0.4, y)
-      ctx.lineTo(x + s * 0.4, y)
-      ctx.moveTo(x, y - s * 0.4)
-      ctx.lineTo(x, y + s * 0.4)
+      ctx.moveTo(x, y - s)
+      ctx.lineTo(x, y - s - 6)
       ctx.stroke()
-      // Active Eve: pulsing halo (she only "exists" when attacking)
-      const active = !sublabel.includes('Inactive')
-      if (active) {
-        ctx.beginPath()
-        ctx.arc(x, y, s + 6 + pulse * 5, 0, Math.PI * 2)
-        ctx.strokeStyle = color + (pulse > 0.5 ? '55' : '22')
-        ctx.lineWidth = 1.5
-        ctx.stroke()
-      }
+
+      // Eve label inside
+      ctx.fillStyle = color
+      ctx.font = 'bold 10px monospace'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('TAP', x, y)
     } else {
       // Fallback: solid bordered circle
       ctx.beginPath()
@@ -180,12 +195,12 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.stroke()
     }
 
-    // Outer border ring
+    // Outer registration ring
     const outerR = type === 'eve' ? r * 1.1 + 4 : r + 4
     if (type !== 'eve') {
       ctx.beginPath()
       ctx.arc(x, y, outerR, 0, Math.PI * 2)
-      ctx.strokeStyle = 'rgba(255,255,255,0.2)'
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)'
       ctx.lineWidth = 1
       ctx.stroke()
     }
@@ -443,7 +458,7 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.stroke()
       ctx.setLineDash([])
     })
-  }, [placedGates, params.attack_prob])
+  }, [placedGates])
 
   /**
    * Draw the static background.
@@ -473,7 +488,12 @@ export default function QuantumCanvas({ className = '' }) {
   }, [])
 
   /**
-   * Draw continuous laser beam when animation mode is 'beam'
+   * Draw continuous laser beam when animation mode is 'beam'.
+   * Matches the experiential optical sandbox on the landing page:
+   * - Transverse electric field sinusoidal traveling wave
+   * - Traveling photon phase nodes with polarization vector needles
+   * - Eve 45° dielectric beam splitter with upward reflected tap beam and collapse disturbance
+   * - Bob SPAD detector expanding arrival ripple waves
    */
   const drawContinuousBeam = useCallback((ctx) => {
     const storeState = useSimulationStore.getState()
@@ -482,73 +502,151 @@ export default function QuantumCanvas({ className = '' }) {
     if (!isBeam || !hasResults) return
 
     ctx.save()
-    const channelLeft = ALICE_X + NODE_RADIUS
-    const channelRight = BOB_X - NODE_RADIUS
+    const channelLeft = ALICE_X + NODE_RADIUS + 8
+    const channelRight = BOB_X - NODE_RADIUS - 6
     const eveActive = params.attack_prob > 0
     const paused = storeState.animation.isPaused
-    const t = paused ? 0 : (Date.now() / 1000)
+    const speed = storeState.animation.speed || 1.0
+    const t = paused ? 0 : (Date.now() / 1000) * speed
 
-    // Attenuation gradient: beam gets slightly dimmer with distance
-    const beamGrad = ctx.createLinearGradient(channelLeft, 0, channelRight, 0)
-    beamGrad.addColorStop(0, 'rgba(0, 229, 255, 0.85)')
-    beamGrad.addColorStop(0.5, 'rgba(0, 204, 255, 0.75)')
-    beamGrad.addColorStop(1, 'rgba(0, 180, 240, 0.60)')
+    const aliceReadout = storeState.animation?.activeReadout?.alice
+    const isDiagBasis = aliceReadout?.basis === 'x'
+    const baseColor = isDiagBasis ? '#c084fc' : '#10b981' // Orchid (×) or Emerald (+)
+    const polAngle = isDiagBasis ? 45 : 0
 
-    // 1. Wide outer aura / halo
-    ctx.lineWidth = 14
-    ctx.strokeStyle = 'rgba(0, 229, 255, 0.12)'
+    // ── 1. Central Collimated Optical Guide ──
+    ctx.lineWidth = 1.5
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
     ctx.beginPath()
     ctx.moveTo(channelLeft, ENTITY_Y)
     ctx.lineTo(channelRight, ENTITY_Y)
     ctx.stroke()
 
-    // 2. Focused mid beam
-    ctx.lineWidth = 6
-    ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)'
-    ctx.stroke()
+    // ── 2. Transverse Electric-Field Sinusoidal Traveling Wave ──
+    // Section A: Alice to Eve (or to Bob if Eve is inactive)
+    const midPoint = eveActive ? EVE_X : channelRight
 
-    // 3. High intensity core laser line
-    ctx.lineWidth = 2.5
-    ctx.strokeStyle = beamGrad
-    ctx.stroke()
-
-    // 4. Flowing optical wave ripples (interference fringes)
     ctx.lineWidth = 2
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)'
-    ctx.setLineDash([14, 16])
-    ctx.lineDashOffset = -t * 80
+    ctx.strokeStyle = baseColor
     ctx.beginPath()
-    ctx.moveTo(channelLeft, ENTITY_Y)
-    ctx.lineTo(channelRight, ENTITY_Y)
-    ctx.stroke()
-    ctx.setLineDash([])
+    const k = 0.04
+    const omega = 10
+    const amp = 10
 
-    // 5. Eve tap refraction if active
+    for (let x = channelLeft; x <= midPoint; x += 6) {
+      const envelope = Math.min(1, Math.min((x - channelLeft) / 24, (midPoint - x) / 24))
+      const phase = (x * k) - (t * omega)
+      const y = ENTITY_Y + Math.sin(phase) * amp * envelope
+      if (x === channelLeft) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    }
+    ctx.stroke()
+
+    // Section B: Eve to Bob (if Eve active, exhibits state collapse / disturbance)
     if (eveActive) {
-      ctx.lineWidth = 8
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.35)'
+      // ── Eve 45° Beam Splitter Optical Cube ──
+      ctx.fillStyle = '#1c1c24'
+      ctx.strokeStyle = '#e05252'
+      ctx.lineWidth = 1.5
       ctx.beginPath()
-      ctx.moveTo(EVE_X, ENTITY_Y)
-      ctx.lineTo(channelRight, ENTITY_Y)
+      ctx.roundRect(EVE_X - 18, ENTITY_Y - 18, 36, 36, 3)
+      ctx.fill()
+      ctx.stroke()
+
+      // 45° Dielectric interface line
+      ctx.strokeStyle = 'rgba(224, 82, 82, 0.9)'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(EVE_X - 14, ENTITY_Y + 14)
+      ctx.lineTo(EVE_X + 14, ENTITY_Y - 14)
+      ctx.stroke()
+
+      // Upward reflected beam channel to Eve's tap detector
+      const tapTopY = ENTITY_Y - 60
+      ctx.strokeStyle = '#e05252'
+      ctx.lineWidth = 1.5
+      ctx.setLineDash([3, 4])
+      ctx.lineDashOffset = -t * 40
+      ctx.beginPath()
+      ctx.moveTo(EVE_X, ENTITY_Y - 18)
+      ctx.lineTo(EVE_X, tapTopY)
+      ctx.stroke()
+      ctx.setLineDash([])
+
+      // Eve tap flash ripple
+      const eveRippleR = ((t * 24) % 18) + 3
+      const eveAlpha = Math.max(0, 1 - eveRippleR / 20)
+      ctx.strokeStyle = `rgba(224, 82, 82, ${eveAlpha})`
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.arc(EVE_X, tapTopY, eveRippleR, 0, Math.PI * 2)
+      ctx.stroke()
+
+      // Transmitted beam past Eve (interception disturbance)
+      ctx.lineWidth = 2
+      ctx.strokeStyle = '#e05252' // Disturbed by Eve
+      ctx.beginPath()
+      for (let x = EVE_X; x <= channelRight; x += 6) {
+        const envelope = Math.min(1, Math.min((x - EVE_X) / 24, (channelRight - x) / 24))
+        const phase = (x * k) - (t * omega) + Math.PI / 3 // Phase shift from disturbance
+        const y = ENTITY_Y + Math.sin(phase) * (amp * 0.85) * envelope
+        if (x === EVE_X) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      }
       ctx.stroke()
     }
 
-    // 6. Aperture flare at Alice & Collector glow at Bob
-    const aliceGlow = ctx.createRadialGradient(channelLeft, ENTITY_Y, 0, channelLeft, ENTITY_Y, 16)
-    aliceGlow.addColorStop(0, 'rgba(0, 229, 255, 0.8)')
-    aliceGlow.addColorStop(1, 'rgba(0, 229, 255, 0.0)')
-    ctx.fillStyle = aliceGlow
-    ctx.beginPath()
-    ctx.arc(channelLeft, ENTITY_Y, 16, 0, Math.PI * 2)
-    ctx.fill()
+    // ── 3. Traveling Photon Nodes & Polarization Needles ──
+    const packetSpacing = 160
+    const totalDist = channelRight - channelLeft
+    const packetCount = Math.floor(totalDist / packetSpacing)
+    const baseOffset = (t * 70) % packetSpacing
 
-    const bobGlow = ctx.createRadialGradient(channelRight, ENTITY_Y, 0, channelRight, ENTITY_Y, 16)
-    bobGlow.addColorStop(0, 'rgba(168, 85, 247, 0.7)')
-    bobGlow.addColorStop(1, 'rgba(168, 85, 247, 0.0)')
-    ctx.fillStyle = bobGlow
-    ctx.beginPath()
-    ctx.arc(channelRight, ENTITY_Y, 16, 0, Math.PI * 2)
-    ctx.fill()
+    for (let i = 0; i <= packetCount; i++) {
+      const px = channelLeft + baseOffset + i * packetSpacing
+      if (px > channelRight - 15) continue
+
+      const isPostEve = eveActive && px > EVE_X
+      const packetColor = isPostEve ? '#e05252' : baseColor
+      const curAngle = isPostEve ? 135 : polAngle
+      const rad = (curAngle * Math.PI) / 180
+      const phase = (px * k) - (t * omega)
+      const py = ENTITY_Y + Math.sin(phase) * 8
+
+      // Bright photon core
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.arc(px, py, 2.5, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Polarization needle
+      const nLen = 10
+      ctx.strokeStyle = packetColor
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(px - Math.cos(rad) * nLen, py - Math.sin(rad) * nLen)
+      ctx.lineTo(px + Math.cos(rad) * nLen, py + Math.sin(rad) * nLen)
+      ctx.stroke()
+    }
+
+    // ── 4. Bob SPAD Detection Ripple Waves ──
+    const bobRipplePhase = (t * 30) % 24
+    for (let r = 0; r < 2; r++) {
+      const rRad = ((bobRipplePhase + r * 12) % 24) + 4
+      const rAlpha = Math.max(0, 1 - rRad / 26)
+      const rColor = eveActive && params.attack_prob > 0.5 ? '224, 82, 82' : '16, 185, 129'
+      ctx.strokeStyle = `rgba(${rColor}, ${rAlpha * 0.7})`
+      ctx.lineWidth = 1.2
+      ctx.beginPath()
+      ctx.arc(channelRight + 8, ENTITY_Y, rRad, -Math.PI / 2, Math.PI / 2)
+      ctx.stroke()
+    }
+
+    // ── 5. Aperture Couplers ──
+    ctx.fillStyle = '#10b981'
+    ctx.fillRect(channelLeft - 2, ENTITY_Y - 4, 3, 8)
+    ctx.fillStyle = eveActive ? '#e05252' : '#c084fc'
+    ctx.fillRect(channelRight - 1, ENTITY_Y - 4, 3, 8)
 
     ctx.restore()
   }, [params.attack_prob])
@@ -583,12 +681,12 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.arc(x, ENTITY_Y - NODE_RADIUS - 4, 2, 0, Math.PI * 2)
       ctx.fill()
 
-      // Card body (neutral grey surface)
-      ctx.fillStyle = 'rgba(36, 36, 36, 0.95)'
+      // Card body (neutral dark chassis)
+      ctx.fillStyle = 'rgba(20, 20, 24, 0.96)'
       ctx.strokeStyle = borderColor
-      ctx.lineWidth = 1.5
+      ctx.lineWidth = 1
       ctx.beginPath()
-      ctx.roundRect(x - w / 2, y - h / 2, w, h, 6)
+      ctx.roundRect(x - w / 2, y - h / 2, w, h, 4)
       ctx.fill()
       ctx.stroke()
 
@@ -600,8 +698,8 @@ export default function QuantumCanvas({ className = '' }) {
       ctx.fillText(title, x, y - h / 2 + 5)
 
       // Divider line
-      ctx.strokeStyle = borderColor + '40'
-      ctx.lineWidth = 0.75
+      ctx.strokeStyle = 'rgba(52, 52, 61, 0.8)'
+      ctx.lineWidth = 1
       ctx.beginPath()
       ctx.moveTo(x - w / 2 + 8, y - h / 2 + 18)
       ctx.lineTo(x + w / 2 - 8, y - h / 2 + 18)
@@ -619,8 +717,8 @@ export default function QuantumCanvas({ className = '' }) {
     drawBadge(
       ALICE_X, aliceY, cardW, cardH,
       'ALICE ENCODING',
-      '#00e5ff',
-      isAliceActive ? 'rgba(0, 229, 255, 0.6)' : 'rgba(148, 163, 184, 0.25)',
+      '#10b981',
+      isAliceActive ? '#10b981' : 'rgba(52, 52, 61, 0.8)',
       (cx, topY) => {
         if (!hasResults || !alice?.basis) {
           ctx.font = '11px monospace'
@@ -632,7 +730,7 @@ export default function QuantumCanvas({ className = '' }) {
         }
 
         const isRect = alice.basis === '+'
-        const basisColor = isRect ? '#00e5ff' : '#d946ef'
+        const basisColor = isRect ? '#10b981' : '#c084fc'
         const basisSymbol = isRect ? '+' : '×'
 
         // Row 1: Bit & Basis
@@ -640,7 +738,7 @@ export default function QuantumCanvas({ className = '' }) {
         ctx.textAlign = 'left'
         ctx.fillStyle = '#94a3b8'
         ctx.fillText(`Bit:`, cx - 82, topY + 6)
-        ctx.fillStyle = '#38bdf8'
+        ctx.fillStyle = '#f1f5f9'
         ctx.fillText(`${alice.bit}`, cx - 50, topY + 6)
 
         ctx.fillStyle = '#94a3b8'
@@ -667,7 +765,7 @@ export default function QuantumCanvas({ className = '' }) {
       BOB_X, bobY, cardW, cardH,
       'BOB MEASUREMENT',
       '#c084fc',
-      isBobActive ? 'rgba(192, 132, 252, 0.6)' : 'rgba(148, 163, 184, 0.25)',
+      isBobActive ? '#c084fc' : 'rgba(52, 52, 61, 0.8)',
       (cx, topY) => {
         if (!hasResults || !bob?.basis) {
           ctx.font = '11px monospace'
@@ -679,7 +777,7 @@ export default function QuantumCanvas({ className = '' }) {
         }
 
         const isRect = bob.basis === '+'
-        const basisColor = isRect ? '#00e5ff' : '#d946ef'
+        const basisColor = isRect ? '#10b981' : '#c084fc'
         const basisSymbol = isRect ? '+' : '×'
 
         // Row 1: Selected Basis
@@ -694,14 +792,14 @@ export default function QuantumCanvas({ className = '' }) {
         ctx.font = 'bold 11px monospace'
         if (bob.status === 'detected') {
           if (bob.match) {
-            ctx.fillStyle = '#22c55e'
+            ctx.fillStyle = '#10b981'
             ctx.fillText('MATCH ✓ (SIFTED)', cx - 82, topY + 25)
           } else {
             ctx.fillStyle = '#f59e0b'
             ctx.fillText('MISMATCH ✗', cx - 82, topY + 25)
           }
         } else {
-          ctx.fillStyle = '#38bdf8'
+          ctx.fillStyle = '#f59e0b'
           ctx.fillText('IN FLIGHT...', cx - 82, topY + 25)
         }
       }
@@ -825,7 +923,7 @@ export default function QuantumCanvas({ className = '' }) {
       position,
       color: GATE_COLORS[gateType] || '#6366f1'
     })
-  }, [addGate, GATE_COLORS, placedGates, toolMode])
+  }, [addGate, placedGates, toolMode])
 
   /**
    * Handle right-click to remove a gate.
@@ -932,11 +1030,14 @@ export default function QuantumCanvas({ className = '' }) {
   // Listen to global reset
   useEffect(() => {
     if (viewResetSignal > 0) {
-      setScale(1)
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollLeft = 0
-        scrollContainerRef.current.scrollTop = 0
-      }
+      const id = setTimeout(() => {
+        setScale(1)
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollLeft = 0
+          scrollContainerRef.current.scrollTop = 0
+        }
+      }, 0)
+      return () => clearTimeout(id)
     }
   }, [viewResetSignal])
 
@@ -961,7 +1062,7 @@ export default function QuantumCanvas({ className = '' }) {
           style={{
             width: `${zoomedWidth}px`,
             height: `${zoomedHeight}px`,
-            cursor: toolMode === 'hand' ? (isDragging.current ? 'grabbing' : 'grab') : 'default'
+            cursor: toolMode === 'hand' ? 'grab' : 'default'
           }}
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => toolMode === 'cursor' && handleDrop(e)}
@@ -1050,28 +1151,27 @@ export default function QuantumCanvas({ className = '' }) {
         </div>
       </div>
 
-      {/* Floating UI Overlays */}
-      <div className="absolute top-4 left-4 text-[10px] text-gray-500 font-mono tracking-[0.2em] uppercase pointer-events-none">
-        Quantum Key Distribution Channel
-      </div>
+      {/* Laboratory Optical Bench Hardware Telemetry */}
+      <NodeTelemetryHUD />
 
+      {/* Floating Toolbar Controls */}
       <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
-        <div className="flex rounded-lg overflow-hidden border"
-          style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+        <div
+          className="flex rounded overflow-hidden"
+          style={{ backgroundColor: 'var(--q-surface-1, #1a1a1e)', border: '1px solid var(--q-border, #34343d)' }}
+        >
           <button
             onClick={() => setToolMode('cursor')}
-            className={`flex items-center justify-center w-8 h-8 transition-colors ${toolMode === 'cursor' ? 'text-[#00B8E6]' : 'text-[var(--text-muted)]'}`}
-            style={toolMode === 'cursor'
-              ? { backgroundColor: 'rgba(0,184,230,0.12)' } : undefined}
+            className={`flex items-center justify-center w-8 h-8 transition-colors ${toolMode === 'cursor' ? 'text-[var(--q-accent,#f59e0b)]' : 'text-[var(--q-text-muted,#94a3b8)]'}`}
+            style={toolMode === 'cursor' ? { backgroundColor: 'rgba(245, 158, 11, 0.12)' } : undefined}
             title="Select Mode"
           >
             <MousePointer2 size={15} />
           </button>
           <button
             onClick={() => setToolMode('hand')}
-            className={`flex items-center justify-center w-8 h-8 transition-colors ${toolMode === 'hand' ? 'text-[#00B8E6]' : 'text-[var(--text-muted)]'}`}
-            style={toolMode === 'hand'
-              ? { backgroundColor: 'rgba(0,184,230,0.12)' } : undefined}
+            className={`flex items-center justify-center w-8 h-8 transition-colors ${toolMode === 'hand' ? 'text-[var(--q-accent,#f59e0b)]' : 'text-[var(--q-text-muted,#94a3b8)]'}`}
+            style={toolMode === 'hand' ? { backgroundColor: 'rgba(245, 158, 11, 0.12)' } : undefined}
             title="Pan Mode"
           >
             <Hand size={15} />
@@ -1085,11 +1185,11 @@ export default function QuantumCanvas({ className = '' }) {
               scrollContainerRef.current.scrollTop = 0
             }
           }}
-          className="px-3 py-1.5 rounded-lg text-xs font-mono border transition-colors"
+          className="px-3 py-1.5 rounded text-xs font-body font-semibold transition-colors hover:text-[var(--q-text-bright,#f1f5f9)]"
           style={{
-            backgroundColor: 'var(--panel-bg)',
-            borderColor: 'var(--border-color)',
-            color: 'var(--text-muted)'
+            backgroundColor: 'var(--q-surface-1, #1a1a1e)',
+            border: '1px solid var(--q-border, #34343d)',
+            color: 'var(--q-text-muted, #94a3b8)',
           }}
           title="Reset View"
         >
@@ -1101,11 +1201,16 @@ export default function QuantumCanvas({ className = '' }) {
       <TransmissionHUD countersRef={countersRef} />
 
       {results?.secure_threshold_breached && (
-        <div className="absolute bottom-4 right-4 px-3.5 py-2 bg-red-950/80 
-                        border border-red-500/60 rounded-lg text-red-400 
-                        text-xs font-mono font-semibold tracking-wider animate-pulse pointer-events-none flex items-center gap-2 shadow-2xl backdrop-blur-sm">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-ping flex-shrink-0" />
-          <span>⚠ SECURITY THRESHOLD BREACHED (QBER &gt; 11%)</span>
+        <div
+          className="absolute bottom-4 right-4 px-3.5 py-2 rounded text-xs font-body font-semibold tracking-wide pointer-events-none flex items-center gap-2 shadow-xl select-none"
+          style={{
+            backgroundColor: 'var(--q-surface-1, #1a1a1e)',
+            border: '1px solid var(--q-accent-crimson, #e05252)',
+            color: 'var(--q-accent-crimson, #e05252)',
+          }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--q-accent-crimson,#e05252)] flex-shrink-0" />
+          <span>SECURITY THRESHOLD BREACHED (QBER &gt; <span className="font-mono tabular-nums">11%</span>)</span>
         </div>
       )}
     </div>

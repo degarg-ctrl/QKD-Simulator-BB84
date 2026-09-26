@@ -1,13 +1,7 @@
-import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function GateStateVector({ gate, position, isHovered }) {
-  const [stateVector, setStateVector] = useState({ alpha: { real: 1, imag: 0 }, beta: { real: 0, imag: 0 } });
-
-  useEffect(() => {
-    const newState = calculateStateVector(gate);
-    setStateVector(newState);
-  }, [gate]);
+  const stateVector = calculateStateVector(gate);
 
   const formatComplex = (amplitude) => {
     const real = amplitude.real.toFixed(3);

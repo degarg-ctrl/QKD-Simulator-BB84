@@ -247,9 +247,9 @@ function SidebarItem({ item, collapsed, draggable = false, isGate = false, isPro
             ? 'w-6 h-6 text-xs'
             : 'w-7 h-7 text-xs'}`}
         style={{
-          backgroundColor: item.color + '40',
-          color: 'var(--text-primary)',
-          border: `1px solid var(--border-color)`,
+          backgroundColor: 'var(--q-surface-2, #222227)',
+          color: item.color,
+          border: `1px solid ${item.color}60`,
           fontWeight: 'bold'
         }}
       >
@@ -257,16 +257,17 @@ function SidebarItem({ item, collapsed, draggable = false, isGate = false, isPro
       </div>
       <AnimatePresence>
         {!collapsed && (
-          <motion.span
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.12, delay: 0.16 }}
-            className="text-xs font-mono text-[var(--text-secondary)] font-medium
-                       whitespace-nowrap truncate min-w-0 flex-1"
+            className="flex flex-col min-w-0 flex-1 leading-tight"
           >
-            {item.label}
-          </motion.span>
+            <span className="text-xs font-body text-[var(--q-text-bright,#f1f5f9)] font-medium truncate">
+              {item.label}
+            </span>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
@@ -337,7 +338,7 @@ function ExperimentButton({ exp, collapsed, isActive, onClick, disabled = false 
             transition={{ duration: 0.12, delay: 0.16 }}
             className="overflow-hidden min-w-0 flex-1 whitespace-nowrap"
           >
-            <div className="text-xs font-mono font-medium text-[var(--text-primary)] truncate">
+            <div className="text-xs font-body font-medium text-[var(--text-primary)] truncate">
               {exp.label}
             </div>
             <div className="text-[11px] text-[var(--text-muted)] truncate">
@@ -367,8 +368,8 @@ function SectionHeader({ label, collapsed }) {
   )
   return (
     <div className="px-1 pt-3 pb-1">
-      <span className="text-xs font-mono text-[var(--text-subtle)] 
-                       uppercase tracking-widest">
+      <span className="text-[11px] font-body text-[var(--text-subtle)] 
+                       uppercase tracking-wider font-semibold">
         {label}
       </span>
     </div>
@@ -378,7 +379,7 @@ function SectionHeader({ label, collapsed }) {
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(true)
   const [activeExp, setActiveExp] = useState(null)
-  const { setParams, openExperimentModal, sourceModel } = useSimulationStore()
+  const { openExperimentModal, sourceModel } = useSimulationStore()
 
   const handleExpSelect = (expId) => {
     setActiveExp(expId === activeExp ? null : expId)
@@ -389,18 +390,18 @@ export default function Sidebar() {
     <motion.div
       animate={{ width: collapsed ? 48 : 240 }}
       transition={{ duration: 0.2, ease: 'easeInOut' }}
-      className="flex flex-col border-r 
-                 flex-shrink-0 overflow-hidden relative"
+      className="flex flex-col border-r flex-shrink-0 overflow-hidden relative select-none"
       style={{
-        backgroundColor: 'var(--panel-bg)',
-        borderColor: 'var(--border-color)',
+        backgroundColor: 'var(--q-surface-0, #131317)',
+        borderColor: 'var(--q-border, #34343d)',
         minHeight: 0
       }}
     >
       {/* Toggle button */}
-      <div className="flex items-center justify-between 
-                      px-2 py-2 border-b border-border-subtle
-                      flex-shrink-0">
+      <div
+        className="flex items-center justify-between px-2.5 py-2 border-b flex-shrink-0"
+        style={{ borderColor: 'var(--q-border-subtle, #282830)' }}
+      >
         <AnimatePresence>
           {!collapsed && (
             <motion.span
@@ -408,20 +409,18 @@ export default function Sidebar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.1, delay: 0.08 }}
-              className="text-xs font-mono text-[var(--text-subtle)] 
-                         uppercase tracking-widest"
+              className="text-[11px] font-body text-[var(--q-text-dim,#64748b)] uppercase tracking-wider font-semibold"
             >
-              Toolbox
+              OPTICAL COMPONENTS
             </motion.span>
           )}
         </AnimatePresence>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-7 h-7 rounded flex items-center justify-center
-                     text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--panel-dark)]
-                     transition-colors ml-auto flex-shrink-0"
+          className="w-6 h-6 rounded flex items-center justify-center text-[var(--q-text-muted,#94a3b8)] hover:text-[var(--q-text-bright,#f1f5f9)] hover:bg-white/5 transition-colors ml-auto flex-shrink-0"
+          title={collapsed ? 'Expand Components' : 'Collapse Components'}
         >
-          <span className="text-xs font-mono">
+          <span className="text-xs">
             {collapsed ? '›' : '‹'}
           </span>
         </button>

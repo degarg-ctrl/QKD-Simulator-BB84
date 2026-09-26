@@ -40,29 +40,29 @@ export default function MetricCard({
           : 'var(--q-border-subtle, rgba(255,255,255,0.1))'
       }}
     >
-      <div className="text-xs font-mono uppercase tracking-wider mb-1 text-[var(--q-text-2)] font-semibold">
+      <div className="text-xs font-body uppercase tracking-wider mb-1 text-[var(--q-text-2)] font-semibold">
         {label}
       </div>
       <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
-        <span className="text-2xl font-mono font-bold tracking-tight text-[var(--q-text-1)]">
+        <span className="text-2xl font-mono tabular-nums font-bold tracking-tight text-[var(--q-text-1)]">
           {value}
         </span>
         {unit && (
-          <span className="text-xs font-mono text-[var(--q-text-3)] whitespace-nowrap">
+          <span className="text-xs font-body text-[var(--q-text-3)] whitespace-nowrap">
             {unit}
           </span>
         )}
       </div>
       {subtitle && (
-        <div className="text-xs font-mono mt-1.5 text-[var(--q-text-3)]">
+        <div className="text-xs font-body mt-1.5 text-[var(--q-text-3)]">
           {subtitle}
         </div>
       )}
       {gauge && (
         <div className="mt-2 pt-1.5 border-t border-[var(--border-color)]/40">
-          <div className="flex justify-between text-[10px] font-mono text-[var(--q-text-3)] mb-1">
+          <div className="flex justify-between text-[10px] font-body text-[var(--q-text-3)] mb-1">
             <span>{gauge.label || 'Threshold'}</span>
-            <span>{((gauge.value / gauge.max) * 100).toFixed(0)}%</span>
+            <span className="font-mono tabular-nums">{((gauge.value / gauge.max) * 100).toFixed(0)}%</span>
           </div>
           <div className="h-1.5 w-full bg-[var(--q-surface-0)] rounded-full overflow-hidden border border-[var(--border-color)]">
             <div

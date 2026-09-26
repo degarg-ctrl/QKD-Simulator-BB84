@@ -1,4 +1,4 @@
-﻿export default function EntityTooltip({ entity }) {
+export default function EntityTooltip({ entity }) {
   if (!entity) return null;
 
   const entityInfo = {
@@ -26,7 +26,7 @@
   if (!info) return null;
 
   return (
-    <div className="rounded-lg shadow-2xl w-72 overflow-hidden border"
+    <div className="rounded-lg shadow-2xl w-72 overflow-hidden border font-body"
          style={{ backgroundColor: 'var(--tooltip-bg, var(--panel-bg))', borderColor: 'var(--border-color)' }}>
       {/* Header */}
       <div className="px-4 py-3 border-b"
@@ -38,7 +38,7 @@
           >
             {info.icon}
           </div>
-          <h3 className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>{info.name}</h3>
+          <h3 className="font-semibold text-base font-body" style={{ color: 'var(--text-primary)' }}>{info.name}</h3>
         </div>
       </div>
 
@@ -66,8 +66,8 @@
           </div>
         </div>
 
-        <div className="text-xs font-mono" style={{ color: 'var(--text-subtle)' }}>
-          Used in: {info.useIn}
+        <div className="text-xs font-body" style={{ color: 'var(--text-subtle)' }}>
+          Used in: <span className="font-semibold">{info.useIn}</span>
         </div>
       </div>
     </div>

@@ -163,9 +163,9 @@ export default function BottomPanel({ className = '' }) {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`relative px-4 py-1.5 text-sm font-mono font-medium rounded-md transition-colors z-10 ${
+                className={`relative px-4 py-1.5 text-sm font-body font-semibold rounded-md transition-colors z-10 ${
                   isActive
-                    ? 'text-[var(--q-text-1,#ffffff)] font-semibold'
+                    ? 'text-[var(--q-text-1,#ffffff)]'
                     : 'text-[var(--q-text-3,#8e8e93)] hover:text-[var(--q-text-1,#ffffff)]'
                 }`}
               >
@@ -183,7 +183,7 @@ export default function BottomPanel({ className = '' }) {
         </div>
         <button
           onClick={toggleBottomPanel}
-          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono
+          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-body font-medium
                      text-[var(--q-text-3)] hover:text-[var(--q-text-1)] rounded hover:bg-white/5
                      transition-colors"
           title="Collapse panel"
@@ -286,23 +286,23 @@ export default function BottomPanel({ className = '' }) {
 
               return (
                 <div className="overflow-auto h-full flex flex-col">
-                  <div className="px-2 py-2 flex items-center justify-between text-sm font-mono text-[var(--text-primary)] border-b border-[var(--border-color)] flex-shrink-0 bg-[var(--panel-bg)]">
+                  <div className="px-2 py-2 flex items-center justify-between text-sm font-body text-[var(--text-primary)] border-b border-[var(--border-color)] flex-shrink-0 bg-[var(--panel-bg)]">
                     <div className="flex items-center gap-2">
                       {isLive ? (
                         <>
                           <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                           <span className="text-emerald-400 font-semibold">LIVE STREAM:</span>
-                          <span className="text-xs text-[var(--text-secondary)]">{displayList.length} / {results.bit_stream?.length} detected photons received</span>
+                          <span className="text-xs font-mono tabular-nums text-[var(--text-secondary)]">{displayList.length} / {results.bit_stream?.length} detected photons received</span>
                         </>
                       ) : (
-                        <span className="font-semibold text-xs">Total Detected Photons: {displayList.length}</span>
+                        <span className="font-semibold text-xs">Total Detected Photons: <span className="font-mono tabular-nums">{displayList.length}</span></span>
                       )}
                     </div>
                     <span className="text-xs text-[var(--text-muted)]">Entries appear as photons are received by Bob</span>
                   </div>
                   <div className="overflow-auto flex-1">
                     <table className="w-full text-xs font-mono">
-                      <thead>
+                      <thead className="font-body">
                         <tr className="text-[var(--text-secondary)]
                                        border-b border-[var(--border-color)] text-left sticky top-0 bg-[var(--panel-bg)]">
                           <th className="py-2.5 pr-4 font-semibold uppercase tracking-wider text-[11px]">#</th>

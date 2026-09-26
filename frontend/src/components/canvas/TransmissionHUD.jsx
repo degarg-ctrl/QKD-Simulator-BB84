@@ -76,11 +76,10 @@ export default function TransmissionHUD({ countersRef }) {
             ref={hudRef}
             drag
             dragMomentum={false}
-            className="absolute bottom-4 left-4 z-20 pointer-events-auto rounded-lg overflow-hidden select-none shadow-2xl"
+            className="absolute bottom-4 left-4 z-20 pointer-events-auto rounded overflow-hidden select-none shadow-xl"
             style={{
-                backgroundColor: 'color-mix(in srgb, var(--panel-bg) 94%, transparent)',
-                border: '1px solid var(--border-color)',
-                backdropFilter: 'blur(8px)',
+                backgroundColor: 'var(--q-surface-1, #1a1a1e)',
+                border: '1px solid var(--q-border, #34343d)',
                 minWidth: 260,
             }}
         >
@@ -88,25 +87,24 @@ export default function TransmissionHUD({ countersRef }) {
             <div
                 className="px-3.5 pt-2.5 pb-2 flex items-center justify-between cursor-move"
                 style={{
-                    borderBottom: '1px solid var(--border-color)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                    borderBottom: '1px solid var(--q-border-subtle, #282830)',
+                    backgroundColor: 'var(--q-surface-2, #222227)',
                 }}
                 title="Click and drag to move panel anywhere"
             >
                 <div className="flex items-center gap-2">
-                    <GripHorizontal size={14} className="text-[var(--text-subtle)] hover:text-[var(--text-primary)]" />
-                    <span className="text-xs font-mono uppercase tracking-wider font-semibold"
-                        style={{ color: 'var(--text-primary)' }}>
+                    <GripHorizontal size={14} className="text-[var(--q-text-dim,#64748b)] hover:text-[var(--q-text-bright,#f1f5f9)]" />
+                    <span className="text-xs font-body uppercase tracking-wider font-semibold text-[var(--q-text-bright,#f1f5f9)]">
                         Transmission
                     </span>
                     {!isComplete && released > 0 && (
-                        <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+                        <span className="inline-block w-1.5 h-1.5 rounded-full"
+                            style={{ backgroundColor: 'var(--q-accent-emerald, #10b981)' }}
                             title="Live playback active" />
                     )}
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono tabular-nums"
-                        style={{ color: 'var(--text-subtle)' }}>
+                    <span className="text-xs font-mono tabular-nums text-[var(--q-text-dim,#64748b)]">
                         {released} / {totalTarget}
                     </span>
                     <button
@@ -114,7 +112,7 @@ export default function TransmissionHUD({ countersRef }) {
                             e.stopPropagation()
                             setIsCollapsed(!isCollapsed)
                         }}
-                        className="p-1 rounded hover:bg-white/10 text-[var(--text-muted)] transition-colors"
+                        className="p-1 rounded hover:bg-white/5 text-[var(--q-text-muted,#94a3b8)] transition-colors"
                         title={isCollapsed ? 'Expand' : 'Collapse'}
                     >
                         {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
@@ -125,37 +123,37 @@ export default function TransmissionHUD({ countersRef }) {
             {/* Live accounting content */}
             {!isCollapsed && (
                 <>
-                    <div className="px-3.5 py-2.5 flex flex-col gap-1.5 font-mono">
+                    <div className="px-3.5 py-2.5 flex flex-col gap-1.5 font-body text-xs">
                         <Stat label="Generated" value={released} />
-                        <Stat label="Fiber survived" color="#34d399" value={liveSurvived} />
-                        <Stat label="Fiber lost" color="#64748b" value={liveLost} />
+                        <Stat label="Fiber survived" color="var(--q-accent-emerald, #10b981)" value={liveSurvived} />
+                        <Stat label="Fiber lost" color="var(--q-text-dim, #64748b)" value={liveLost} />
                         {(liveVacuum > 0 || transmission.vacuum_pulses > 0) && (
-                            <Stat label="Vacuum pulses" color="#64748b" value={liveVacuum} />
+                            <Stat label="Vacuum pulses" color="var(--q-text-dim, #64748b)" value={liveVacuum} />
                         )}
-                        <div className="my-1" style={{ borderTop: '1px dashed var(--border-color)' }} />
-                        <Stat label="Detected" color="#34d399" value={liveDetected} />
-                        <Stat label="Detector miss" color="#94a3b8" value={liveDetectorMiss} />
+                        <div className="my-1" style={{ borderTop: '1px dashed var(--q-border-subtle, #282830)' }} />
+                        <Stat label="Detected" color="var(--q-accent-emerald, #10b981)" value={liveDetected} />
+                        <Stat label="Detector miss" color="var(--q-text-muted, #94a3b8)" value={liveDetectorMiss} />
                         {(liveDarkCounts > 0 || transmission.dark_counts > 0) && (
-                            <Stat label="Dark counts" color="#e0e7ff" value={liveDarkCounts} />
+                            <Stat label="Dark counts" color="var(--q-text-dim, #64748b)" value={liveDarkCounts} />
                         )}
                         {(liveIntercepted > 0 || transmission.intercepted > 0) && (
-                            <Stat label="Eve intercepted" color="#ef4444" value={liveIntercepted} />
+                            <Stat label="Eve intercepted" color="var(--q-accent-crimson, #e05252)" value={liveIntercepted} />
                         )}
                         {(livePnsSplit > 0 || livePnsBlocked > 0 || transmission.pns_split > 0) && (
                             <>
-                                <Stat label="PNS split" color="#fb7185" value={livePnsSplit} />
-                                <Stat label="PNS blocked" color="#fb7185" value={livePnsBlocked} />
+                                <Stat label="PNS split" color="var(--q-accent-amber, #f59e0b)" value={livePnsSplit} />
+                                <Stat label="PNS blocked" color="var(--q-accent-crimson, #e05252)" value={livePnsBlocked} />
                             </>
                         )}
-                        <div className="my-1" style={{ borderTop: '1px dashed var(--border-color)' }} />
-                        <Stat label="Sifted" color="#22d3ee" value={liveSifted} />
+                        <div className="my-1" style={{ borderTop: '1px dashed var(--q-border-subtle, #282830)' }} />
+                        <Stat label="Sifted" color="var(--q-accent-cyan, #38bdf8)" value={liveSifted} />
                     </div>
 
                     {/* Sampling note */}
                     {isSample && (
-                        <div className="px-3.5 py-1.5" style={{ borderTop: '1px solid var(--border-color)' }}>
-                            <span className="text-xs font-mono leading-normal" style={{ color: 'var(--text-subtle)' }}>
-                                representative playback of N={transmission.generated}
+                        <div className="px-3.5 py-1.5" style={{ borderTop: '1px solid var(--q-border-subtle, #282830)' }}>
+                            <span className="text-[11px] font-body leading-normal text-[var(--q-text-dim,#64748b)]">
+                                representative playback of N=<span className="font-mono tabular-nums">{transmission.generated}</span>
                             </span>
                         </div>
                     )}

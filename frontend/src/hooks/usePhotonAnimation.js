@@ -100,12 +100,15 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
   const pendingArrivalsRef = useRef([])
   const lastArrivalFlushRef = useRef(0)
   const beamAccumulatorRef = useRef(0)
+  const lastBeamReadoutRef = useRef(0)
 
-  // Keep the latest draw callback WITHOUT restarting playback
+  // Keep the latest draw callback and results WITHOUT restarting playback
   useEffect(() => {
     drawSceneRef.current = drawStaticScene
   }, [drawStaticScene])
-  resultsRef.current = results
+  useEffect(() => {
+    resultsRef.current = results
+  }, [results])
 
   /**
    * The single rAF loop for the lifetime of a result set.
@@ -129,6 +132,7 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
     pendingArrivalsRef.current = []
     lastArrivalFlushRef.current = 0
     beamAccumulatorRef.current = 0
+    lastBeamReadoutRef.current = 0
     useSimulationStore.getState().resetLiveArrivals()
     useSimulationStore.getState().resetReadouts()
 
@@ -166,18 +170,17 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
             particlesRef.current = []
           }
           beamAccumulatorRef.current += beamRate / 60
+          let latestRecord = null
+          let latestDetectedRecord = null
+          const hadFirstRelease = releaseIndexRef.current === 0
+
           while (beamAccumulatorRef.current >= 1 && releaseIndexRef.current < evts.length) {
             const record = evts[releaseIndexRef.current]
-            const isFirst = releaseIndexRef.current === 0
             releaseIndexRef.current++
             beamAccumulatorRef.current -= 1
 
             countRelease(countersRef.current, record)
-            state.updateAliceReadout(formatAliceReadout(record))
-
-            if (isFirst) {
-              state.updateBobReadout(formatBobReadout(record, 'in_flight'))
-            }
+            latestRecord = record
 
             if (record.detector_detected) {
               countersRef.current.live_detected = (countersRef.current.live_detected || 0) + 1
@@ -185,13 +188,26 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
                 countersRef.current.live_sifted = (countersRef.current.live_sifted || 0) + 1
               }
               currentPending.push(record)
-              state.updateBobReadout(formatBobReadout(record, 'detected'))
+              latestDetectedRecord = record
             } else if (record.fiber_survived === false) {
               countersRef.current.live_fiber_loss = (countersRef.current.live_fiber_loss || 0) + 1
               // Lost in fiber: Bob's basis does not advance
             } else {
               countersRef.current.live_detector_loss = (countersRef.current.live_detector_loss || 0) + 1
             }
+          }
+
+          // Throttle UI store readouts to 10 Hz (every 100ms) or first/final pulse to prevent React main-thread lag
+          const nowMs = performance.now()
+          const isComplete = releaseIndexRef.current >= evts.length
+          if (latestRecord && (hadFirstRelease || isComplete || (nowMs - lastBeamReadoutRef.current >= 100))) {
+            state.updateAliceReadout(formatAliceReadout(latestRecord))
+            if (hadFirstRelease) {
+              state.updateBobReadout(formatBobReadout(latestRecord, 'in_flight'))
+            } else if (latestDetectedRecord) {
+              state.updateBobReadout(formatBobReadout(latestDetectedRecord, 'detected'))
+            }
+            lastBeamReadoutRef.current = nowMs
           }
         } else if (sync) {
           // ── SYNC MODE: One photon at a time ───────────────────
@@ -307,9 +323,10 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
       }
       ctx.restore()
 
-      // Flush live arrivals to store throttled (~20 Hz)
+      // Flush live arrivals to store throttled (~10 Hz in beam mode, ~20 Hz in waves mode)
       const now = performance.now()
-      if (currentPending.length > 0 && (now - lastArrivalFlushRef.current >= 50)) {
+      const flushInterval = animMode === 'beam' ? 100 : 50
+      if (currentPending.length > 0 && (now - lastArrivalFlushRef.current >= flushInterval)) {
         state.appendLiveArrivals([...currentPending])
         currentPending.length = 0
         lastArrivalFlushRef.current = now
@@ -351,8 +368,6 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
   }, [results, canvasRef])
 
   return {
-    isAnimating: frameRef.current !== null,
-    particleCount: particlesRef.current.length,
     countersRef,
   }
 }

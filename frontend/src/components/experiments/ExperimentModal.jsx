@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Experiment selection modal.
  * Shows experiment description, learning objective,
  * configuration options, and Start button.
@@ -106,9 +106,7 @@ export default function ExperimentModal() {
     experimentModalId,
     closeExperimentModal,
     setParams,
-    setActiveExperiment,
-    params,
-    sourceModel
+    setActiveExperiment
   } = useSimulationStore()
 
   const { runSimulation } = useSimulation()
@@ -126,7 +124,8 @@ export default function ExperimentModal() {
 
   // Initialize local state when modal opens
   useEffect(() => {
-    if (exp) {
+    if (!exp) return
+    const id = setTimeout(() => {
       setLocalDistance(exp.defaults.distance_km)
       setLocalNoise(exp.defaults.noise_level * 100)
       setLocalAttack(exp.defaults.attack_prob * 100)
@@ -139,8 +138,9 @@ export default function ExperimentModal() {
         setUserBits(defaultBits)
         setUserBases(defaultBases)
       }
-    }
-  }, [experimentModalId])
+    }, 0)
+    return () => clearTimeout(id)
+  }, [exp])
 
   const handleStart = () => {
     if (!exp) return
@@ -219,7 +219,7 @@ export default function ExperimentModal() {
                               p-6 border-b border-[var(--border-color)]">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-mono px-2 py-0.5 
+                    <span className="text-xs font-body font-semibold uppercase px-2 py-0.5 
                                      rounded"
                       style={{
                         backgroundColor: exp.color + '20',
@@ -228,7 +228,7 @@ export default function ExperimentModal() {
                       {exp.name}
                     </span>
                     {['exp7', 'exp8'].includes(experimentModalId) && (
-                      <span className="text-xs font-mono px-2 py-0.5
+                      <span className="text-xs font-body font-medium px-2 py-0.5
                                        rounded ml-2"
                         style={{
                           backgroundColor: '#ccaa0020',
@@ -239,8 +239,7 @@ export default function ExperimentModal() {
                       </span>
                     )}
                   </div>
-                  <h2 className="text-lg font-bold text-[var(--text-primary)] 
-                                 font-mono">
+                  <h2 className="text-lg font-serif font-semibold text-[var(--text-primary)]">
                     {exp.title}
                   </h2>
                 </div>
@@ -264,7 +263,7 @@ export default function ExperimentModal() {
                   </p>
                   <div className="p-3 bg-[var(--panel-dark)]/10 rounded-lg 
                                   border border-[var(--border-color)]">
-                    <div className="text-xs font-mono uppercase 
+                    <div className="text-xs font-body uppercase font-semibold 
                                     tracking-wider mb-1"
                       style={{ color: exp.color }}>
                       Learning Objective
@@ -280,7 +279,7 @@ export default function ExperimentModal() {
                 {exp.requires_gates && (
                   <div className="p-3 bg-indigo-950/30 rounded-lg 
                                   border border-indigo-800/40">
-                    <div className="text-xs font-mono text-indigo-400 
+                    <div className="text-xs font-body font-semibold text-indigo-400 
                                     mb-1">
                       ⚠ Before Starting
                     </div>
@@ -296,7 +295,7 @@ export default function ExperimentModal() {
                 {exp.requires_cloning_probe && (
                   <div className="p-3 bg-red-950/30 rounded-lg 
                                   border border-red-800/40">
-                    <div className="text-xs font-mono text-red-400 
+                    <div className="text-xs font-body font-semibold text-red-400 
                                     mb-1">
                       ⚠ Before Starting
                     </div>
@@ -312,8 +311,7 @@ export default function ExperimentModal() {
                 {/* User input table for exp2 and exp4 */}
                 {exp.user_input && (
                   <div className="flex flex-col gap-2">
-                    <div className="text-xs font-mono text-[var(--text-muted)] 
-                                    uppercase tracking-wider">
+                    <div className="text-xs font-body uppercase tracking-wider font-semibold text-[var(--text-muted)]">
                       Photon Configuration
                     </div>
                     <PhotonInputTable
@@ -329,8 +327,7 @@ export default function ExperimentModal() {
 
                 {/* Channel settings */}
                 <div className="flex flex-col gap-4">
-                  <div className="text-xs font-mono text-[var(--text-muted)] 
-                                  uppercase tracking-wider">
+                  <div className="text-xs font-body uppercase tracking-wider font-semibold text-[var(--text-muted)]">
                     Channel Settings
                   </div>
 
@@ -338,7 +335,7 @@ export default function ExperimentModal() {
                   <div className="flex flex-col gap-1.5">
                     <div className="flex justify-between 
                                     items-center">
-                      <span className="text-xs font-mono 
+                      <span className="text-xs font-body font-medium 
                                        text-[var(--text-muted)]">
                         Distance
                       </span>
@@ -369,7 +366,7 @@ export default function ExperimentModal() {
                   <div className="flex flex-col gap-1.5">
                     <div className="flex justify-between 
                                     items-center">
-                      <span className="text-xs font-mono 
+                      <span className="text-xs font-body font-medium 
                                        text-[var(--text-muted)]">
                         Noise Level
                       </span>
@@ -401,7 +398,7 @@ export default function ExperimentModal() {
                     <div className="flex flex-col gap-1.5">
                       <div className="flex justify-between 
                                       items-center">
-                        <span className="text-xs font-mono 
+                        <span className="text-xs font-body font-medium 
                                          text-[var(--text-muted)]">
                           Eve Attack
                         </span>
@@ -432,7 +429,7 @@ export default function ExperimentModal() {
                   {/* Locked params info */}
                   {exp.locked.length > 0 && (
                     <div className="text-xs text-[var(--text-subtle)] 
-                                    font-mono">
+                                    font-body">
                       ℹ Eve attack is fixed for this experiment
                       {exp.defaults.attack_prob === 0
                         ? ' (disabled)'
@@ -448,7 +445,7 @@ export default function ExperimentModal() {
                       <div className="flex flex-col gap-1.5">
                         <div className="flex justify-between 
                                       items-center">
-                          <span className="text-xs font-mono 
+                          <span className="text-xs font-body font-medium 
                                          text-[var(--text-muted)]">
                             Photons
                           </span>
@@ -482,7 +479,7 @@ export default function ExperimentModal() {
                                 border-t border-[var(--border-color)]">
                   <button
                     onClick={closeExperimentModal}
-                    className="px-4 py-2 text-sm font-mono 
+                    className="px-4 py-2 text-sm font-body font-medium 
                                text-[var(--text-muted)] hover:text-[var(--text-primary)]
                                transition-colors"
                   >
@@ -491,7 +488,7 @@ export default function ExperimentModal() {
                   <button
                     onClick={handleStart}
                     className="flex items-center gap-2 px-6 py-2 
-                               rounded font-mono text-sm 
+                               rounded font-body font-semibold text-sm 
                                text-white transition-colors"
                     style={{ backgroundColor: exp.color }}
                   >

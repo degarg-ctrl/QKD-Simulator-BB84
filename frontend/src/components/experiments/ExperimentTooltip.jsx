@@ -103,7 +103,7 @@ export default function ExperimentTooltip({ experiment }) {
           <div>
             <h3 className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>{info.name}</h3>
             {info.requiresRealistic && (
-              <span className="text-xs text-orange-400 font-mono">Realistic Mode Only</span>
+              <span className="text-xs text-orange-400 font-body font-semibold">Realistic Mode Only</span>
             )}
           </div>
         </div>

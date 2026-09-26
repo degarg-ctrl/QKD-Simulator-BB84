@@ -4,7 +4,7 @@ import { OrbitControls, Line, Sphere, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
 // State vector arrow
-function StateVector({ position, color = '#00ffff', label }) {
+function StateVector({ position, color = '#10b981', label }) {
   const points = [
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(position[0], position[1], position[2])
@@ -110,38 +110,38 @@ function BlochScene({ gateType, animate }) {
         {/* Sphere */}
         <Sphere args={[1, 32, 32]}>
           <meshPhysicalMaterial 
-            color="#0a0a1a" 
+            color="#14141b" 
             transparent 
-            opacity={0.15}
-            roughness={0.1}
+            opacity={0.25}
+            roughness={0.15}
             metalness={0.1}
           />
         </Sphere>
 
-        {/* Wireframe */}
-        <Sphere args={[1.01, 12, 12]}>
+        {/* Wireframe (Neutral Graphite/Silver) */}
+        <Sphere args={[1.01, 14, 14]}>
           <meshBasicMaterial 
-            color="#00ccff" 
+            color="#52525b" 
             wireframe 
             transparent 
-            opacity={0.15}
+            opacity={0.35}
           />
         </Sphere>
 
-        {/* Axes */}
-        <Axis start={[-1.4, 0, 0]} end={[1.4, 0, 0]} color="#ff6b6b" label="X" />
-        <Axis start={[0, -1.4, 0]} end={[0, 1.4, 0]} color="#51cf66" label="Y" />
-        <Axis start={[0, 0, -1.4]} end={[0, 0, 1.4]} color="#4dabf7" label="Z" />
+        {/* Axes: X (Crimson), Y (Emerald), Z (Gold/Amber) */}
+        <Axis start={[-1.4, 0, 0]} end={[1.4, 0, 0]} color="#ef4444" label="X" />
+        <Axis start={[0, -1.4, 0]} end={[0, 1.4, 0]} color="#10b981" label="Y" />
+        <Axis start={[0, 0, -1.4]} end={[0, 0, 1.4]} color="#f59e0b" label="Z" />
 
-        {/* State vectors */}
+        {/* State vectors: Before (Amber/Gold), After (Emerald) */}
         <StateVector 
           position={state.before} 
-          color="#ffd43b" 
+          color="#f59e0b" 
           label={state.beforeLabel}
         />
         <StateVector 
           position={state.after} 
-          color="#00ffff" 
+          color="#10b981" 
           label={state.afterLabel}
         />
       </group>
@@ -150,17 +150,17 @@ function BlochScene({ gateType, animate }) {
         enableZoom={false} 
         enablePan={false}
         autoRotate={animate}
-        autoRotateSpeed={1.5}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={Math.PI * 3 / 4}
+        autoRotateSpeed={1.0}
+        minPolarAngle={0}
+        maxPolarAngle={Math.PI}
       />
     </>
   );
 }
 
-export default function BlochSphere({ gateType = 'H', animate = true, size = 200 }) {
+export default function BlochSphere({ gateType = 'H', animate = false, size = 260 }) {
   return (
-    <div style={{ width: size, height: size }}>
+    <div style={{ width: size, height: size, cursor: 'grab' }}>
       <Canvas camera={{ position: [2.5, 2, 2.5], fov: 45 }}>
         <BlochScene gateType={gateType} animate={animate} />
       </Canvas>

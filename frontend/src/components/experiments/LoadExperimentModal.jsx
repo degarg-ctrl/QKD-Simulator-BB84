@@ -2,15 +2,27 @@ import { useState, useEffect } from 'react';
 import useSimulationStore from '../../store/simulationStore';
 
 export default function LoadExperimentModal({ isOpen, onClose }) {
-  const [experiments, setExperiments] = useState([]);
+  const [experiments, setExperiments] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('qkd-experiments') || '[]');
+    } catch {
+      return [];
+    }
+  });
   const setParams = useSimulationStore((state) => state.setParams);
   const setSourceModel = useSimulationStore((state) => state.setSourceModel);
 
   useEffect(() => {
-    if (isOpen) {
-      const saved = JSON.parse(localStorage.getItem('qkd-experiments') || '[]');
-      setExperiments(saved);
-    }
+    if (!isOpen) return;
+    const id = setTimeout(() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem('qkd-experiments') || '[]');
+        setExperiments(saved);
+      } catch {
+        setExperiments([]);
+      }
+    }, 0);
+    return () => clearTimeout(id);
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -51,7 +63,7 @@ export default function LoadExperimentModal({ isOpen, onClose }) {
           saved.push({ ...experiment, id: Date.now().toString() });
           localStorage.setItem('qkd-experiments', JSON.stringify(saved));
           setExperiments(saved);
-        } catch (err) {
+        } catch {
           alert('Invalid experiment file');
         }
       };
@@ -65,10 +77,10 @@ export default function LoadExperimentModal({ isOpen, onClose }) {
       <div className="border rounded-lg p-6 w-[600px] max-h-[80vh] overflow-y-auto shadow-2xl"
            style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-cyan-400 font-mono">Load Experiment</h2>
+          <h2 className="text-xl font-semibold text-cyan-400 font-serif">Load Experiment</h2>
           <button
             onClick={handleImport}
-            className="text-xs border px-3 py-1.5 rounded font-mono transition-colors"
+            className="text-xs border px-3 py-1.5 rounded font-body font-medium transition-colors"
             style={{
               backgroundColor: 'var(--card-bg)',
               borderColor: 'var(--card-border)',
@@ -80,7 +92,7 @@ export default function LoadExperimentModal({ isOpen, onClose }) {
         </div>
 
         {experiments.length === 0 ? (
-          <p className="text-center py-8 font-mono text-sm" style={{ color: 'var(--text-muted)' }}>No saved experiments</p>
+          <p className="text-center py-8 font-body text-sm" style={{ color: 'var(--text-muted)' }}>No saved experiments</p>
         ) : (
           <div className="space-y-2">
             {experiments.map((exp) => (
@@ -88,24 +100,24 @@ export default function LoadExperimentModal({ isOpen, onClose }) {
                    style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="font-semibold font-mono text-sm" style={{ color: 'var(--text-primary)' }}>{exp.name}</h3>
+                    <h3 className="font-semibold font-body text-sm" style={{ color: 'var(--text-primary)' }}>{exp.name}</h3>
                     {exp.description && (
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{exp.description}</p>
+                      <p className="text-xs mt-0.5 font-body" style={{ color: 'var(--text-muted)' }}>{exp.description}</p>
                     )}
-                    <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-subtle)' }}>
+                    <p className="text-xs mt-1 font-body text-[var(--text-subtle)]">
                       {new Date(exp.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex gap-1">
                     <button
                       onClick={() => handleLoad(exp)}
-                      className="text-xs bg-cyan-600 hover:bg-cyan-700 text-white font-mono px-2 py-1 rounded"
+                      className="text-xs bg-cyan-600 hover:bg-cyan-700 text-white font-body font-semibold px-2 py-1 rounded"
                     >
                       Load
                     </button>
                     <button
                       onClick={() => handleExport(exp)}
-                      className="text-xs border font-mono px-2 py-1 rounded transition-colors"
+                      className="text-xs border font-body font-medium px-2 py-1 rounded transition-colors"
                       style={{
                         backgroundColor: 'var(--panel-bg)',
                         borderColor: 'var(--border-color)',
@@ -116,14 +128,14 @@ export default function LoadExperimentModal({ isOpen, onClose }) {
                     </button>
                     <button
                       onClick={() => handleDelete(exp.id)}
-                      className="text-xs bg-red-600 hover:bg-red-700 text-white font-mono px-2 py-1 rounded"
+                      className="text-xs bg-red-600 hover:bg-red-700 text-white font-body font-semibold px-2 py-1 rounded"
                     >
                       Delete
                     </button>
                   </div>
                 </div>
-                <div className="text-xs font-mono" style={{ color: 'var(--text-subtle)' }}>
-                  {exp.params.n_bits} bits, {exp.params.distance_km}km, {exp.sourceModel}
+                <div className="text-xs font-body" style={{ color: 'var(--text-subtle)' }}>
+                  <span className="font-mono tabular-nums">{exp.params.n_bits}</span> bits, <span className="font-mono tabular-nums">{exp.params.distance_km}</span>km, {exp.sourceModel}
                 </div>
               </div>
             ))}
@@ -132,7 +144,7 @@ export default function LoadExperimentModal({ isOpen, onClose }) {
 
         <button
           onClick={onClose}
-          className="w-full mt-4 border font-mono text-sm px-4 py-2 rounded transition-colors"
+          className="w-full mt-4 border font-body font-medium text-sm px-4 py-2 rounded transition-colors"
           style={{
             backgroundColor: 'var(--card-bg)',
             borderColor: 'var(--card-border)',

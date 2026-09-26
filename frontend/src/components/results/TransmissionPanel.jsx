@@ -60,7 +60,7 @@ export default function TransmissionPanel({ results }) {
     const t = results?.transmission
     if (!t) {
         return (
-            <div className="text-xs font-mono text-[var(--text-subtle)] py-4">
+            <div className="text-xs font-body text-[var(--text-subtle)] py-4">
                 Transmission accounting unavailable (run a simulation).
             </div>
         )
@@ -103,11 +103,11 @@ export default function TransmissionPanel({ results }) {
                 <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2">
                     {bar.map((seg, i) => (
                         <span key={i}
-                            className="text-xs font-mono flex items-center gap-1.5"
+                            className="text-xs font-body flex items-center gap-1.5"
                             style={{ color: 'var(--text-secondary)' }}>
                             <span className="w-2.5 h-2.5 rounded-sm inline-block flex-shrink-0"
                                 style={{ backgroundColor: seg.color }} />
-                            {seg.label} {seg.n}
+                            {seg.label} <span className="font-mono tabular-nums">{seg.n}</span>
                         </span>
                     ))}
                 </div>
@@ -117,7 +117,7 @@ export default function TransmissionPanel({ results }) {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                 {SECTIONS.map((section) => (
                     <div key={section.title} className="flex flex-col gap-2 min-w-0">
-                        <div className="text-xs font-mono uppercase tracking-wider font-semibold border-b border-[var(--border-color)]/40 pb-1"
+                        <div className="text-xs font-body uppercase tracking-wider font-semibold border-b border-[var(--border-color)]/40 pb-1"
                             style={{ color: 'var(--text-primary)' }}>
                             {section.title}
                         </div>
@@ -125,11 +125,11 @@ export default function TransmissionPanel({ results }) {
                             .filter((r) => !r.wcpOnly || wcp)
                             .map((r) => (
                                 <div key={r.key}
-                                    className="flex items-baseline justify-between gap-2 text-xs font-mono">
-                                    <span className="text-[var(--text-muted)] truncate" title={r.label}>
+                                    className="flex items-baseline justify-between gap-2 text-xs">
+                                    <span className="font-body text-[var(--text-muted)] truncate" title={r.label}>
                                         {r.label}
                                     </span>
-                                    <span className="font-semibold tabular-nums flex-shrink-0"
+                                    <span className="font-mono font-semibold tabular-nums flex-shrink-0"
                                         style={{ color: r.color }}>
                                         {t[r.key]}
                                         <span className="text-[10px] font-normal ml-1"
@@ -145,9 +145,9 @@ export default function TransmissionPanel({ results }) {
 
             {/* Sampling note */}
             {t.event_stream_truncated && (
-                <div className="text-xs font-mono leading-relaxed pt-2 border-t border-[var(--border-color)]/30"
+                <div className="text-xs font-body leading-relaxed pt-2 border-t border-[var(--border-color)]/30"
                     style={{ color: 'var(--text-muted)' }}>
-                    Counts cover all {t.generated.toLocaleString()} simulated
+                    Counts cover all <span className="font-mono tabular-nums">{t.generated.toLocaleString()}</span> simulated
                     pulses. The canvas animation plays a representative sample
                     (first 500 events by deterministic stride) — counters in the
                     HUD reflect full-simulation totals.

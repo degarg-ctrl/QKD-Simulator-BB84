@@ -60,7 +60,7 @@ const useSimulationStore = create((set, get) => ({
     currentPhotonIndex: 0,
     mode: 'waves',        // 'waves' (discrete photons with ~1.5s delay) | 'beam' (continuous laser)
     speed: 1.0,           // multiplier for waves (0.2x to 3.0x, baseline 1.0x)
-    beamRate: 35,         // photons / sec in beam mode (10 to 120 photons/s)
+    beamRate: 20,         // photons / sec in beam mode (calibrated for silky 60fps)
     sliderPos: 25,        // normalized 0-100 position (0-50 = waves, 50-100 = beam)
     completedPhotons: [], // photons that have finished traveling
     activePhotons: [],    // photons currently in flight on canvas
@@ -176,9 +176,9 @@ const useSimulationStore = create((set, get) => ({
         }
       }
     } else {
-      // 50 to 100: Beam mode (10 to 120 photons/s; 75 is 40 photons/s)
+      // 50 to 100: Beam mode (8 to 92 photons/s; 75 is 50 photons/s)
       const frac = (clamped - 50) / 50
-      const beamRate = Math.round(10 + frac * 110)
+      const beamRate = Math.round(8 + frac * 84)
       return {
         animation: {
           ...state.animation,

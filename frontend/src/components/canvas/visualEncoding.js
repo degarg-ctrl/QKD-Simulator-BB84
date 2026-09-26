@@ -160,7 +160,7 @@ export function stateLabel(basis, bit) {
  *
  * Single transmission lane: all pulses travel on the single BB84 channel (lane 0).
  */
-export function laneForIndex(index) {
+export function laneForIndex(_index) {
     return 0
 }
 

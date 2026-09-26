@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/components/inspector/PhotonInspector.jsx
  *
  * Floating draggable panel showing the complete journey of one
@@ -22,7 +22,7 @@ function StageCard({ title, color, children }) {
         backgroundColor: color + '15',
         border: `1px solid ${color}40`
       }}>
-      <div className="text-xs font-mono uppercase tracking-wider"
+      <div className="text-xs font-body font-semibold uppercase tracking-wider"
         style={{ color }}>
         {title}
       </div>
@@ -35,12 +35,11 @@ function StageCard({ title, color, children }) {
 
 function DataRow({ label, value, highlight = false }) {
   return (
-    <div className="flex items-center justify-between
-                    text-xs font-mono">
-      <span className="text-[var(--text-muted)]">{label}</span>
-      <span className={highlight
+    <div className="flex items-center justify-between text-xs">
+      <span className="font-body text-[var(--text-muted)]">{label}</span>
+      <span className={`font-mono tabular-nums ${highlight
         ? 'text-[var(--text-primary)] font-bold'
-        : 'text-[var(--text-muted)]'}>
+        : 'text-[var(--text-muted)]'}`}>
         {value}
       </span>
     </div>
@@ -82,7 +81,7 @@ export default function PhotonInspector() {
     }, inspector.playSpeed)
     return () => clearTimeout(timer)
   }, [inspector.isPlaying, inspector.currentIndex,
-    total, inspector.playSpeed])
+    total, inspector.playSpeed, setInspectorIndex, setInspectorPlaying])
 
   const goFirst = () => {
     setInspectorPlaying(false)
@@ -191,7 +190,7 @@ export default function PhotonInspector() {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-quantum-blue
                             animate-pulse" />
-            <span className="text-xs font-mono text-[var(--text-primary)]
+            <span className="text-xs font-body font-semibold text-[var(--text-primary)]
                              uppercase tracking-wider">
               Pulse Inspector
             </span>
@@ -209,8 +208,8 @@ export default function PhotonInspector() {
         <div className="px-4 py-2 flex items-center
                         justify-between"
           style={{ borderBottom: '1px solid var(--border-color)' }}>
-          <span className="text-xs font-mono text-[var(--text-muted)]">
-            Event {inspector.currentIndex + 1} of {total}
+          <span className="text-xs font-body text-[var(--text-muted)]">
+            Event <span className="font-mono tabular-nums">{inspector.currentIndex + 1}</span> of <span className="font-mono tabular-nums">{total}</span>
           </span>
           <div className="flex-1 mx-3 h-1 bg-[var(--panel-dark)] rounded-full">
             <div
@@ -221,7 +220,7 @@ export default function PhotonInspector() {
               }}
             />
           </div>
-          <span className="text-xs font-mono text-[var(--text-subtle)]">
+          <span className="text-xs font-mono tabular-nums text-[var(--text-subtle)]">
             #{current.index}
           </span>
         </div>
@@ -369,7 +368,7 @@ export default function PhotonInspector() {
               border: `1px solid ${inSiftedKey
                 ? '#34d39940' : '#f8717140'}`
             }}>
-            <div className="text-sm font-mono font-bold"
+            <div className="text-sm font-body font-bold"
               style={{
                 color: inSiftedKey ? '#34d399' : '#f87171'
               }}>
@@ -401,20 +400,20 @@ export default function PhotonInspector() {
           style={{ borderTop: '1px solid var(--border-color)' }}>
           <button onClick={goFirst}
             disabled={inspector.currentIndex === 0}
-            className="px-2 py-1 text-xs font-mono
+            className="px-2 py-1 text-xs font-body font-semibold
                              text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
             |◀
           </button>
           <button onClick={goPrev}
             disabled={inspector.currentIndex === 0}
-            className="px-2 py-1 text-xs font-mono
+            className="px-2 py-1 text-xs font-body font-semibold
                              text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
             ◀ Prev
           </button>
           <button onClick={togglePlay}
-            className="px-4 py-1.5 text-xs font-mono
+            className="px-4 py-1.5 text-xs font-body
                              rounded font-bold transition-colors"
             style={{
               backgroundColor: inspector.isPlaying
@@ -428,14 +427,14 @@ export default function PhotonInspector() {
           </button>
           <button onClick={goNext}
             disabled={inspector.currentIndex >= total - 1}
-            className="px-2 py-1 text-xs font-mono
+            className="px-2 py-1 text-xs font-body font-semibold
                              text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
             Next ▶
           </button>
           <button onClick={goLast}
             disabled={inspector.currentIndex >= total - 1}
-            className="px-2 py-1 text-xs font-mono
+            className="px-2 py-1 text-xs font-body font-semibold
                              text-[var(--text-muted)] hover:text-[var(--text-primary)]
                              disabled:opacity-30 transition-colors">
             ▶|
