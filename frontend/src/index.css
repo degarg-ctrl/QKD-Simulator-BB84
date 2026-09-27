@@ -1,62 +1,62 @@
 @import "tailwindcss";
 
 @theme {
-  --color-quantum-blue: #00d4ff;
-  --color-quantum-purple: #a855f7;
-  --color-quantum-red: #ff4444;
-  --color-quantum-green: #00ff88;
-  --color-canvas-bg: #2a2a2a;
-  --color-panel-bg: #242424;
-  --color-border-subtle: #404040;
-  --color-panel-dark: #1e1e1e;
+  --color-quantum-blue: #81b8a4;
+  --color-quantum-purple: #b4a0d5;
+  --color-quantum-red: #d76862;
+  --color-quantum-green: #78b69a;
+  --color-canvas-bg: #100f0d;
+  --color-panel-bg: #171512;
+  --color-border-subtle: #3a352e;
+  --color-panel-dark: #0c0b0a;
 }
 
 @layer base {
   :root {
     color-scheme: dark;
 
-    /* ── Precision Optics Bench Surfaces (Strictly Neutral Matte) ── */
-    --q-surface-0: #131317; /* Chassis base & viewport substrate */
-    --q-surface-1: #1a1a1e; /* Primary instrumentation panels & toolbars */
-    --q-surface-2: #222227; /* Sub-panels, parameter cards & drawers */
-    --q-surface-active: #282830; /* Recessed inputs & active wells */
+    /* ── Graphite + copper optical bench ── */
+    --q-surface-0: #100f0d;
+    --q-surface-1: #171512;
+    --q-surface-2: #211f1b;
+    --q-surface-active: #2b2823;
 
     /* ── High-Contrast Typography & Text Hierarchy ── */
-    --q-text-1: #f1f1f4; /* Primary technical data & headings */
-    --q-text-2: #d1d1d8; /* Standard body text & specifications */
-    --q-text-3: #9e9ea8; /* Secondary units, labels & telemetry */
-    --q-text-4: #5c5c66; /* Coordinate grids & muted caption marks */
+    --q-text-1: #f3efe6;
+    --q-text-2: #d7d0c4;
+    --q-text-3: #a89f91;
+    --q-text-4: #746c61;
 
     /* ── Mechanical Demarcation Lines (1px structural borders) ── */
-    --q-border-subtle: #282830;
-    --q-border: #34343d;
-    --q-border-strong: #42424e;
+    --q-border-subtle: #2a2722;
+    --q-border: #3a352e;
+    --q-border-strong: #4b4439;
 
     /* ── Functional Telemetry Accents (Precision Instrument Gold/Amber) ── */
-    --q-accent: #f59e0b;
-    --q-accent-weak: rgba(245, 158, 11, 0.12);
-    --q-accent-strong: #d97706;
-    --q-accent-cyan: #10b981; /* Map legacy cyan references to clean precision emerald */
+    --q-accent: #d99a62;
+    --q-accent-weak: rgba(217, 154, 98, 0.12);
+    --q-accent-strong: #e7ad78;
+    --q-accent-cyan: #81b8a4;
 
     /* ── Protocol & Outcome Indicators ── */
-    --q-secure: #10b981;  /* Valid coincidence / threshold safe (< 11%) */
-    --q-warn: #f59e0b;    /* Eavesdropping alert / thermal settling */
-    --q-danger: #e05252;  /* Security abort threshold breached (≥ 11%) */
-    --q-inactive: #5c5c66;
+    --q-secure: #78b69a;
+    --q-warn: #d2a45f;
+    --q-danger: #d76862;
+    --q-inactive: #746c61;
 
     /* ── Physics Tokens (visualEncoding.js parity - No bluish dominance) ── */
-    --q-alice: #10b981;       /* Alice Laser Source (Precision Emerald) */
-    --q-bob: #c084fc;         /* Bob SPAD Receiver (Violet) */
-    --q-eve: #e05252;         /* Eve Eavesdropper Beam-Tap (Crimson) */
-    --q-basis-rect: #10b981;  /* 0° and 90° (+ Basis: Emerald) */
-    --q-basis-diag: #c084fc;  /* 45° and 135° (× Basis: Violet) */
-    --q-probe: #e05252;       /* Cloning & CNOT probe */
-    --q-gate-h: #8b5cf6;      /* Hadamard */
-    --q-gate-x: #f59e0b;      /* Pauli-X */
-    --q-gate-y: #ec4899;      /* Pauli-Y */
-    --q-gate-z: #10b981;      /* Pauli-Z */
-    --q-gate-s: #a855f7;      /* Phase S */
-    --q-gate-t: #eab308;      /* Phase T */
+    --q-alice: #81b8a4;
+    --q-bob: #b4a0d5;
+    --q-eve: #d76862;
+    --q-basis-rect: #81b8a4;
+    --q-basis-diag: #b4a0d5;
+    --q-probe: #d76862;
+    --q-gate-h: #a793c9;
+    --q-gate-x: #d99a62;
+    --q-gate-y: #c27f9f;
+    --q-gate-z: #81b8a4;
+    --q-gate-s: #9d86bd;
+    --q-gate-t: #d2a45f;
 
     /* ── Backward Compatibility Aliases ── */
     --accent: var(--q-accent);
@@ -64,34 +64,34 @@
     --warning: var(--q-warn);
     --danger: var(--q-danger);
     --neutral: var(--q-text-3);
-    --bg-primary: #111115;
-    --bg-secondary: #17171d;
-    --bg-panel: #17171d;
-    --bg-dark: #0e0e12;
-    --canvas-bg: #111115;
-    --panel-bg: #17171d;
-    --panel-dark: #0e0e12;
-    --border-color: #2e2e38;
-    --border-white: #2e2e38;
+    --bg-primary: #100f0d;
+    --bg-secondary: #171512;
+    --bg-panel: #171512;
+    --bg-dark: #0c0b0a;
+    --canvas-bg: #100f0d;
+    --panel-bg: #171512;
+    --panel-dark: #0c0b0a;
+    --border-color: #3a352e;
+    --border-white: #3a352e;
     --text-primary: var(--q-text-1);
     --text-secondary: var(--q-text-2);
     --text-muted: var(--q-text-3);
     --text-subtle: var(--q-text-4);
-    --card-bg: #1c1c23;
-    --card-border: #2e2e38;
-    --code-bg: #0e0e12;
-    --input-bg: #15151b;
-    --input-border: #2e2e38;
-    --panel-border: #2e2e38;
-    --tooltip-bg: #17171d;
-    --scrollbar-thumb: #2e2e38;
-    --scrollbar-thumb-hover: #3d3d4a;
-    --scrollbar-thumb-active: #525263;
+    --card-bg: #211f1b;
+    --card-border: #3a352e;
+    --code-bg: #0c0b0a;
+    --input-bg: #14120f;
+    --input-border: #3a352e;
+    --panel-border: #3a352e;
+    --tooltip-bg: #171512;
+    --scrollbar-thumb: #3a352e;
+    --scrollbar-thumb-hover: #4b4439;
+    --scrollbar-thumb-active: #655b4c;
 
     /* ── Stylish Serif & Calligraphic Typography Tokens ── */
-    --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-    --font-display: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-    --font-calligraphy: 'Italiana', 'Instrument Serif', 'Cormorant Garamond', Georgia, serif;
+    --font-serif: 'Instrument Serif', 'Cormorant Garamond', Georgia, serif;
+    --font-display: 'Cormorant Garamond', 'Instrument Serif', Georgia, serif;
+    --font-calligraphy: 'Instrument Serif', 'Cormorant Garamond', Georgia, serif;
     --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
@@ -153,6 +153,66 @@
   }
 }
 
+.quantum-equation {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--q-border);
+  border-radius: 0.5rem;
+  background: var(--q-surface-0);
+  color: var(--q-text-1);
+  overflow-x: auto;
+}
+
+.quantum-equation math {
+  font-size: 1.15rem;
+  min-width: max-content;
+}
+
+.quantum-equation figcaption {
+  margin-top: 0.55rem;
+  color: var(--q-text-3);
+  font: 600 0.6875rem/1.2 var(--font-body);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.quantum-equation--compact { padding: 0.75rem 1rem; }
+
+.foundation-preview {
+  background: color-mix(in srgb, var(--q-surface-1) 92%, transparent);
+  border-color: var(--q-border);
+}
+
+.foundation-preview > summary {
+  cursor: pointer;
+  padding: 0.8rem 1rem;
+  color: var(--q-text-2);
+  font: 600 0.75rem/1 var(--font-body);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.foundation-label {
+  color: var(--q-text-3);
+  font: 600 0.6875rem/1.2 var(--font-body);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.story-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--q-border);
+  border-radius: 999px;
+  color: var(--q-text-2);
+  background: var(--q-surface-2);
+  font: 500 0.75rem/1 var(--font-body);
+}
+
+.story-chip b { color: var(--q-accent); font-family: var(--font-mono); }
+
 /* ── STRICT ROOT LOCK (Eliminates all outer window-level double scrollbars) ── */
 html {
   height: 100% !important;
@@ -207,4 +267,25 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--scrollbar-thumb-active);
   border-width: 2px;
+}
+
+/* ── Reduced motion ──
+   Honour the OS "reduce motion" preference for decorative CSS animation and
+   transitions (status-chip pulses, panel slides, hover fades).
+
+   Deliberately NOT disabled here:
+   - The simulator canvas. Photon transmission is the scientific output of the
+     run, not decoration, and it is driven by requestAnimationFrame rather than
+     CSS, so this block does not reach it.
+   - The landing background video, which only advances under direct scroll
+     input and has no autoplay attribute. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -4,7 +4,7 @@
  * Cinematic Scroll-Synced Frame-by-Frame Quantum Video & Optics Scrubber.
  * Implements Engine B architecture from quantum_video_and_design_architecture.md:
  * - 200 Frame timeline across 4 optical phases
- * - High-precision 60 FPS HTML5 Canvas with subpixel lerp smoothing
+ * - requestAnimationFrame HTML5 Canvas with subpixel lerp smoothing
  * - Frame scrubbing synchronized with page scroll, trackpad wheel, and tactile slider
  * - Instant bidirectional scrubbing (forward & reverse rewind with 0ms latency)
  * - Precision instrument aesthetics (charcoal carbon chassis, gold/amber, emerald, violet, crimson)
@@ -137,7 +137,7 @@ export default function QuantumScrollScrubber() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Main 60 FPS requestAnimationFrame canvas render loop with subpixel lerp
+  // Main requestAnimationFrame canvas render loop with subpixel lerp
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -453,7 +453,7 @@ export default function QuantumScrollScrubber() {
               Frame-by-Frame Optical Breakdown
             </span>
             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border border-[#2e2e38] text-[var(--q-text-3)] bg-[#17171d]">
-              60 FPS SUBPIXEL SCRUBBER
+              rAF SUBPIXEL SCRUBBER
             </span>
           </div>
           <h3 className="font-serif text-2xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -636,7 +636,7 @@ export default function QuantumScrollScrubber() {
 
           <div className="mt-3 pt-3 border-t border-[#2e2e38] flex items-center gap-2 text-[11px] text-[var(--q-text-3)]">
             <Sparkles size={13} className="text-[#f59e0b]" />
-            <span className="font-body">Evaluated in real-time by BB84 model</span>
+            <span className="font-body">Evaluated by the backend BB84 model</span>
           </div>
         </div>
 
