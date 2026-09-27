@@ -32,6 +32,29 @@ import {
 
 // Maximum simultaneous particles on canvas.
 const MAX_ACTIVE_PARTICLES = 120
+const MAX_WAVE_VISUALS = 120
+const BEAM_TARGET_SECONDS = 12
+
+export function getPlaybackEvents(results) {
+  if (results?.playback_stream?.length) return results.playback_stream
+  if (results?.event_stream?.length) return results.event_stream
+  return results?.bit_stream || []
+}
+
+export function waveBatchSize(eventCount) {
+  return Math.max(1, Math.ceil(eventCount / MAX_WAVE_VISUALS))
+}
+
+/**
+ * Pick the backend record that supplies the path drawn for a grouped wave.
+ * When a group contains a Bob detection, its visual carrier must reach Bob;
+ * otherwise Bob's grouped readout would advance when a loss animation ends
+ * part-way through the fiber. Accounting still processes every record.
+ */
+export function representativeRecordForWaveBatch(records) {
+  if (!records?.length) return null
+  return [...records].reverse().find((record) => record.bob_bit != null) ?? records[0]
+}
 
 /**
  * Fresh playback counters. Outcome keys mirror
@@ -46,6 +69,7 @@ export function createCounters() {
     detected: 0, dark_count: 0,
     intercepted: 0, pns_split: 0, noise_flipped: 0, sifted: 0,
     live_fiber_loss: 0, live_detected: 0, live_sifted: 0, live_detector_loss: 0,
+    visual_batch_size: 1, visual_batch_start: null, visual_batch_end: null,
   }
 }
 
@@ -73,7 +97,9 @@ export function formatAliceReadout(record) {
 export function formatBobReadout(record, status = 'detected') {
   if (!record) return null
   return {
+    bit: record.bob_bit ?? null,
     basis: record.bob_basis ?? '+',
+    angle: record.polarization_angle ?? null,
     match: record.match ?? (record.alice_basis === record.bob_basis),
     photonIndex: record.index,
     status
@@ -101,6 +127,8 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
   const lastArrivalFlushRef = useRef(0)
   const beamAccumulatorRef = useRef(0)
   const lastBeamReadoutRef = useRef(0)
+  const lastFrameTimeRef = useRef(null)
+  const frameDurationsRef = useRef([])
 
   // Keep the latest draw callback and results WITHOUT restarting playback
   useEffect(() => {
@@ -116,9 +144,7 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
    * frame — no closures over React state, no restart on zoom.
    */
   useEffect(() => {
-    const events = results?.event_stream?.length
-      ? results.event_stream
-      : results?.bit_stream
+    const events = getPlaybackEvents(results)
     if (!events || events.length === 0) return
 
     // ── New result set: reset playback state ──────────────────
@@ -133,6 +159,8 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
     lastArrivalFlushRef.current = 0
     beamAccumulatorRef.current = 0
     lastBeamReadoutRef.current = 0
+    lastFrameTimeRef.current = null
+    frameDurationsRef.current = []
     useSimulationStore.getState().resetLiveArrivals()
     useSimulationStore.getState().resetReadouts()
 
@@ -145,6 +173,22 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
       const ctx = canvas.getContext('2d')
       frameCountRef.current++
 
+      // Rolling measured frame cadence for the Details telemetry. This stays
+      // in refs/counters so it never drives the Canvas loop through React.
+      const frameNow = performance.now()
+      if (lastFrameTimeRef.current != null) {
+        const duration = frameNow - lastFrameTimeRef.current
+        const samples = frameDurationsRef.current
+        samples.push(duration)
+        if (samples.length > 120) samples.shift()
+        if (samples.length >= 30 && frameCountRef.current % 15 === 0) {
+          const mean = samples.reduce((sum, value) => sum + value, 0) / samples.length
+          countersRef.current.measured_fps = mean > 0 ? 1000 / mean : 0
+          countersRef.current.frame_ms_max = Math.max(...samples)
+        }
+      }
+      lastFrameTimeRef.current = frameNow
+
       // Fresh store state every frame — pause/zoom/speed are read
       // live and NEVER restart this loop.
       const state = useSimulationStore.getState()
@@ -154,9 +198,7 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
       const beamRate = state.animation.beamRate || 35
       const sync = state.syncMode
       const r = resultsRef.current
-      const evts = r?.event_stream?.length
-        ? r.event_stream
-        : r?.bit_stream
+      const evts = getPlaybackEvents(r)
 
       // ── Draw static scene under everything ───────────────────
       drawSceneRef.current?.()
@@ -167,9 +209,21 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
         if (animMode === 'beam') {
           // ── BEAM MODE: High-rate continuous photon streaming ──
           if (particlesRef.current.length > 0) {
+            const latestTransitionDetection = drainActiveParticles(
+              countersRef.current, particlesRef.current, currentPending
+            )
+            if (latestTransitionDetection) {
+              state.updateBobReadout(formatBobReadout(
+                latestTransitionDetection, 'detected'
+              ))
+            }
             particlesRef.current = []
           }
-          beamAccumulatorRef.current += beamRate / 60
+          const effectiveBeamRate = Math.max(
+            beamRate,
+            evts.length / BEAM_TARGET_SECONDS
+          )
+          beamAccumulatorRef.current += effectiveBeamRate / 60
           let latestRecord = null
           let latestDetectedRecord = null
           const hadFirstRelease = releaseIndexRef.current === 0
@@ -182,7 +236,7 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
             countRelease(countersRef.current, record)
             latestRecord = record
 
-            if (record.detector_detected) {
+            if (record.bob_bit != null) {
               countersRef.current.live_detected = (countersRef.current.live_detected || 0) + 1
               if (record.match) {
                 countersRef.current.live_sifted = (countersRef.current.live_sifted || 0) + 1
@@ -217,19 +271,24 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
             photonCompleteRef.current = false
             const record = evts[releaseIndexRef.current]
             if (record) {
+              const batch = evts.slice(
+                releaseIndexRef.current,
+                releaseIndexRef.current + 1
+              )
               const isSingle = r?.raw_key_length === 1
               const p = new PhotonParticle(
                 record, laneForIndex(record.index),
                 isSingle ? speed * 0.3 : speed)
+              p._playbackBatch = batch
               particlesRef.current.push(p)
-              countRelease(countersRef.current, record)
+              batch.forEach((item) => countRelease(countersRef.current, item))
               state.updateAliceReadout(formatAliceReadout(record))
               if (isFirst) {
                 state.updateBobReadout(formatBobReadout(record, 'in_flight'))
               }
               state.setInspectorIndex(releaseIndexRef.current)
               laneLastFrameRef.current[p.laneIndex] = frameCountRef.current
-              releaseIndexRef.current++
+              releaseIndexRef.current += batch.length
               lastReleaseFrameRef.current = frameCountRef.current
             }
           }
@@ -249,22 +308,38 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
             const lastFrame = laneLastFrameRef.current[lane] ?? -Infinity
             if (frameCountRef.current - lastFrame >= minGap) {
               const isSingle = r?.raw_key_length === 1
-              particlesRef.current.push(new PhotonParticle(
-                record, lane, isSingle ? speed * 0.3 : speed))
-              countRelease(countersRef.current, record)
+              const batch = evts.slice(
+                i,
+                i + waveBatchSize(evts.length)
+              )
+              const representative = representativeRecordForWaveBatch(batch)
+              const representativeLane = laneForIndex(representative.index)
+              const particle = new PhotonParticle(
+                representative, representativeLane, isSingle ? speed * 0.3 : speed)
+              particle._playbackBatch = batch
+              particlesRef.current.push(particle)
+              batch.forEach((item) => countRelease(countersRef.current, item))
+              countersRef.current.visual_batch_size = batch.length
+              countersRef.current.visual_batch_start = batch[0]?.index ?? null
+              countersRef.current.visual_batch_end = batch[batch.length - 1]?.index ?? null
 
               // Alice advances immediately upon release
-              state.updateAliceReadout(formatAliceReadout(record))
+              state.updateAliceReadout({
+                ...formatAliceReadout(representative),
+                representedCount: batch.length,
+                representedStart: batch[0]?.index ?? null,
+                representedEnd: batch[batch.length - 1]?.index ?? null,
+              })
               // Prime Bob on the very first photon
               if (i === 0 || releaseIndexRef.current === 0) {
-                state.updateBobReadout(formatBobReadout(record, 'in_flight'))
+                state.updateBobReadout(formatBobReadout(representative, 'in_flight'))
               }
 
-              laneLastFrameRef.current[lane] = frameCountRef.current
+              laneLastFrameRef.current[representativeLane] = frameCountRef.current
               for (let j = releaseIndexRef.current; j < i; j++) {
                 countSkipped(countersRef.current, evts[j], currentPending)
               }
-              releaseIndexRef.current = i + 1
+              releaseIndexRef.current = i + batch.length
               lastReleaseFrameRef.current = frameCountRef.current
               released = true
             }
@@ -292,11 +367,11 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
           const alive = p.update()
 
           // Live event detection
-          if (p.justLostInFiber && !p._fiberLossReported) {
+          if (!p._playbackBatch && p.justLostInFiber && !p._fiberLossReported) {
             p._fiberLossReported = true
             countersRef.current.live_fiber_loss = (countersRef.current.live_fiber_loss || 0) + 1
           }
-          if (p.justArrivedAtBob && !p._arrivalReported) {
+          if (!p._playbackBatch && p.justArrivedAtBob && !p._arrivalReported) {
             p._arrivalReported = true
             if (p.outcome === 'detected') {
               countersRef.current.live_detected = (countersRef.current.live_detected || 0) + 1
@@ -315,7 +390,18 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
           else completed.push(p)
           return alive
         })
-        completed.forEach(p => countCompletion(countersRef.current, p))
+        completed.forEach(p => {
+          if (p._playbackBatch) {
+            const detected = completePlaybackBatch(
+              countersRef.current, p._playbackBatch, currentPending
+            )
+            if (detected) {
+              state.updateBobReadout(formatBobReadout(detected, 'detected'))
+            }
+          } else {
+            countCompletion(countersRef.current, p)
+          }
+        })
 
         if (sync && prevCount > 0 && particlesRef.current.length === 0) {
           photonCompleteRef.current = true
@@ -342,9 +428,7 @@ export function usePhotonAnimation(canvasRef, drawStaticScene) {
           state.appendLiveArrivals([...currentPending])
           currentPending.length = 0
         }
-        if (r?.bit_stream?.length) {
-          state.setLiveArrivals(r.bit_stream)
-        }
+        state.finishPlayback()
         frameRef.current = null
         runningRef.current = false
       }
@@ -399,6 +483,43 @@ export function countSkipped(counters, record, arrivalsQueue) {
   if (oc === 'detector_loss') {
     counters.live_detector_loss = (counters.live_detector_loss || 0) + 1
   }
+}
+
+export function completePlaybackBatch(counters, records, arrivalsQueue) {
+  let latestDetected = null
+  for (const record of records) {
+    counters.completed++
+    const outcome = classifyOutcome(record)
+    if (counters[outcome] !== undefined) counters[outcome]++
+    if (outcome === 'fiber_loss') counters.live_fiber_loss++
+    if (outcome === 'detector_loss') counters.live_detector_loss++
+    if (record.bob_bit != null) {
+      counters.live_detected++
+      if (record.sifted ?? record.match) counters.live_sifted++
+      arrivalsQueue?.push(record)
+      latestDetected = record
+    }
+  }
+  return latestDetected
+}
+
+export function drainActiveParticles(counters, particles, arrivalsQueue) {
+  let latestDetected = null
+  for (const particle of particles) {
+    if (particle._playbackBatch) {
+      const detected = completePlaybackBatch(
+        counters, particle._playbackBatch, arrivalsQueue
+      )
+      if (detected) latestDetected = detected
+    } else {
+      countCompletion(counters, particle)
+      if (particle.record?.bob_bit != null) {
+        arrivalsQueue?.push(particle.record)
+        latestDetected = particle.record
+      }
+    }
+  }
+  return latestDetected
 }
 
 export function countCompletion(counters, particle) {

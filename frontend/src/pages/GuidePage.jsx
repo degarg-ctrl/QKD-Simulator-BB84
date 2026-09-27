@@ -30,6 +30,7 @@ import {
   Play
 } from 'lucide-react'
 import useSimulationStore from '../store/simulationStore'
+import FoundationPreview from '../components/design/FoundationPreview'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine
@@ -40,15 +41,19 @@ import PNSAttackSection from '../components/guide/PNSAttackSection'
 import ExperimentsSection from '../components/guide/ExperimentsSection'
 import InteractiveBB84Stepper from '../components/guide/InteractiveBB84Stepper'
 import MalusLawSimulator from '../components/guide/MalusLawSimulator'
+import QuantumStateBadge from '../components/quantum/QuantumStateBadge'
+import QuantumEquation from '../components/math/QuantumEquation'
+import { BB84_STATE_LIST } from '../lib/quantumStates'
+import { normalizeLandingPreset } from '../lib/landingPreset'
 
 // ─── SECTION 1 DATA ──────────────────────────────────────────
 const QKD_INTRO = {
   title: "What is Quantum Key Distribution?",
   summary: `Quantum Key Distribution (QKD) is a method of 
-  establishing a cryptographic key between two parties using 
+  establishing shared key material between two parties using
   the principles of quantum mechanics. Unlike classical 
-  cryptography, its security is guaranteed by physics — 
-  not computational hardness.`,
+  cryptography, its security analysis relies on measurable quantum
+  disturbance rather than computational hardness.`,
 
   whyItMatters: `Classical encryption like RSA relies on the 
   mathematical difficulty of factoring large numbers. 
@@ -60,7 +65,8 @@ const QKD_INTRO = {
   disturbs it. This is the Heisenberg Uncertainty Principle 
   in action. If Eve intercepts a photon and measures it, 
   she irreversibly disturbs the quantum state. Alice and Bob 
-  detect this disturbance as an elevated QBER.`
+  can detect the resulting disturbance as an elevated QBER when they
+  disclose and compare a sample of their sifted bits.`
 }
 
 // ─── SECTION 2 DATA ──────────────────────────────────────────
@@ -130,11 +136,13 @@ Diagonal (×): 45° and 135° polarization angles.`,
     title: "Error Estimation and Key Extraction",
     description: `Alice and Bob sacrifice a sample of their 
     sifted key to estimate the Quantum Bit Error Rate (QBER). 
-    If QBER is below 11%, they proceed to extract a secure key. 
-    Above 11% — session aborted, eavesdropper detected.`,
-    detail: `The remaining bits after QBER sampling form the 
-    raw secure key. Privacy amplification can further compress 
-    it to eliminate any partial information Eve may have.`,
+    If QBER is below 11%, this simulator keeps the unsampled bits
+    as a post-sampling key candidate. Above 11% — the modeled key
+    exchange is aborted.`,
+    detail: `A deployable QKD system must also authenticate the
+    classical channel and run error correction and privacy
+    amplification. Those post-processing stages are outside this
+    simulator's current implementation.`,
     color: '#ef4444',
     symbol: 'KEY'
   }
@@ -144,7 +152,7 @@ Diagonal (×): 45° and 135° polarization angles.`,
 const GLOSSARY = [
   { term: 'BB84', definition: 'The first quantum key distribution protocol, proposed by Charles Bennett and Gilles Brassard in 1984. Uses four polarization states across two bases to establish a secure key.' },
   { term: 'QBER', definition: 'Quantum Bit Error Rate. The fraction of sifted key bits that differ between Alice and Bob. A QBER above 11% indicates eavesdropping or excessive channel noise.' },
-  { term: 'SKR', definition: 'Secret Key Rate. The rate at which secure key bits can be generated. Computed as S × (1 - 2H(Q)) where S is the sifted key rate and H(Q) is binary entropy.' },
+  { term: 'SKR', definition: 'Secret Key Rate estimate. This simulator computes the asymptotic expression S × (1 - 2H(Q)), where S is the sifted key rate and H(Q) is binary entropy; it does not execute the post-processing stages needed to produce a deployable key.' },
   { term: 'Sifting', definition: 'The process of discarding bits where Alice and Bob chose different measurement bases. Retains approximately 50% of raw bits.' },
   { term: 'Polarization', definition: 'The orientation of a photon\'s oscillation. BB84 uses four polarization angles (0°, 45°, 90°, 135°) to encode bits across two bases.' },
   { term: 'Intercept-Resend', definition: 'Eve\'s attack strategy. She measures each photon in a random basis and re-emits a new photon. When her basis mismatches Alice\'s, she introduces a 25% error rate.' },
@@ -163,6 +171,7 @@ const TOC_ITEMS = [
   { id: 'usage', label: 'Using Simulator', icon: HelpCircle },
   { id: 'gates', label: 'Quantum Gates', icon: Cpu },
   { id: 'pns', label: 'PNS Attack', icon: Crosshair },
+  { id: 'limitations', label: 'Model Limits', icon: FileText },
   { id: 'experiments', label: 'Experiments', icon: FlaskConical },
   { id: 'exercises', label: 'Exercises', icon: CheckSquare },
   { id: 'glossary', label: 'Glossary', icon: FileText },
@@ -170,82 +179,38 @@ const TOC_ITEMS = [
 
 // ─── POLARIZATION DIAGRAM SVG ────────────────────────────────
 function PolarizationDiagram() {
-  const states = [
-    {
-      angle: 0, label: '|0⟩', basis: '+', bit: 0,
-      color: '#6366f1', x: 80, y: 80
-    },
-    {
-      angle: 90, label: '|1⟩', basis: '+', bit: 1,
-      color: '#6366f1', x: 200, y: 80
-    },
-    {
-      angle: 45, label: '|+⟩', basis: '×', bit: 0,
-      color: '#a855f7', x: 80, y: 180
-    },
-    {
-      angle: 135, label: '|-⟩', basis: '×', bit: 1,
-      color: '#a855f7', x: 200, y: 180
-    },
-  ]
-
   return (
-    <div className="rounded-lg p-5 inline-block border"
+    <div className="rounded-lg p-5 border w-full max-w-2xl"
       style={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
       <div className="text-xs font-body mb-4 uppercase tracking-wider font-semibold"
         style={{ color: 'var(--text-muted)' }}>
         BB84 Polarization States
       </div>
-      <svg width="280" height="230" className="overflow-visible">
-        {/* Column headers */}
-        <text x="80" y="20" textAnchor="middle"
-          fill="#6366f1" fontSize="12" fontFamily="var(--font-body)" fontWeight="bold">
-          Bit 0
-        </text>
-        <text x="200" y="20" textAnchor="middle"
-          fill="#6366f1" fontSize="12" fontFamily="var(--font-body)" fontWeight="bold">
-          Bit 1
-        </text>
-        {/* Row headers */}
-        <text x="10" y="85" fill="#6366f1" fontSize="13"
-          fontFamily="monospace" fontWeight="bold">+</text>
-        <text x="10" y="185" fill="#a855f7" fontSize="13"
-          fontFamily="monospace" fontWeight="bold">×</text>
+      <div className="grid grid-cols-2 gap-3">
+        {BB84_STATE_LIST.map((state) => (
+          <div key={state.key} className="flex items-center justify-between gap-3 rounded border p-3"
+            style={{ background: 'var(--q-surface-0)', borderColor: 'var(--q-border)' }}>
+            <QuantumStateBadge state={state} size="md" showDetails />
+            <span className="font-mono text-[10px] text-[var(--q-text-3)]">bit {state.bit}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
-        {states.map((s, i) => {
-          const rad = (s.angle * Math.PI) / 180
-          const len = 24
-          const dx = Math.cos(rad) * len
-          const dy = Math.sin(rad) * len
-          return (
-            <g key={i}>
-              {/* Outer ring */}
-              <circle cx={s.x} cy={s.y} r="20"
-                fill={s.color} fillOpacity="0.15"
-                stroke={s.color} strokeOpacity="0.4"
-                strokeWidth="1.5" />
-              {/* Photon body */}
-              <circle cx={s.x} cy={s.y} r="8"
-                fill={s.color} fillOpacity="0.9" />
-              {/* Polarization line */}
-              <line x1={s.x - dx / 2} y1={s.y - dy / 2}
-                x2={s.x + dx / 2} y2={s.y + dy / 2}
-                stroke="white" strokeWidth="2" />
-              {/* Label */}
-              <text x={s.x} y={s.y + 36} textAnchor="middle"
-                fill={s.color} fontSize="12"
-                fontFamily="monospace" fontWeight="bold">
-                {s.label}
-              </text>
-              <text x={s.x} y={s.y + 48} textAnchor="middle"
-                fill="var(--text-subtle)" fontSize="10"
-                fontFamily="monospace">
-                {s.angle}°
-              </text>
-            </g>
-          )
-        })}
-      </svg>
+function TryThis({ title, description, params, onLaunch }) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg border p-4"
+      style={{ background: 'color-mix(in srgb, var(--q-accent) 6%, var(--panel-bg))', borderColor: 'color-mix(in srgb, var(--q-accent) 35%, var(--q-border))' }}>
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.14em] font-mono text-[var(--q-accent)]">Try this in the simulator</div>
+        <div className="text-sm font-body font-semibold text-[var(--q-text-1)] mt-1">{title}</div>
+        <p className="text-xs font-body text-[var(--q-text-3)] mt-1">{description}</p>
+      </div>
+      <button type="button" onClick={() => onLaunch(params)} className="shrink-0 inline-flex items-center gap-2 rounded px-3 py-2 text-xs font-body font-semibold border text-[var(--q-text-1)] border-[var(--q-accent)]">
+        <Play size={13} /> Load setup
+      </button>
     </div>
   )
 }
@@ -506,8 +471,13 @@ function SideFisheyeDock({ scrollContainerRef }) {
 // ─── MAIN GUIDE PAGE ──────────────────────────────────────────
 export default function GuidePage() {
   const [activeStep, setActiveStep] = useState(0)
-  const { setActiveView } = useSimulationStore()
+  const { setActiveView, applySimulationConfiguration } = useSimulationStore()
   const scrollContainerRef = useRef(null)
+  const launchSetup = (preset) => {
+    const { sourceModel, params } = normalizeLandingPreset(preset)
+    applySimulationConfiguration({ params, sourceModel, activeExperiment: null, placedGates: [] })
+    setActiveView('simulator')
+  }
 
   return (
     <div className="relative flex h-full overflow-hidden"
@@ -563,6 +533,8 @@ export default function GuidePage() {
             <div className="flex justify-center my-2">
               <PolarizationDiagram />
             </div>
+
+            <FoundationPreview />
           </section>
 
           {/* ── SECTION 2: BB84 Protocol ── */}
@@ -581,6 +553,7 @@ export default function GuidePage() {
 
             {/* Interactive BB84 Stepper Sandbox */}
             <InteractiveBB84Stepper />
+            <TryThis title="Clean BB84 baseline" description="Load 1,000 ideal-source pulses over 10 km with no Eve and compare emitted, detected and sifted counts." params={{ n_bits: 1000, distance_km: 10, noise_level: 0, attack_prob: 0 }} onLaunch={launchSetup} />
 
             <div className="flex flex-col gap-2.5">
               {BB84_STEPS.map((step, i) => (
@@ -612,10 +585,10 @@ export default function GuidePage() {
                   QBER &lt; <span className="font-mono tabular-nums">7%</span>
                 </div>
                 <div className="text-2xl font-serif font-semibold text-[#22c55e] mb-2">
-                  Secure
+                  Below threshold
                 </div>
                 <p className="text-xs leading-relaxed font-body" style={{ color: 'var(--text-muted)' }}>
-                  Channel noise is within acceptable limits. Key extraction proceeds normally.
+                  The observed QBER is within the simulator's normal operating band. This alone is not a security certification.
                 </p>
               </div>
               <div className="p-4 rounded-lg border"
@@ -639,7 +612,7 @@ export default function GuidePage() {
                   Abort
                 </div>
                 <p className="text-xs leading-relaxed font-body" style={{ color: 'var(--text-muted)' }}>
-                  Security threshold breached. Session aborted. SKR = 0.
+                  The simulator threshold is breached; modeled key extraction is blocked and the asymptotic SKR estimate is zero.
                 </p>
               </div>
             </div>
@@ -650,9 +623,8 @@ export default function GuidePage() {
                 style={{ color: 'var(--text-muted)' }}>
                 Secret Key Rate Formula
               </div>
-              <div className="font-mono text-center text-lg py-3 font-bold"
-                style={{ color: '#6366f1' }}>
-                R = S × (1 - 2H(Q))
+              <div className="text-center py-3">
+                <span className="font-mono text-lg font-bold text-[var(--q-basis-rect)]">R = S × (1 − 2H₂(Q))</span>
               </div>
               <div className="grid grid-cols-3 gap-4 mt-2">
                 <div className="text-center">
@@ -703,9 +675,7 @@ export default function GuidePage() {
 
               <div className="p-4 rounded-lg border text-center"
                 style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
-                <div className="text-xl font-mono text-cyan-400 font-bold">
-                  QBER = E / N
-                </div>
+                <QuantumEquation name="qber" caption="The official estimate uses only the disclosed sample; full sifted-key errors are reported separately." />
                 <div className="text-xs mt-2 font-body" style={{ color: 'var(--text-muted)' }}>
                   <span className="font-mono font-semibold">E</span> = erroneous bits in sample | <span className="font-mono font-semibold">N</span> = total sampled bits
                 </div>
@@ -730,8 +700,8 @@ export default function GuidePage() {
                     margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-                    <XAxis dataKey="eve" stroke="var(--text-subtle)" tick={{ fill: 'var(--text-subtle)', fontSize: 10, fontFamily: 'monospace' }} />
-                    <YAxis stroke="var(--text-subtle)" tick={{ fill: 'var(--text-subtle)', fontSize: 10, fontFamily: 'monospace' }} tickFormatter={v => `${v}%`} />
+                    <XAxis dataKey="eve" stroke="var(--text-subtle)" tick={{ fill: 'var(--text-subtle)', fontSize: 10, fontFamily: 'monospace' }} label={{ value: 'Eve interception (%)', position: 'insideBottom', offset: -2, fill: 'var(--text-subtle)', fontSize: 10 }} />
+                    <YAxis stroke="var(--text-subtle)" tick={{ fill: 'var(--text-subtle)', fontSize: 10, fontFamily: 'monospace' }} tickFormatter={v => `${v}%`} label={{ value: 'Theoretical QBER (%)', angle: -90, position: 'insideLeft', fill: 'var(--text-subtle)', fontSize: 10 }} />
                     <Tooltip
                       contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: '11px' }}
                       formatter={(v) => [`${v}%`, 'QBER']}
@@ -759,9 +729,7 @@ export default function GuidePage() {
 
               <div className="p-4 rounded-lg border text-center"
                 style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
-                <div className="text-lg font-mono text-yellow-400 font-bold">
-                  H(Q) = -Q·log₂(Q) - (1-Q)·log₂(1-Q)
-                </div>
+                <QuantumEquation name="entropy" />
                 <div className="text-xs mt-2 font-body" style={{ color: 'var(--text-muted)' }}>
                   <span className="font-mono">Q = QBER</span> | <span className="font-mono">H(0) = 0</span> | <span className="font-mono">H(0.5) = 1</span> | <span className="font-mono">H(0.11) ≈ 0.5</span>
                 </div>
@@ -783,9 +751,7 @@ export default function GuidePage() {
 
               <div className="p-4 rounded-lg border text-center"
                 style={{ backgroundColor: 'var(--code-bg)', borderColor: 'var(--card-border)' }}>
-                <div className="text-lg font-mono text-purple-400 font-bold">
-                  P_survive = 10^(-α·d / 10)
-                </div>
+                <QuantumEquation name="attenuation" caption="T(d) is channel transmission for attenuation α in dB/km and distance d in km." />
                 <div className="text-xs mt-2 font-body" style={{ color: 'var(--text-muted)' }}>
                   <span className="font-mono">α = 0.2 dB/km</span> (1550nm telecom fiber) | <span className="font-mono">d</span> = distance in km
                 </div>
@@ -807,7 +773,7 @@ export default function GuidePage() {
             <div className="flex flex-col gap-3">
               {[
                 { step: '01', title: 'Set Parameters', desc: 'Configure photon count, distance, noise, and Eve interception in the right sidebar.' },
-                { step: '02', title: 'Click RUN', desc: 'Execute the BB84 pipeline — results and animations update in real time.' },
+                { step: '02', title: 'Click RUN', desc: 'Execute the BB84 pipeline, then play back the completed backend events on the canvas.' },
                 { step: '03', title: 'Watch Photons', desc: 'Observe photon transmission across the quantum channel with accurate polarization.' },
                 { step: '04', title: 'Inspect Bit Stream', desc: 'Open the Inspector tab to step through each individual photon state and measurement.' }
               ].map(item => (
@@ -837,6 +803,27 @@ export default function GuidePage() {
           {/* ── SECTION 7: PNS Attack ── */}
           <section id="pns" className="scroll-mt-6">
             <PNSAttackSection />
+            <div className="mt-5"><TryThis title="PNS and decoy comparison" description="Load a realistic weak-coherent source with a modeled PNS attack and decoy intensities enabled." params={{ n_bits: 2000, distance_km: 10, source_model: 'realistic', mu: 0.5, attack_prob: 1, attack_strategy: 'pns', decoy_enabled: true }} onLaunch={launchSetup} /></div>
+          </section>
+
+          <section id="limitations" className="flex flex-col gap-5 scroll-mt-6">
+            <div>
+              <div className="text-xs font-serif italic tracking-wider mb-2 font-medium text-[var(--q-accent)]">Evidence boundary</div>
+              <h2 className="text-3xl font-serif font-semibold tracking-tight text-[var(--text-primary)]">What this <span className="font-calligraphy text-[var(--q-accent)] font-normal">model does not claim</span></h2>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                ['Post-processing', 'The app does not execute authenticated classical reconciliation, error correction or privacy amplification. Its post-sampling key and asymptotic SKR are educational model outputs.'],
+                ['Finite-size security', 'The 11% line is the simulator’s BB84 abort threshold. A below-threshold run is not a deployment security certificate, especially for a small disclosed sample.'],
+                ['Optical hardware', 'Loss, detector efficiency, dark counts, WCP, PNS and decoy behavior are modeled abstractions. They do not replace calibration of a physical link.'],
+                ['Animation', 'Photon motion and polarization glyphs explain recorded backend events. Their position and timing are illustrative and are not measurements of physical propagation speed.'],
+              ].map(([title, copy]) => (
+                <div key={title} className="rounded-lg border p-5" style={{ background: 'var(--panel-bg)', borderColor: 'var(--border-color)' }}>
+                  <h3 className="font-body text-sm font-semibold text-[var(--q-text-1)]">{title}</h3>
+                  <p className="font-body text-xs leading-relaxed text-[var(--q-text-3)] mt-2">{copy}</p>
+                </div>
+              ))}
+            </div>
           </section>
 
           {/* ── SECTION 8: Guided Experiments ── */}

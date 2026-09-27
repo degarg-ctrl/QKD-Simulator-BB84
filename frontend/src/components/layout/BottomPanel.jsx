@@ -21,13 +21,27 @@ import MetricCard from '../metrics/MetricCard'
 import QBERChart from '../metrics/QBERChart'
 import SKRChart from '../metrics/SKRChart'
 import TransmissionPanel from '../results/TransmissionPanel'
+import {
+  getQberConfidenceLabel,
+  getQberPresentation,
+} from '../../lib/qberPresentation'
 
 const MIN_HEIGHT = 120
 const MAX_FRACTION = 0.45
 
 export default function BottomPanel({ className = '' }) {
   const { results, bottomPanelCollapsed,
-    toggleBottomPanel, liveArrivals, params } = useSimulationStore()
+    toggleBottomPanel, liveArrivals, playbackStatus,
+    params, submittedRun } = useSimulationStore()
+  const runParams = submittedRun?.params || params
+  const qberView = getQberPresentation(results)
+  const qberEstimated = qberView.estimated
+  const qberDisplay = qberView.qber
+  const skrDisplay = qberView.skr
+  const previewLabel = getQberConfidenceLabel(qberView.confidence)
+  const qberSampleLabel = qberView.sampleSize > 0
+    ? `${qberView.sampleErrors}/${qberView.sampleSize} sampled`
+    : null
   const [activeTab, setActiveTab] = useState('metrics')
   const [tabDirection, setTabDirection] = useState(0)
   const [height, setHeight] = useState(270)   // comfortable height for charts + disclaimer
@@ -96,9 +110,12 @@ export default function BottomPanel({ className = '' }) {
           {results && (
             <span className="text-xs font-mono tabular-nums
                              text-[var(--text-subtle)]">
-              QBER {results.qber_estimated && results.qber != null
-                ? `${(results.qber * 100).toFixed(2)}%`
-                : 'n/a'} · SKR {results.skr.toFixed(3)}
+              QBER {qberDisplay != null
+                ? `${(qberDisplay * 100).toFixed(2)}%${qberEstimated ? '' : ' ~'}`
+                : 'n/a'}{qberEstimated && qberSampleLabel
+                ? ` (${qberSampleLabel})` : ''} · SKR {skrDisplay != null
+                ? `${skrDisplay.toFixed(3)}${qberEstimated ? '' : ' ~'}`
+                : 'n/a'}
             </span>
           )}
         </div>
@@ -214,17 +231,19 @@ export default function BottomPanel({ className = '' }) {
                 <div className="grid grid-cols-2 gap-3 w-80 flex-shrink-0">
                   <MetricCard
                     label="QBER"
-                    value={results.qber_estimated && results.qber != null
-                      ? (results.qber * 100).toFixed(2) : '—'}
-                    unit={results.qber_estimated && results.qber != null ? '%' : ''}
-                    status={!results.qber_estimated ? 'inactive'
+                    value={qberDisplay != null
+                      ? (qberDisplay * 100).toFixed(2) : '—'}
+                    unit={qberDisplay != null ? '%' : ''}
+                    status={!qberEstimated ? 'inactive'
                       : results.qber >= 0.11 ? 'danger'
                         : results.qber >= 0.07 ? 'warning' : 'normal'}
-                    subtitle={!results.qber_estimated
-                      ? 'Not estimated (small sample)'
-                      : results.secure_threshold_breached
-                        ? 'Session aborted' : 'Secure'}
-                    gauge={results.qber_estimated && results.qber != null ? {
+                    subtitle={!qberEstimated
+                      ? qberDisplay != null
+                        ? `${previewLabel} · ${qberView.sampleErrors}/${qberView.sampleSize} errors`
+                        : 'Not estimated (no sifted sample)'
+                      : qberSampleLabel || (results.secure_threshold_breached
+                        ? 'Session aborted' : 'Below threshold')}
+                    gauge={qberEstimated ? {
                       value: results.qber * 100,
                       max: 11,
                       label: 'BB84 Limit: 11%'
@@ -232,9 +251,14 @@ export default function BottomPanel({ className = '' }) {
                   />
                   <MetricCard
                     label="SKR"
-                    value={results.skr.toFixed(3)} unit="bits/bit"
-                    status={results.skr === 0 ? 'danger'
-                      : results.skr < 0.05 ? 'warning' : 'normal'}
+                    value={skrDisplay != null ? skrDisplay.toFixed(3) : '—'}
+                    unit={skrDisplay != null ? 'bits/bit' : ''}
+                    status={!qberEstimated ? 'inactive'
+                      : results.skr === 0 ? 'danger'
+                        : results.skr < 0.05 ? 'warning' : 'normal'}
+                    subtitle={!qberEstimated && skrDisplay != null
+                      ? `${previewLabel} · official SKR withheld`
+                      : undefined}
                   />
                   <MetricCard
                     label="Sifted Key"
@@ -252,22 +276,38 @@ export default function BottomPanel({ className = '' }) {
                   <div className="flex-1 grid grid-cols-2 gap-6 min-h-0">
                     <QBERChart
                       data={results.qber_vs_distance}
-                      currentQBER={results.qber}
-                      distance={params?.distance_km}
+                      currentQBER={qberDisplay}
+                      currentQBERPreview={!qberEstimated && qberDisplay != null}
+                      distance={runParams?.distance_km}
                     />
                     <SKRChart
                       data={results.skr_vs_distance}
-                      currentSKR={results.skr}
-                      distance={params?.distance_km}
+                      currentSKR={skrDisplay}
+                      currentSKRPreview={!qberEstimated && skrDisplay != null}
+                      distance={runParams?.distance_km}
                     />
                   </div>
                   <div className="pt-2 mt-1 flex items-center gap-2 text-xs text-[var(--text-subtle)] border-t border-[var(--border-color)]/30 flex-shrink-0">
                     <span className="text-[var(--text-muted)]">ℹ</span>
                     <span>
-                      Graph shows the theoretical model across distances.
-                      Simulated value shows your actual run result.
-                      Differences are normal at low photon counts — use
-                      n_bits ≥ 5000 for convergence.
+                      {runParams?.attack_strategy === 'pns' ? (
+                        <>
+                          PNS does not add polarization-error QBER. The curve
+                          shows channel noise and detector dark-count effects;
+                          use the PNS and decoy indicators to assess leakage.
+                        </>
+                      ) : (
+                        <>
+                          Graph shows the theoretical model across distances.
+                          {qberEstimated
+                            ? ' Simulated value shows your actual run result.'
+                            : qberDisplay != null
+                              ? ` ${previewLabel} calculated from ${qberView.sampleSize} sifted bits (${qberView.sampleErrors} errors). A single error can change the percentage substantially, so this value is diagnostic only and does not certify security.`
+                              : ' QBER is not estimated until enough sifted bits are available.'}
+                          Differences are normal at low photon counts — use
+                          n_bits ≥ 5000 for convergence.
+                        </>
+                      )}
                     </span>
                   </div>
                 </div>
@@ -279,10 +319,15 @@ export default function BottomPanel({ className = '' }) {
             )}
 
             {activeTab === 'bitstream' && (() => {
-              const isLive = liveArrivals && liveArrivals.length > 0 && liveArrivals.length < (results.bit_stream?.length || 0)
-              const displayList = (liveArrivals && liveArrivals.length > 0)
-                ? [...liveArrivals].sort((a, b) => a.index - b.index)
+              const allDetected = results.playback_stream?.length
+                ? results.playback_stream.filter((record) => record.bob_bit != null)
                 : (results.bit_stream || [])
+              const showingPreview = playbackStatus === 'idle'
+              const isLive = playbackStatus === 'playing'
+              const displayList = showingPreview
+                ? allDetected
+                : [...liveArrivals].sort((a, b) => a.index - b.index)
+              const visibleList = displayList.slice(-200)
 
               return (
                 <div className="overflow-auto h-full flex flex-col">
@@ -292,13 +337,15 @@ export default function BottomPanel({ className = '' }) {
                         <>
                           <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                           <span className="text-emerald-400 font-semibold">LIVE STREAM:</span>
-                          <span className="text-xs font-mono tabular-nums text-[var(--text-secondary)]">{displayList.length} / {results.bit_stream?.length} detected photons received</span>
+                          <span className="text-xs font-mono tabular-nums text-[var(--text-secondary)]">{displayList.length} / {allDetected.length} detected photons received</span>
                         </>
+                      ) : showingPreview ? (
+                        <span className="font-semibold text-xs">PRECOMPUTED PREVIEW: <span className="font-mono tabular-nums">{displayList.length}</span> detected photons</span>
                       ) : (
-                        <span className="font-semibold text-xs">Total Detected Photons: <span className="font-mono tabular-nums">{displayList.length}</span></span>
+                        <span className="font-semibold text-xs">PLAYBACK COMPLETE: <span className="font-mono tabular-nums">{displayList.length}</span> detected photons received</span>
                       )}
                     </div>
-                    <span className="text-xs text-[var(--text-muted)]">Entries appear as photons are received by Bob</span>
+                    <span className="text-xs text-[var(--text-muted)]">Preview is replaced by ordered arrivals once playback begins</span>
                   </div>
                   <div className="overflow-auto flex-1">
                     <table className="w-full text-xs font-mono">
@@ -316,7 +363,7 @@ export default function BottomPanel({ className = '' }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {displayList.map((photon, i) => (
+                        {visibleList.map((photon, i) => (
                           <tr key={`${photon.index}-${i}`}
                             className={`border-b border-[var(--border-color)]
                                 ${photon.intercepted ? 'bg-red-950/20' : ''}
@@ -362,6 +409,11 @@ export default function BottomPanel({ className = '' }) {
                       </tbody>
                     </table>
                   </div>
+                  {displayList.length > visibleList.length && (
+                    <div className="px-2 py-1 text-[11px] text-[var(--text-muted)] border-t border-[var(--border-color)]">
+                      Showing the latest {visibleList.length} rows; all {displayList.length} arrivals remain accounted.
+                    </div>
+                  )}
                 </div>
               )
             })()}

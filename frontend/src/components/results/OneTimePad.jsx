@@ -2,17 +2,19 @@
  * src/components/results/OneTimePad.jsx
  *
  * One-time pad encryption demonstration.
- * Uses the sifted key bits from simulation results
+ * Uses the complete backend post-QBER-sampling key
  * to encrypt and decrypt a user-provided message.
  *
  * Physics basis: BB84 key used as OTP key.
- * Perfect secrecy when: key is random, used once,
- * at least as long as the message. (Shannon, 1949)
+ * This is an educational XOR demonstration. The simulator does not perform
+ * error correction or privacy amplification and does not claim deployment
+ * security.
  */
 
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
+import { getOtpDemoState } from '../../lib/otpDemo'
 
 function toBinary(char) {
   return char.charCodeAt(0).toString(2).padStart(8, '0')
@@ -36,14 +38,8 @@ export default function OneTimePad() {
   const { results } = useSimulationStore()
   const [message, setMessage] = useState('')
 
-  // Extract key bits from sifted key
-  // Use bob_bit from matched photons as the key
-  const keyBits = useMemo(() => {
-    if (!results?.bit_stream) return []
-    return results.bit_stream
-      .filter(p => p.match && !p.lost)
-      .map(p => p.bob_bit)
-  }, [results])
+  const otpState = useMemo(() => getOtpDemoState(results), [results])
+  const keyBits = otpState.keyBits
 
   const maxChars = Math.floor(keyBits.length / 8)
 
@@ -82,7 +78,7 @@ export default function OneTimePad() {
 
   const PRESET_MESSAGES = ['QUANTUM', 'SECURE', 'BB84', 'KEY']
 
-  if (!results || keyBits.length < 8) {
+  if (!otpState.allowed) {
     return (
       <div
         className="p-4 rounded text-center select-none"
@@ -92,8 +88,14 @@ export default function OneTimePad() {
         }}
       >
         <div className="text-[var(--q-text-muted,#94a3b8)] text-sm font-body">
-          Run a simulation first to generate a sifted key.
-          At least 8 sifted key bits are required for one-time pad encryption.
+          <div className="font-semibold text-[var(--q-text-primary)] mb-1">
+            OTP demonstration unavailable
+          </div>
+          {otpState.reason}
+          <div className="mt-2 text-xs text-[var(--q-text-dim,#64748b)]">
+            The panel requires at least eight matching post-sampling bits and
+            no modeled security abort or PNS compromise.
+          </div>
         </div>
       </div>
     )
@@ -111,7 +113,7 @@ export default function OneTimePad() {
       >
         <div className="flex flex-col gap-0.5">
           <div className="text-[11px] font-body uppercase tracking-wider text-[var(--q-text-dim,#64748b)] font-semibold">
-            SIFTED QUANTUM KEY AVAILABLE
+            MATCHING POST-SAMPLING KEY
           </div>
           <div className="text-xl font-mono tabular-nums font-bold text-[var(--q-accent-cyan,#38bdf8)]">
             {keyBits.length} <span className="font-body text-xs font-normal text-[var(--q-text-muted)]">bits</span>
@@ -274,7 +276,7 @@ export default function OneTimePad() {
             </div>
           </div>
 
-          {/* Theoretical Security Note */}
+          {/* Scope note */}
           <div
             className="p-3 rounded text-[11px] font-body leading-relaxed"
             style={{
@@ -283,8 +285,8 @@ export default function OneTimePad() {
               color: 'var(--q-text-muted, #94a3b8)'
             }}
           >
-            <span className="text-[var(--q-accent-cyan,#38bdf8)] font-bold">SHANNON PERFECT SECRECY:</span>
-            {' '}XOR encryption using a truly random quantum key provides information-theoretic security (Shannon, 1949). Because the key is generated via quantum mechanical measurements (BB84) and used only once, an adversary with infinite computing power cannot extract any plaintext information from the ciphertext.
+            <span className="text-[var(--q-accent-cyan,#38bdf8)] font-bold">DEMONSTRATION SCOPE:</span>
+            {' '}This panel demonstrates the XOR identity C = M ⊕ K and M = C ⊕ K with backend-produced, matching post-sampling bits. QKDSimFlow uses a seeded-capable PCG64 pseudo-random generator and does not implement error correction, privacy amplification, authentication, or hardware quantum randomness. The result demonstrates protocol mechanics, not production perfect secrecy.
           </div>
         </motion.div>
       )}

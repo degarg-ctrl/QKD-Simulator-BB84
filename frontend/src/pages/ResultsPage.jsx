@@ -23,7 +23,17 @@ import {
   ReferenceDot
 } from 'recharts'
 import useSimulationStore from '../store/simulationStore'
+import {
+  getQberConfidenceLabel,
+  getQberConfidenceStatusLabel,
+  getQberPresentation,
+} from '../lib/qberPresentation'
 import OneTimePad from '../components/results/OneTimePad'
+import RunEvidenceSummary from '../components/results/RunEvidenceSummary'
+import QuantumStateBadge from '../components/quantum/QuantumStateBadge'
+import { filterBitStream, getFullFilterCount } from '../lib/bitStreamFilters'
+
+const BITSTREAM_PAGE_SIZE = 200
 
 // ─── HELPER: compute theoretical values at exact distance ─
 function getTheoreticalAtDistance(results, distanceKm) {
@@ -127,8 +137,18 @@ function EmptyResults() {
 
 // ─── MAIN PAGE ────────────────────────────────────────────
 export default function ResultsPage() {
-  const { results, params, sourceModel } = useSimulationStore()
+  const {
+    results,
+    params: editableParams,
+    sourceModel: editableSourceModel,
+    submittedRun,
+  } = useSimulationStore()
+  // Results describe the request that produced them. Sidebar edits made after
+  // submission must not relabel the completed run.
+  const params = submittedRun?.params || editableParams
+  const sourceModel = submittedRun?.sourceModel || editableSourceModel
   const [bitStreamFilter, setBitStreamFilter] = useState('all')
+  const [bitStreamPage, setBitStreamPage] = useState(0)
   const [inspectedPhoton, setInspectedPhoton] = useState(null)
   const [runTimestamp] = useState(() => new Date().toLocaleString())
 
@@ -141,8 +161,18 @@ export default function ResultsPage() {
   const theoreticalSurvivalRate = theoreticalSurvival(
     params.distance_km, detectorEta
   )
-  const qberEstimated = results.qber_estimated === true &&
-    results.qber != null
+  const qberView = getQberPresentation(results)
+  const qberEstimated = qberView.estimated
+  const displayedQber = qberView.qber
+  const displayedSkr = qberView.skr
+  const previewConfidence = qberView.confidence
+  const previewLabel = getQberConfidenceLabel(previewConfidence)
+  const qberSampleLabel = qberView.sampleSize > 0
+    ? `${qberView.sampleErrors}/${qberView.sampleSize} sampled bits`
+    : null
+  const fullSiftedErrorRate = results.sifted_key_length > 0
+    ? qberView.fullErrors / results.sifted_key_length
+    : null
   const isBreached = results.secure_threshold_breached === true
   const isSecure = qberEstimated && !isBreached
   const isUndetermined = !qberEstimated
@@ -158,46 +188,89 @@ export default function ResultsPage() {
     theoretical: parseFloat(d.skr.toFixed(4))
   }))
 
-  // Filter bit stream
-  const filteredBitStream = results.bit_stream.filter(p => {
-    if (bitStreamFilter === 'matched') return p.match
-    if (bitStreamFilter === 'intercepted') return p.intercepted
-    if (bitStreamFilter === 'lost') return p.lost
-    return true
-  })
+  // The inspection table uses the all-outcome event stream so filters can
+  // include lost pulses. For large runs this is the backend's representative
+  // sample; full counts remain available in TransmissionPanel.
+  const fullEventStream = results.playback_stream?.length
+    ? results.playback_stream
+    : (results.event_stream?.length ? results.event_stream : results.bit_stream)
+  const detectedEventStream = results.playback_stream?.length
+    ? results.playback_stream.filter((record) => record.bob_bit != null)
+    : (results.bit_stream || [])
+  const detectedOnlyFilter = ['matched', 'mismatch', 'siftedErrors']
+    .includes(bitStreamFilter)
+  const inspectionStream = detectedOnlyFilter
+    ? detectedEventStream : fullEventStream
+  const filteredBitStream = filterBitStream(inspectionStream, bitStreamFilter)
+  const fullFilterCount = getFullFilterCount(
+    bitStreamFilter,
+    results.transmission,
+    { ...results, fullErrors: qberView.fullErrors },
+    bitStreamFilter === 'all' ? inspectionStream.length : filteredBitStream.length,
+  )
+  const inspectionIsSampled = !results.playback_stream?.length
+    && filteredBitStream.length < fullFilterCount
+  const bitStreamFilterOptions = [
+    { id: 'all', label: 'All Pulses' },
+    { id: 'matched', label: 'Sifted Key' },
+    { id: 'mismatch', label: 'Basis Mismatch' },
+    { id: 'siftedErrors', label: 'Sifted Errors' },
+    { id: 'intercepted', label: 'Eve Intercepted' },
+    { id: 'lost', label: 'Lost' },
+  ]
+  const bitStreamPageCount = Math.max(
+    1, Math.ceil(filteredBitStream.length / BITSTREAM_PAGE_SIZE)
+  )
+  const safeBitStreamPage = Math.min(bitStreamPage, bitStreamPageCount - 1)
+  const pagedBitStream = filteredBitStream.slice(
+    safeBitStreamPage * BITSTREAM_PAGE_SIZE,
+    (safeBitStreamPage + 1) * BITSTREAM_PAGE_SIZE
+  )
 
   const comparisonRows = [
     {
       metric: 'QBER',
-      simulated: qberEstimated
-        ? `${(results.qber * 100).toFixed(2)}%`
+      simulated: displayedQber != null
+        ? `${(displayedQber * 100).toFixed(2)}%${qberEstimated ? '' : ` (${previewLabel.toLowerCase()})`}`
         : 'Not estimated',
       theoretical: theoretical
         ? `${(theoretical.qber * 100).toFixed(2)}%`
         : 'N/A',
-      simulatedRaw: qberEstimated ? results.qber : undefined,
+      simulatedRaw: displayedQber != null ? displayedQber : undefined,
       theoreticalRaw: theoretical?.qber || 0,
       isPercent: true,
       invertGood: true,
       note: !qberEstimated
-        ? 'Sifted sample too small to estimate'
-        : results.qber >= 0.11
-          ? '⚠ Threshold breached'
-          : '✓ Within safe range'
+        ? displayedQber != null
+          ? `${previewLabel}; ${qberView.sampleErrors}/${qberView.sampleSize} sifted errors. One error can change this percentage sharply; security verdict remains undetermined.`
+          : 'Sifted sample too small to estimate'
+        : `${qberSampleLabel || 'Sample count unavailable'}${fullSiftedErrorRate != null
+          ? `; full sifted table: ${qberView.fullErrors}/${results.sifted_key_length} (${(fullSiftedErrorRate * 100).toFixed(2)}%)`
+          : ''}${results.qber >= 0.11
+          ? ' · ⚠ Threshold breached'
+          : ' · ✓ Below model threshold'}`
     },
     {
       metric: 'SKR',
-      simulated: results.skr.toFixed(4),
+      simulated: displayedSkr != null
+        ? `${displayedSkr.toFixed(4)}${qberEstimated ? '' : ` (${previewLabel.toLowerCase()})`}`
+        : 'Not estimated',
       theoretical: theoretical
         ? theoretical.skr.toFixed(4)
         : 'N/A',
-      simulatedRaw: results.skr,
+      simulatedRaw: displayedSkr != null ? displayedSkr : undefined,
       theoreticalRaw: theoretical?.skr || 0,
       isPercent: false,
       invertGood: false,
-      note: results.skr === 0
-        ? '⚠ No secure key'
-        : '✓ Key extractable'
+      // The official SKR remains 0 for an undetermined run. A separate
+      // diagnostic preview may be shown without changing that security state.
+      note: !qberEstimated
+        ? displayedSkr != null
+          ? `${previewLabel}; official SKR withheld until QBER is estimated`
+          : 'Not estimated — QBER undetermined'
+        : results.skr === 0
+          ? 'Key extraction blocked by model'
+          : '✓ Positive model estimate'
     },
     {
       metric: 'Sifted Key',
@@ -272,7 +345,13 @@ export default function ResultsPage() {
               }}
             />
             <span>
-              {isUndetermined ? 'UNDETERMINED' : isSecure ? 'SECURE CHANNEL' : 'SECURITY BREACH'}
+              {isUndetermined
+                ? displayedQber != null
+                  ? getQberConfidenceStatusLabel(previewConfidence)
+                  : 'UNDETERMINED'
+                : isSecure
+                  ? 'BELOW QBER THRESHOLD'
+                  : 'SECURITY THRESHOLD BREACHED'}
             </span>
           </div>
         </div>
@@ -295,7 +374,7 @@ export default function ResultsPage() {
               { label: 'Noise (edet)', value: `${(params.noise_level * 100).toFixed(1)}%` },
               { label: 'Eve Attack', value: `${(params.attack_prob * 100).toFixed(0)}%` },
               { label: 'Strategy', value: params.attack_strategy.replace('_', '-') },
-              { label: 'Gates', value: `${useSimulationStore.getState().placedGates?.length || 0} placed` },
+              { label: 'Gates', value: `${submittedRun?.placedGates?.length ?? params.gates?.length ?? 0} placed` },
               {
                 label: 'Source Model',
                 value: sourceModel === 'ideal' ? 'Ideal SPS' : 'WCP Laser'
@@ -319,6 +398,8 @@ export default function ResultsPage() {
             ))}
           </div>
         </div>
+
+        <RunEvidenceSummary results={results} qberView={qberView} />
 
         {/* Comparison table */}
         <div className="flex flex-col gap-2.5">
@@ -425,7 +506,7 @@ export default function ResultsPage() {
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[var(--q-accent-crimson,#e05252)] inline-block" />
-                Measured at <span className="font-mono tabular-nums">{params.distance_km} km</span>
+                {qberEstimated ? 'Measured' : 'Preview'} at <span className="font-mono tabular-nums">{params.distance_km} km</span>
               </span>
             </div>
             <ResponsiveContainer width="100%" height={210}>
@@ -475,17 +556,21 @@ export default function ResultsPage() {
                   strokeWidth={2}
                   dot={false}
                 />
-                {qberEstimated && (
+                {displayedQber != null && (
                   <ReferenceDot
                     x={Math.round(params.distance_km)}
-                    y={parseFloat((results.qber * 100).toFixed(2))}
+                    y={parseFloat((displayedQber * 100).toFixed(2))}
                     r={5}
-                    fill="var(--q-accent-crimson, #e05252)"
+                    fill={qberEstimated
+                      ? 'var(--q-accent-crimson, #e05252)'
+                      : 'var(--q-accent-amber, #f59e0b)'}
                     stroke="var(--q-surface-0, #131317)"
                     strokeWidth={1.5}
                     label={{
-                      value: `${(results.qber * 100).toFixed(1)}%`,
-                      fill: 'var(--q-accent-crimson, #e05252)',
+                      value: `${(displayedQber * 100).toFixed(1)}%${qberEstimated ? '' : ' preview'}`,
+                      fill: qberEstimated
+                        ? 'var(--q-accent-crimson, #e05252)'
+                        : 'var(--q-accent-amber, #f59e0b)',
                       fontSize: 10,
                       fontFamily: 'monospace',
                       position: 'top'
@@ -519,7 +604,7 @@ export default function ResultsPage() {
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[var(--q-accent-emerald,#10b981)] inline-block" />
-                Measured at <span className="font-mono tabular-nums">{params.distance_km} km</span>
+                {qberEstimated ? 'Measured' : 'Preview'} at <span className="font-mono tabular-nums">{params.distance_km} km</span>
               </span>
             </div>
             <ResponsiveContainer width="100%" height={210}>
@@ -557,21 +642,25 @@ export default function ResultsPage() {
                   strokeWidth={2}
                   dot={false}
                 />
-                <ReferenceDot
+                {displayedSkr != null && <ReferenceDot
                   x={Math.round(params.distance_km)}
-                  y={parseFloat(results.skr.toFixed(4))}
+                  y={parseFloat(displayedSkr.toFixed(4))}
                   r={5}
-                  fill="var(--q-accent-emerald, #10b981)"
+                  fill={qberEstimated
+                    ? 'var(--q-accent-emerald, #10b981)'
+                    : 'var(--q-accent-amber, #f59e0b)'}
                   stroke="var(--q-surface-0, #131317)"
                   strokeWidth={1.5}
                   label={{
-                    value: results.skr.toFixed(3),
-                    fill: 'var(--q-accent-emerald, #10b981)',
+                    value: `${displayedSkr.toFixed(3)}${qberEstimated ? '' : ' preview'}`,
+                    fill: qberEstimated
+                      ? 'var(--q-accent-emerald, #10b981)'
+                      : 'var(--q-accent-amber, #f59e0b)',
                     fontSize: 10,
                     fontFamily: 'monospace',
                     position: 'top'
                   }}
-                />
+                />}
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -599,7 +688,7 @@ export default function ResultsPage() {
                 : 'var(--q-accent-crimson, #e05252)'
             }}
           >
-            PROTOCOL SECURITY CERTIFICATION
+            PROTOCOL SECURITY ASSESSMENT
           </div>
           <div className="grid md:grid-cols-2 gap-5">
             <div className="flex flex-col gap-2">
@@ -614,16 +703,21 @@ export default function ResultsPage() {
                       : 'var(--q-accent-crimson, #e05252)'
                   }}
                 >
-                  {isUndetermined ? 'ⓘ QBER NOT ESTIMATED'
-                    : isSecure ? '✓ QUANTUM SECURE VERIFIED' : '⚠ SECURITY THRESHOLD BREACHED'}
+                  {isUndetermined
+                    ? displayedQber != null
+                      ? `⚠ ${previewLabel.toUpperCase()}`
+                      : 'ⓘ QBER NOT ESTIMATED'
+                    : isSecure ? '✓ QBER BELOW ABORT THRESHOLD' : '⚠ SECURITY THRESHOLD BREACHED'}
                 </span>
               </div>
               <div className="text-sm font-body text-[var(--q-text-muted,#94a3b8)] leading-relaxed">
                 {isUndetermined
-                  ? `Insufficient sifted pulses to estimate QBER statistically (sifted key = ${results.sifted_key_length}). QBER is classified as undetermined rather than 0.0%, and key certification is suspended.`
+                  ? displayedQber != null
+                    ? `${previewLabel} calculated from ${qberView.sampleSize} sifted bits (${qberView.sampleErrors} errors). With so few sifted bits, even one error can change the percentage substantially, so this value is diagnostic only. The official security verdict remains undetermined and key extraction is blocked until a sufficient QBER sample is available.`
+                    : `Insufficient sifted pulses to calculate a QBER preview (sifted key = ${results.sifted_key_length}). QBER remains unestimated and no key-extraction decision was reached.`
                   : isSecure
-                    ? `Observed QBER of ${(results.qber * 100).toFixed(2)}% is safely below the 11.0% Shor-Preskill security limit. Channel disturbance from eavesdropping is within acceptable bounds; privacy amplification can distill a secret key.`
-                    : `Observed QBER of ${(results.qber * 100).toFixed(2)}% exceeds the 11.0% limit. Eavesdropping or channel disturbance is too high to guarantee secrecy. Transmission session aborted.`
+                    ? `Observed QBER of ${(results.qber * 100).toFixed(2)}% is below the simulator's 11.0% abort threshold. The reported SKR is an asymptotic model estimate; error correction and privacy amplification are not executed by this application.`
+                    : `Observed QBER of ${(results.qber * 100).toFixed(2)}% exceeds the simulator's 11.0% abort threshold. The modeled run therefore blocks key extraction.`
                 }
               </div>
             </div>
@@ -631,7 +725,7 @@ export default function ResultsPage() {
               {[
                 {
                   label: 'Eve Detection Alarm',
-                  value: !qberEstimated ? 'Undetermined' : results.qber >= 0.11 ? 'Triggered (Breach)' : 'Silent (Safe)',
+                  value: !qberEstimated ? 'Undetermined' : results.qber >= 0.11 ? 'Triggered (Breach)' : 'Not triggered',
                   ok: qberEstimated && results.qber < 0.11
                 },
                 {
@@ -641,12 +735,19 @@ export default function ResultsPage() {
                 },
                 {
                   label: 'Key Extraction Outcome',
-                  value: isSecure ? 'Distillation Successful' : 'Session Aborted',
+                  // An undetermined run was not aborted — QBER was never estimated,
+                  // so no extraction decision was reached. (Audit fix C1 semantics.)
+                  value: isUndetermined
+                    ? 'Undetermined'
+                    : isSecure ? 'Threshold check passed' : 'Session Aborted',
                   ok: isSecure
                 },
                 {
-                  label: 'Distillable Key Length',
-                  value: isSecure ? `~${Math.round(results.sifted_key_length * 0.9)} bits` : '0 bits',
+                  label: 'Post-sampling Key Length',
+                  // Never render an unestimated length as a definite 0.
+                  value: isUndetermined
+                    ? 'Not estimated'
+                    : isSecure ? `${results.post_sample_key_length ?? 0} bits` : '0 bits',
                   ok: isSecure
                 },
               ].map(item => (
@@ -693,7 +794,7 @@ export default function ResultsPage() {
                     label: 'Single Photon',
                     value: `${((results.wcp_stats.single_fraction || 0) * 100).toFixed(1)}%`,
                     color: '#00aacc',
-                    note: 'Secure'
+                    note: 'Preferred for BB84'
                   },
                   {
                     label: 'Multi-Photon',
@@ -758,8 +859,8 @@ export default function ResultsPage() {
                       <div>
                         <div className="text-gray-400 font-medium">QBER shows</div>
                         <div className="text-green-400 font-mono font-bold tabular-nums">
-                          {qberEstimated
-                            ? `${(results.qber * 100).toFixed(2)}%`
+                          {displayedQber != null
+                            ? `${(displayedQber * 100).toFixed(2)}%${qberEstimated ? '' : ' (preview)'}`
                             : 'Not estimated'}
                           {qberEstimated && (
                             <span className="text-red-400 ml-1 font-body">
@@ -770,8 +871,8 @@ export default function ResultsPage() {
                       </div>
                     </div>
                     <div className="mt-2 text-xs text-gray-400 font-body leading-relaxed">
-                      ℹ QBER appears secure but Eve has stolen key
-                      information. Enable Decoy States to detect.
+                      ℹ QBER is below the abort threshold, but the model reports
+                      information leakage to Eve. Enable Decoy States to detect it.
                     </div>
                   </div>
                 )}
@@ -859,31 +960,33 @@ export default function ResultsPage() {
             <div className="text-[11px] font-body text-[var(--q-text-dim,#64748b)] uppercase tracking-wider font-semibold">
               QUANTUM BIT STREAM INSPECTION
               <span className="text-[var(--q-text-dim,#64748b)] ml-2 font-normal">
-                (<span className="font-mono tabular-nums">{filteredBitStream.length}</span> of <span className="font-mono tabular-nums">{results.bit_stream.length}</span> pulses displayed)
+                (<span className="font-mono tabular-nums">{filteredBitStream.length}</span> of <span className="font-mono tabular-nums">{fullFilterCount}</span> matching full-run events available{inspectionIsSampled ? ', representative sample' : ', paginated below'})
               </span>
             </div>
-            {/* Filters */}
-            <div className="flex items-center gap-1.5">
-              {[
-                { id: 'all', label: 'All Pulses' },
-                { id: 'matched', label: 'Sifted Key' },
-                { id: 'mismatch', label: 'Basis Mismatch' },
-                { id: 'intercepted', label: 'Eve Intercepted' },
-                { id: 'lost', label: 'Lost' },
-              ].map(f => (
-                <button
-                  key={f.id}
-                  onClick={() => setBitStreamFilter(f.id)}
-                  className={`px-2.5 py-1 text-[11px] font-body font-medium rounded border transition-colors ${
-                    bitStreamFilter === f.id
-                      ? 'border-[var(--q-accent-cyan,#38bdf8)] text-[var(--q-accent-cyan,#38bdf8)] bg-[var(--q-surface-2,#222227)] font-semibold'
-                      : 'border-[var(--q-border-subtle,#282830)] text-[var(--q-text-muted,#94a3b8)] hover:text-[var(--q-text-bright,#f1f5f9)] hover:bg-white/5'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
+            <label className="flex items-center gap-2 text-[11px] font-body text-[var(--q-text-dim,#64748b)] uppercase tracking-wider">
+              Filter
+              <select
+                aria-label="Filter quantum bit stream"
+                value={bitStreamFilter}
+                onChange={(event) => {
+                  setBitStreamFilter(event.target.value)
+                  setBitStreamPage(0)
+                  setInspectedPhoton(null)
+                }}
+                className="w-44 rounded border px-3 py-1.5 text-xs font-body font-medium normal-case tracking-normal outline-none cursor-pointer"
+                style={{
+                  backgroundColor: 'var(--q-surface-2, #222227)',
+                  borderColor: 'var(--q-border, #34343d)',
+                  color: 'var(--q-text-bright, #f1f5f9)',
+                }}
+              >
+                {bitStreamFilterOptions.map((filter) => (
+                  <option key={filter.id} value={filter.id}>
+                    {filter.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
 
           {/* Interactive Inspection Card */}
@@ -974,11 +1077,7 @@ export default function ResultsPage() {
                   </div>
                   <div className="flex justify-between font-body">
                     <span className="text-[var(--q-text-dim,#64748b)]">State Vector:</span>
-                    <span className="text-[var(--q-text-bright,#f1f5f9)] font-mono font-bold">
-                      {inspectedPhoton.alice_basis === '+'
-                        ? (inspectedPhoton.alice_bit === 0 ? '|0⟩' : '|1⟩')
-                        : (inspectedPhoton.alice_bit === 0 ? '|+⟩' : '|−⟩')} ({inspectedPhoton.polarization_angle ?? (inspectedPhoton.alice_basis === '+' ? (inspectedPhoton.alice_bit === 0 ? 0 : 90) : (inspectedPhoton.alice_bit === 0 ? 45 : 135))}°)
-                    </span>
+                    <QuantumStateBadge basis={inspectedPhoton.alice_basis} bit={inspectedPhoton.alice_bit} size="sm" showDetails />
                   </div>
                 </div>
 
@@ -1080,7 +1179,7 @@ export default function ResultsPage() {
             <table className="w-full text-xs font-body">
               <thead className="sticky top-0" style={{ backgroundColor: 'var(--q-surface-2, #222227)' }}>
                 <tr style={{ borderBottom: '1px solid var(--q-border-subtle, #282830)' }}>
-                  {['#', 'Alice Bit', 'A. Basis', 'B. Basis', 'Bob Bit', 'Match', 'Eve', 'Angle', 'Action'].map(h => (
+                  {['#', 'Alice State', 'A. Basis', 'B. Basis', 'Bob Bit', 'Match', 'Eve', 'Angle', 'Action'].map(h => (
                     <th
                       key={h}
                       className="text-left px-3.5 py-2.5 text-[var(--q-text-dim,#64748b)] uppercase tracking-wider text-[11px] font-semibold"
@@ -1091,7 +1190,7 @@ export default function ResultsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredBitStream.map((photon) => {
+                {pagedBitStream.map((photon) => {
                   const isInspected = inspectedPhoton?.index === photon.index
                   return (
                     <tr
@@ -1109,7 +1208,7 @@ export default function ResultsPage() {
                         {photon.index}
                       </td>
                       <td className="px-3.5 py-2 text-[var(--q-text-bright,#f1f5f9)] font-mono font-semibold tabular-nums">
-                        {photon.alice_bit}
+                        <QuantumStateBadge basis={photon.alice_basis} bit={photon.alice_bit} size="sm" showKet={false} />
                       </td>
                       <td
                         className="px-3.5 py-2 font-mono font-bold"
@@ -1129,7 +1228,7 @@ export default function ResultsPage() {
                             : 'var(--q-accent-violet, #c084fc)'
                         }}
                       >
-                        [{photon.bob_basis}]
+                        {photon.bob_basis ? `[${photon.bob_basis}]` : '—'}
                       </td>
                       <td className="px-3.5 py-2 text-[var(--q-text-bright,#f1f5f9)] font-mono tabular-nums">
                         {photon.bob_bit ?? '—'}
@@ -1180,6 +1279,29 @@ export default function ResultsPage() {
               </tbody>
             </table>
           </div>
+          {bitStreamPageCount > 1 && (
+            <div className="flex items-center justify-end gap-3 text-xs font-body text-[var(--q-text-muted,#94a3b8)]">
+              <button
+                type="button"
+                disabled={safeBitStreamPage === 0}
+                onClick={() => setBitStreamPage((page) => Math.max(0, page - 1))}
+                className="px-3 py-1.5 rounded border border-[var(--q-border,#34343d)] disabled:opacity-40"
+              >
+                Previous
+              </button>
+              <span className="font-mono tabular-nums">
+                Page {safeBitStreamPage + 1} / {bitStreamPageCount}
+              </span>
+              <button
+                type="button"
+                disabled={safeBitStreamPage >= bitStreamPageCount - 1}
+                onClick={() => setBitStreamPage((page) => Math.min(bitStreamPageCount - 1, page + 1))}
+                className="px-3 py-1.5 rounded border border-[var(--q-border,#34343d)] disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
 
       </div>

@@ -19,6 +19,9 @@ from core.constants import (
     SAMPLE_FRACTION_FOR_QBER,
     QBER_MIN_SAMPLE_SIZE,
     QBER_MIN_SIFTED_COUNT,
+    QBER_FIXED_SAMPLE_SIZE,
+    QBER_PERCENT_SAMPLE_THRESHOLD,
+    QBER_PREVIEW_LOW_MIN_SIFTED_COUNT,
 )
 from core.rng import resolve_rng
 
@@ -94,22 +97,21 @@ class BB84Protocol:
         sample_fraction: float = SAMPLE_FRACTION_FOR_QBER
     ) -> dict:
         """
-        Estimate QBER by sampling a fraction of the sifted key.
+        Estimate QBER with the tiered sifted-key sampling policy.
 
         Small-sample semantics (audit fix C1)
         -------------------------------------
-        QBER is only reported when the sacrificed sample is large enough to
-        be meaningful (>= QBER_MIN_SAMPLE_SIZE sampled sifted bits). When the
-        sifted key is too short to yield such a sample, QBER is explicitly
-        reported as NOT ESTIMATED:
+        QBER is only reported when at least QBER_MIN_SIFTED_COUNT sifted bits
+        exist. From 100 through 499 sifted bits, a fixed 50-bit sample is
+        sacrificed. At 500 or more, SAMPLE_FRACTION_FOR_QBER (10%) is used.
+        The two tiers meet continuously at 500 sifted bits. Below the minimum,
+        QBER is explicitly reported as NOT ESTIMATED:
 
             qber            = None
             qber_estimated  = False
 
-        This replaces the previous behaviour where ``floor(0.10 * sifted_count)``
-        could produce a zero-size sample and silently report ``qber = 0.0``
-        with ``threshold_breached = False`` — which is scientifically
-        misleading (an unmeasured key must not be presented as error-free).
+        This supersedes the earlier uniform 10% policy, whose 10- to 49-bit
+        samples were too coarse for the 100-499 sifted-bit range.
 
         When the sample IS sufficient:
 
@@ -118,21 +120,46 @@ class BB84Protocol:
 
         No bits are sacrificed when QBER is not estimated.
 
+        In that insufficient-sample path, ``qber_preview`` reports the
+        observed mismatch fraction across all available sifted bits for
+        diagnostic display only. It never changes the official QBER state,
+        threshold decision, or key-extraction result.
+
         Physics reference: PHYSICS_CONTRACT.md Section 6.
         """
         sifted_count = sift_result['sifted_count']
         alice_bits = np.array(sift_result['alice_bits'])
         bob_bits = np.array(sift_result['bob_bits'])
         sifted_states = sift_result['sifted_states']
+        full_sifted_errors = int(np.sum(alice_bits != bob_bits))
 
         # Insufficient-sample path: not enough sifted bits to form a
         # meaningful QBER sample. Report NOT ESTIMATED — never 0.0.
         if sifted_count < QBER_MIN_SIFTED_COUNT:
+            # Diagnostic preview only. This uses every available sifted bit
+            # so the UI can show the observed mismatch rate for tiny runs,
+            # while the official sampled QBER remains unestimated. These
+            # fields must never be used for threshold or key decisions.
+            preview_errors = full_sifted_errors
+            preview_qber = (
+                preview_errors / sifted_count
+                if sifted_count > 0 else None
+            )
+            preview_confidence = (
+                'very_low'
+                if sifted_count < QBER_PREVIEW_LOW_MIN_SIFTED_COUNT
+                else 'low'
+            ) if sifted_count > 0 else None
             return {
                 'qber': None,
                 'qber_estimated': False,
                 'sample_size': 0,
                 'errors_found': 0,
+                'full_sifted_errors': full_sifted_errors,
+                'qber_preview': preview_qber,
+                'qber_preview_sample_size': sifted_count,
+                'qber_preview_errors': preview_errors,
+                'qber_preview_confidence': preview_confidence,
                 'threshold_breached': False,
                 # No sacrifice: without an estimate we keep every sifted bit.
                 'remaining_states': list(sifted_states),
@@ -140,7 +167,11 @@ class BB84Protocol:
                 'remaining_bob_bits': [int(b) for b in bob_bits],
             }
             
-        sample_size = int(np.floor(sample_fraction * sifted_count))
+        sample_size = (
+            QBER_FIXED_SAMPLE_SIZE
+            if sifted_count < QBER_PERCENT_SAMPLE_THRESHOLD
+            else int(np.floor(sample_fraction * sifted_count))
+        )
         indices = np.arange(sifted_count)
         self.rng.shuffle(indices)
         
@@ -164,6 +195,7 @@ class BB84Protocol:
             'qber_estimated': True,
             'sample_size': sample_size,
             'errors_found': errors_found,
+            'full_sifted_errors': full_sifted_errors,
             'threshold_breached': threshold_breached,
             'remaining_states': remaining_states,
             'remaining_alice_bits': remaining_alice,
@@ -172,10 +204,10 @@ class BB84Protocol:
 
     def extract_key(self, qber_result: dict) -> dict:
         """
-        Extract the final secure key from remaining sifted bits.
+        Extract the post-sampling key candidate from remaining sifted bits.
 
         When QBER could not be estimated (insufficient sample), security
-        cannot be certified, so no key is extracted. This is distinct from a
+        cannot be evaluated, so no key candidate is returned. This is distinct from a
         measured QBER below threshold — callers must not read "not estimated"
         as "error-free". (Audit fix C1.)
         """

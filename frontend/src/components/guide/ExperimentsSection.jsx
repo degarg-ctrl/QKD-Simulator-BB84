@@ -14,7 +14,7 @@ export default function ExperimentsSection() {
         'Observe low QBER (~2% from noise)',
         'Successful key establishment'
       ],
-      expectedResults: 'QBER < 5%, High SKR, Secure key established',
+      expectedResults: 'QBER < 5%, positive asymptotic SKR estimate, threshold check passes',
       whatToObserve: [
         'Sifted key length (about 50% of raw bits)',
         'QBER from channel noise only',
@@ -114,7 +114,7 @@ export default function ExperimentsSection() {
         'Run simulation',
         'Compare with/without decoy states'
       ],
-      expectedResults: 'PNS attack becomes detectable, Security restored',
+      expectedResults: 'PNS attack becomes detectable through the decoy-state model',
       whatToObserve: [
         'Signal vs decoy state statistics',
         'Detection rate analysis',

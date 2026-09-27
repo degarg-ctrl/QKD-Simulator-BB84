@@ -41,6 +41,9 @@ import {
     usePhotonAnimation, createCounters,
     countSkipped, countCompletion, countRelease,
     formatAliceReadout, formatBobReadout,
+    completePlaybackBatch, getPlaybackEvents, waveBatchSize,
+    representativeRecordForWaveBatch,
+    drainActiveParticles,
 } from './usePhotonAnimation'
 import useSimulationStore from '../store/simulationStore'
 import { PhotonParticle } from '../components/canvas/PhotonParticle'
@@ -102,6 +105,80 @@ describe('usePhotonAnimation module contract', () => {
         for (const outcome of EVENT_OUTCOMES) {
             expect(counters).toHaveProperty(outcome)
         }
+    })
+})
+
+describe('Exact full-run playback transport', () => {
+    it('prefers the complete playback stream and preserves legacy fallbacks', () => {
+        const full = [record({ index: 0 }), record({ index: 1 })]
+        const sample = [record({ index: 0 })]
+        expect(getPlaybackEvents({ playback_stream: full, event_stream: sample })).toBe(full)
+        expect(getPlaybackEvents({ event_stream: sample, bit_stream: [] })).toBe(sample)
+        expect(getPlaybackEvents({ bit_stream: full })).toBe(full)
+    })
+
+    it.each([
+        [1, 1], [100, 1], [499, 5], [500, 5], [501, 5],
+        [600, 5], [1000, 9], [1400, 12], [10000, 84],
+    ])('batches %i events into at most 120 wave visuals', (count, expected) => {
+        const size = waveBatchSize(count)
+        expect(size).toBe(expected)
+        expect(Math.ceil(count / size)).toBeLessThanOrEqual(120)
+    })
+
+    it('uses a Bob-detected event as a grouped wave carrier when one exists', () => {
+        const lost = record({
+            index: 20, fiber_survived: false, detector_detected: false,
+            bob_bit: null, match: false, sifted: false,
+        })
+        const detected = record({ index: 21 })
+        const laterLost = record({
+            index: 22, fiber_survived: false, detector_detected: false,
+            bob_bit: null, match: false, sifted: false,
+        })
+
+        expect(representativeRecordForWaveBatch([lost, detected, laterLost])).toBe(detected)
+        expect(representativeRecordForWaveBatch([lost, laterLost])).toBe(lost)
+        expect(representativeRecordForWaveBatch([])).toBeNull()
+    })
+
+    it('completes an ordered mixed-outcome batch without duplicate arrivals', () => {
+        const records = [
+            record({ index: 4 }),
+            record({ index: 5, fiber_survived: false, detector_detected: false,
+                bob_bit: null, match: false, sifted: false }),
+            record({ index: 6, dark_count: true, detector_detected: false,
+                bob_bit: 0, match: false, sifted: false }),
+        ]
+        const counters = createCounters()
+        records.forEach((item) => countRelease(counters, item))
+        const arrivals = []
+        const latest = completePlaybackBatch(counters, records, arrivals)
+
+        expect(counters.released).toBe(3)
+        expect(counters.completed).toBe(3)
+        expect(counters.live_detected).toBe(2)
+        expect(counters.live_fiber_loss).toBe(1)
+        expect(arrivals.map((item) => item.index)).toEqual([4, 6])
+        expect(latest.index).toBe(6)
+    })
+
+    it('drains in-flight wave batches before switching to beam mode', () => {
+        const counters = createCounters()
+        const first = [record({ index: 4 }), record({ index: 5 })]
+        const second = [record({ index: 6 }), record({ index: 7,
+            fiber_survived: false, detector_detected: false,
+            bob_bit: null, match: false, sifted: false })]
+        ;[...first, ...second].forEach((item) => countRelease(counters, item))
+        const arrivals = []
+        const latest = drainActiveParticles(counters, [
+            { _playbackBatch: first },
+            { _playbackBatch: second },
+        ], arrivals)
+
+        expect(counters.completed).toBe(4)
+        expect(arrivals.map((item) => item.index)).toEqual([4, 5, 6])
+        expect(latest.index).toBe(6)
     })
 })
 
@@ -249,9 +326,12 @@ describe('Alice and Bob dynamic readouts formatting', () => {
     })
 
     it('formats Bob readout with match status', () => {
-        const rec = record({ bob_basis: '+', match: true })
+        const rec = record({ index: 37, bob_bit: 1, bob_basis: '+', match: true, polarization_angle: 90 })
         const bob = formatBobReadout(rec, 'detected')
+        expect(bob.photonIndex).toBe(37)
+        expect(bob.bit).toBe(1)
         expect(bob.basis).toBe('+')
+        expect(bob.angle).toBe(90)
         expect(bob.match).toBe(true)
         expect(bob.status).toBe('detected')
     })

@@ -129,10 +129,8 @@ describe('Overlap prevention spacing', () => {
     it('release interval respects the per-lane constraint', () => {
         for (const speed of [0.25, 0.5, 1, 2, 4]) {
             const perLane = minLaneGapFrames(speed)
-            // 3 lanes round-robin: consecutive same-lane launches are
-            // at least ceil(perLane / 3) * 3 >= perLane frames apart... only
-            // if every interval slot is used. The scheduler enforces the
-            // per-lane gap directly, so the interval only needs to stagger.
+            // With one lane, the global release interval must satisfy the
+            // same-lane spacing constraint directly.
             expect(releaseIntervalFrames(speed)).toBeGreaterThanOrEqual(2)
             expect(releaseIntervalFrames(speed) * LANE_COUNT)
                 .toBeGreaterThanOrEqual(perLane)

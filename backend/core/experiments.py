@@ -57,7 +57,7 @@ EXPERIMENT_PRESETS = {
     'default_params': {
       # Manual-encoding experiments default to 300 photons. At ~50%
       # basis sifting this yields ~150 sifted bits, comfortably above the
-      # minimum QBER sifted count (QBER_MIN_SIFTED_COUNT = 100 -> 10-bit
+      # minimum QBER sifted count (QBER_MIN_SIFTED_COUNT = 100 -> 50-bit
       # sample) so the QBER is actually estimable. With the legacy
       # 8-photon default the QBER was never estimable (audit fix C1).
       'n_bits': 300,

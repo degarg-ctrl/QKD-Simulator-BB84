@@ -16,9 +16,9 @@ export default function ExperimentTooltip({ experiment }) {
         'Alice sends random bits in random bases',
         'Bob measures in random bases',
         'Basis reconciliation occurs',
-        'Final key is established'
+        'Post-sampling key candidate is reported'
       ],
-      expected: 'Low QBER (~0-5%), secure key established'
+      expected: 'Low QBER (~0-5%) and a positive modeled key-rate estimate'
     },
     exp3: {
       name: 'Eavesdropping Detection',

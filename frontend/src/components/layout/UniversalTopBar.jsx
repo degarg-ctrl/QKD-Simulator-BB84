@@ -2,22 +2,37 @@
  * UniversalTopBar.jsx
  * 
  * Universal navigation bar for all pages.
- * Contains: QKD Simulator branding, hamburger menu (Home/Simulator/About), theme toggle
+ * Contains: QKD Simulator branding, hamburger menu (Home/Simulator/Guide), theme toggle
  */
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Home, Atom, BookOpen, Sun, Moon, Menu } from 'lucide-react'
 import useSimulationStore from '../../store/simulationStore'
 
 export default function UniversalTopBar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuButtonRef = useRef(null)
   const { activeView, setActiveView, theme, setTheme } = useSimulationStore()
 
   const menuItems = [
     { id: 'landing', label: 'Home', icon: Home },
     { id: 'simulator', label: 'Simulator', icon: Atom },
-    { id: 'guide', label: 'About', icon: BookOpen },
+    { id: 'guide', label: 'Guide', icon: BookOpen },
   ]
+
+  // Escape closes the navigation menu and returns focus to its trigger.
+  // Without this the menu could only be dismissed with the mouse.
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setMenuOpen(false)
+        menuButtonRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuOpen])
 
   return (
     <div className="flex items-center justify-between px-3 py-1.5 h-12 flex-shrink-0 z-30 select-none"
@@ -30,9 +45,13 @@ export default function UniversalTopBar() {
       <div className="flex items-center gap-3">
         {/* Hamburger Menu */}
         <button
+          ref={menuButtonRef}
           onClick={() => setMenuOpen(!menuOpen)}
           className="p-1.5 rounded transition-colors text-[var(--q-text-2)] hover:text-[var(--q-text-1)] hover:bg-[var(--q-surface-active)]"
-          aria-label="Menu"
+          aria-label="Navigation Menu"
+          aria-expanded={menuOpen}
+          aria-controls="universal-nav-menu"
+          title="Open navigation menu"
         >
           <Menu size={17} />
         </button>
@@ -41,6 +60,7 @@ export default function UniversalTopBar() {
         <button
           onClick={() => setActiveView('landing')}
           className="flex items-center gap-2 hover:opacity-85 transition-opacity"
+          title="Back to Landing Page"
         >
           <span className="font-body text-sm tracking-wide font-bold text-[var(--q-text-1)]">
             QKDSimFlow
@@ -97,6 +117,7 @@ export default function UniversalTopBar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.15 }}
+              id="universal-nav-menu"
               className="absolute top-12 left-4 z-50 rounded-lg shadow-2xl overflow-hidden"
               style={{
                 backgroundColor: 'var(--panel-bg)',
@@ -113,6 +134,7 @@ export default function UniversalTopBar() {
                       setActiveView(item.id)
                       setMenuOpen(false)
                     }}
+                    aria-current={activeView === item.id ? 'page' : undefined}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-body font-medium transition-colors ${
                       activeView === item.id
                         ? 'bg-cyan-500/20 text-cyan-400'

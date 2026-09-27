@@ -170,7 +170,7 @@ export default function InteractiveBB84Stepper() {
         )}
         {currentStep === 6 && (
           <p className="text-[var(--q-text-2)]">
-            <b>Phase 6: Security Verdict & Error Rate.</b> Alice and Bob compare a test sample of their sifted bits to estimate the Quantum Bit Error Rate (QBER). If QBER &ge; 11.0%, the session is immediately aborted!
+            <b>Phase 6: Modeled Verdict & Error Rate.</b> Alice and Bob compare a test sample of their sifted bits to estimate the Quantum Bit Error Rate (QBER). If QBER &ge; 11.0%, this simulator aborts key extraction.
           </p>
         )}
       </div>
@@ -285,7 +285,7 @@ export default function InteractiveBB84Stepper() {
                 color: isSecure ? 'var(--q-secure)' : 'var(--q-danger)',
               }}
             >
-              {isSecure ? 'SECURE SESSION (< 11%)' : 'COMPROMISED SESSION (ABORTED)'}
+              {isSecure ? 'BELOW ABORT THRESHOLD (< 11%)' : 'ABORT THRESHOLD BREACHED'}
             </span>
           </div>
         ) : (

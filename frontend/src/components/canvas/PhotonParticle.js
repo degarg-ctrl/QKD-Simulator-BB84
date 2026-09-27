@@ -34,7 +34,7 @@
 
 import {
   ALICE_X, BOB_X, EVE_X, LANE_Y_POSITIONS, NODE_RADIUS,
-  PALETTE, classifyOutcome, basisColor, fiberLossFraction,
+  PALETTE, COLORS, classifyOutcome, basisColor, fiberLossFraction,
   phaseForIndex,
 } from './visualEncoding'
 
@@ -114,8 +114,9 @@ export class PhotonParticle {
     // | 'detectorMiss' | 'darkSpark' | 'dead'
     this.state = 'travelling'
     this.opacity = 1.0
-    this.radius = 7
-    this.glowRadius = 14
+    // Keep all four BB84 orientations readable at the normal desktop fit.
+    // This is visual only; event identity and timing remain unchanged.
+    this.radius = 12
 
     // ── Live event reporting flags ─────────────────────────────
     this.justLostInFiber = false
@@ -310,7 +311,6 @@ export class PhotonParticle {
     ctx.globalAlpha = this.opacity
 
     // Layered rendering
-    this._drawGlow(ctx)
     this._drawBody(ctx)
     this._drawPolarization(ctx)
     if (this.isMulti) this._drawCluster(ctx)
@@ -329,17 +329,6 @@ export class PhotonParticle {
   }
 
   // ── Body & state ────────────────────────────────────────────
-
-  _drawGlow(ctx) {
-    const color = this.outcome === 'fiber_loss' ||
-      this.outcome === 'vacuum'
-      ? PALETTE.fiberLoss
-      : this.baseColor
-    ctx.beginPath()
-    ctx.arc(this.x, this.y, this.glowRadius, 0, Math.PI * 2)
-    ctx.fillStyle = color + '26'
-    ctx.fill()
-  }
 
   _drawBody(ctx) {
     if (this.isVacuum) {
@@ -364,8 +353,11 @@ export class PhotonParticle {
     // Filled body (basis color)
     ctx.beginPath()
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
-    ctx.fillStyle = this.baseColor
+    ctx.fillStyle = COLORS.background
     ctx.fill()
+    ctx.strokeStyle = this.baseColor
+    ctx.lineWidth = 2
+    ctx.stroke()
   }
 
   /**
@@ -375,7 +367,7 @@ export class PhotonParticle {
   _drawPolarization(ctx) {
     if (this.isVacuum) return
     const angleRad = (this.currentAngle * Math.PI) / 180
-    const lineLength = 17
+    const lineLength = 28
     const dx = Math.cos(angleRad) * lineLength / 2
     const dy = Math.sin(angleRad) * lineLength / 2
 
@@ -383,13 +375,14 @@ export class PhotonParticle {
     ctx.moveTo(this.x - dx, this.y - dy)
     ctx.lineTo(this.x + dx, this.y + dy)
     ctx.strokeStyle = '#ffffff'
-    ctx.lineWidth = 2
+    ctx.lineWidth = 3
     ctx.stroke()
+    ctx.shadowBlur = 0
 
     // Small end caps for readability
     ctx.beginPath()
-    ctx.arc(this.x - dx, this.y - dy, 1.4, 0, Math.PI * 2)
-    ctx.arc(this.x + dx, this.y + dy, 1.4, 0, Math.PI * 2)
+    ctx.arc(this.x - dx, this.y - dy, 1.8, 0, Math.PI * 2)
+    ctx.arc(this.x + dx, this.y + dy, 1.8, 0, Math.PI * 2)
     ctx.fillStyle = '#ffffff'
     ctx.fill()
   }
@@ -429,8 +422,6 @@ export class PhotonParticle {
     ctx.strokeStyle = PALETTE.eve
     ctx.globalAlpha = ringOpacity * this.opacity
     ctx.lineWidth = 3
-    ctx.shadowColor = PALETTE.eve
-    ctx.shadowBlur = 14
     ctx.stroke()
     ctx.shadowBlur = 0
 

@@ -25,7 +25,9 @@ function SKRTooltip({ active, payload, label }) {
   return null
 }
 
-export default function SKRChart({ data = [], currentSKR = null, distance = null }) {
+export default function SKRChart({
+  data = [], currentSKR = null, currentSKRPreview = false, distance = null
+}) {
   const chartData = data.map(d => ({
     distance: Math.round(d.distance),
     skr: parseFloat(d.skr.toFixed(4))
@@ -40,7 +42,8 @@ export default function SKRChart({ data = [], currentSKR = null, distance = null
         </span>
         {currentSKR !== null && (
           <span className="text-xs font-body font-semibold text-emerald-400">
-            Simulated: <span className="font-mono tabular-nums">{currentSKR.toFixed(4)}</span>
+            {currentSKRPreview ? 'Preview' : 'Simulated'}:{' '}
+            <span className="font-mono tabular-nums">{currentSKR.toFixed(4)}</span>
           </span>
         )}
       </div>

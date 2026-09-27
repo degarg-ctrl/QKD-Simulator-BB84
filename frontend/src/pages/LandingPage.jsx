@@ -17,6 +17,8 @@ import { Play, FlaskConical, Orbit, Activity, ShieldAlert, Zap, Cpu, Sliders, Lo
 import useSimulationStore from '../store/simulationStore'
 import HeroOpticalSandbox from '../components/landing/HeroOpticalSandbox'
 import QuantumVideoBackground from '../components/landing/QuantumVideoBackground'
+import QuantumStateBadge from '../components/quantum/QuantumStateBadge'
+import { buildLandingConfiguration } from '../lib/landingPreset'
 
 const BlochSphere = lazy(() => import('../components/visualizations/BlochSphere'))
 
@@ -44,11 +46,11 @@ const SIMULATOR_FEATURES = [
   {
     id: 'dual-mode',
     title: 'Dual-Engine Wavefront Pipeline',
-    badge: '60 FPS ENGINE',
+    badge: 'rAF CANVAS ENGINE',
     badgeColor: '#f59e0b',
     icon: Activity,
-    desc: 'Seamlessly toggle between discrete single-photon wavepackets and continuous laser beams with real-time polarization rendering at 60 frames per second.',
-    telemetry: 'Single Photon μ ≤ 0.1 | Continuous Beam λ = 1550 nm',
+    desc: 'Toggle between discrete symbolic wavepackets and a high-throughput beam playback mode. Both render through the ref-driven requestAnimationFrame canvas loop.',
+    telemetry: 'Wave playback | Beam playback | Symbolic polarization states',
     actionText: 'Explore Dual Engine',
     actionParams: { n_bits: 50, distance_km: 5, attack_prob: 0 }
   },
@@ -59,7 +61,7 @@ const SIMULATOR_FEATURES = [
     badgeColor: '#e05252',
     icon: ShieldAlert,
     desc: 'Simulate beam-splitter interception where Eve performs projective measurements in random bases, triggering quantum collapse and elevating QBER above the 11% threshold.',
-    telemetry: 'Induced QBER ≥ 25% | Eve Basis Mismatch P = 0.5',
+    telemetry: 'Full intercept-resend QBER ≈ 25% | Eve basis mismatch P = 0.5',
     actionText: 'Test Eavesdropping',
     actionParams: { n_bits: 1000, distance_km: 10, attack_prob: 1.0, attack_strategy: 'intercept_resend' }
   },
@@ -71,7 +73,7 @@ const SIMULATOR_FEATURES = [
     icon: Zap,
     desc: 'Model Poissonian photon statistics of Weak Coherent Pulses. Enable multi-intensity decoy states (signal, decoy, vacuum) to detect and thwart Photon Number Splitting attacks.',
     telemetry: 'Signal μ = 0.5 | Decoy ν = 0.1 | Vacuum ω = 0',
-    actionText: 'Run Decoy Defense',
+    actionText: 'Load Decoy Setup',
     actionParams: { n_bits: 2000, distance_km: 15, attack_prob: 1.0, attack_strategy: 'pns', source_model: 'realistic', mu: 0.5, decoy_enabled: true }
   },
   {
@@ -82,7 +84,7 @@ const SIMULATOR_FEATURES = [
     icon: Cpu,
     desc: 'Place unitary operators—Hadamard, Pauli-X/Y/Z, and S/T phase shifters—directly along the optical fiber to rotate polarization states and test basis invariance.',
     telemetry: 'H, X, Y, Z, S (π/2), T (π/4) | 3D State Inspection',
-    actionText: 'Insert Gates',
+    actionText: 'Open Gate Bench',
     actionParams: { n_bits: 500, distance_km: 0, attack_prob: 0 }
   },
   {
@@ -92,9 +94,9 @@ const SIMULATOR_FEATURES = [
     badgeColor: '#f59e0b',
     icon: Sliders,
     desc: 'Physics-grounded attenuation modeling over silica fiber (0.2 dB/km) paired with single-photon avalanche photodiode (SPAD) quantum efficiency and dark-count noise.',
-    telemetry: 'Beer-Lambert: 10^(-αd/10) | SPAD η = 20% | Dark = 10⁻⁵',
+    telemetry: 'Beer-Lambert: 10^(-αd/10) | Realistic η = 85% | Dark = 10⁻⁵',
     actionText: 'Tune Fiber Parameters',
-    actionParams: { n_bits: 1000, distance_km: 25, attack_prob: 0 }
+    actionParams: { n_bits: 1000, distance_km: 25, attack_prob: 0, source_model: 'realistic', mu: 0.2 }
   },
   {
     id: 'otp-crypto',
@@ -102,9 +104,9 @@ const SIMULATOR_FEATURES = [
     badge: 'INFORMATION SECURITY',
     badgeColor: '#10b981',
     icon: Lock,
-    desc: 'Observe the full cryptographic lifecycle: raw bit transmission, public basis reconciliation, error rate estimation, privacy amplification, and One-Time Pad message encryption.',
-    telemetry: 'Raw Bits → Sifted Key → Error Correction → OTP',
-    actionText: 'Extract Cryptographic Key',
+    desc: 'Use the backend post-sampling key in an educational XOR demonstration. The simulator checks key agreement and modeled attacks before enabling the one-time-pad panel.',
+    telemetry: 'Raw bits → Sifting → QBER sample → Matching key → XOR demo',
+    actionText: 'Inspect Key Demonstration',
     actionParams: { n_bits: 1000, distance_km: 5, attack_prob: 0 }
   }
 ]
@@ -128,8 +130,63 @@ function SectionLabel({ children }) {
   )
 }
 
-function Divider() {
-  return <div style={{ width: '100%', height: 1, backgroundColor: 'var(--q-border, #2e2e38)' }} />
+function StoryTransition({ label }) {
+  return (
+    <div aria-hidden="true" style={{ maxWidth: '68rem', margin: '0 auto', padding: '0 1.5rem', position: 'relative', zIndex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--q-text-4)' }}>
+        <span style={{ width: 7, height: 7, border: '1px solid var(--q-accent)', borderRadius: '50%', boxShadow: '0 0 12px color-mix(in srgb, var(--q-accent) 55%, transparent)' }} />
+        <span style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, color-mix(in srgb, var(--q-accent) 36%, transparent), color-mix(in srgb, var(--q-border) 55%, transparent), transparent)' }} />
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.16em', textTransform: 'uppercase' }}>{label}</span>
+      </div>
+    </div>
+  )
+}
+
+function LandingStoryRail() {
+  const chapters = [
+    { n: '01', title: 'Encode', copy: 'Alice selects a bit and basis, producing one of four BB84 polarization states.', state: { basis: '+', bit: 0 } },
+    { n: '02', title: 'Transmit', copy: 'The pulse crosses a lossy optical channel while its event identity remains traceable.', state: { basis: 'x', bit: 0 } },
+  ]
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(16rem, 1fr))', gap: '0.8rem', marginBottom: '1rem' }}>
+      {chapters.map((chapter) => (
+        <div key={chapter.n} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '0.9rem', padding: '0.9rem 1rem', border: '1px solid color-mix(in srgb, var(--q-border) 76%, transparent)', background: 'rgba(14, 13, 12, 0.48)', backdropFilter: 'blur(8px)', borderRadius: '0.45rem' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--q-accent)', fontSize: '0.68rem' }}>{chapter.n}</span>
+          <span>
+            <strong style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--q-text-1)' }}>{chapter.title}</strong>
+            <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '0.7rem', lineHeight: 1.45, color: 'var(--q-text-3)' }}>{chapter.copy}</span>
+          </span>
+          <QuantumStateBadge basis={chapter.state.basis} bit={chapter.state.bit} size="sm" showKet={false} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SimulatorPreview() {
+  return (
+    <div aria-label="Simulator interface preview" style={{ marginTop: '1rem', border: '1px solid color-mix(in srgb, var(--q-accent) 30%, var(--q-border))', background: 'rgba(12, 12, 11, 0.68)', backdropFilter: 'blur(12px)', borderRadius: '0.6rem', overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.32)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.55rem 0.8rem', borderBottom: '1px solid var(--q-border)', fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: 'var(--q-text-3)' }}>
+        <span>SIMULATOR UI PREVIEW · BB84</span><span style={{ color: 'var(--q-success)' }}>● CHANNEL READY</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr minmax(9rem, 0.28fr)', minHeight: 150 }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', padding: '1.6rem 1.2rem' }}>
+          <div style={{ position: 'absolute', left: '12%', right: '12%', top: '50%', height: 2, background: 'linear-gradient(90deg, var(--q-basis-rect), var(--q-accent), var(--q-basis-diag))' }} />
+          <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--q-basis-rect)' }}>ALICE · TX</span>
+            <QuantumStateBadge basis="x" bit={0} size="sm" showKet />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--q-success)' }}>BOB · RX</span>
+          </div>
+        </div>
+        <div style={{ padding: '0.8rem', borderLeft: '1px solid var(--q-border)', background: 'rgba(24, 22, 19, 0.66)', fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: 'var(--q-text-3)', lineHeight: 1.9 }}>
+          <div style={{ color: 'var(--q-text-2)' }}>RUN SNAPSHOT</div>
+          <div>Pulses <b style={{ color: 'var(--q-text-1)' }}>1,000</b></div>
+          <div>Fiber <b style={{ color: 'var(--q-text-1)' }}>10 km</b></div>
+          <div>Mode <b style={{ color: 'var(--q-accent)' }}>Waves</b></div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function AccentBadge({ children }) {
@@ -157,24 +214,32 @@ function AccentBadge({ children }) {
 }
 
 export default function LandingPage() {
-  const { setActiveView, setParams } = useSimulationStore()
+  const { setActiveView, applySimulationConfiguration, openExperimentModal } = useSimulationStore()
   const [selectedGate, setSelectedGate] = useState(GATES[0])
 
   const launch = () => setActiveView('simulator')
 
   const launchExperiment = (exp) => {
-    setParams(exp.params)
+    applySimulationConfiguration(buildLandingConfiguration(exp.params))
     setActiveView('simulator')
+  }
+
+  const openGuidedExperiment = (exp) => {
+    setActiveView('simulator')
+    openExperimentModal(`exp${exp.n}`)
   }
 
   const section = { maxWidth: '68rem', margin: '0 auto', padding: '4.5rem 1.5rem', position: 'relative', zIndex: 1 }
   const sectionAlt = {
-    backgroundColor: 'rgba(23, 23, 29, 0.75)',
-    borderTop: '1px solid var(--q-border, #2e2e38)',
-    borderBottom: '1px solid var(--q-border, #2e2e38)',
     position: 'relative',
     zIndex: 1,
-    backdropFilter: 'blur(8px)'
+  }
+  const localSurface = {
+    border: '1px solid color-mix(in srgb, var(--q-border) 78%, transparent)',
+    borderRadius: '0.75rem',
+    background: 'linear-gradient(145deg, rgba(18, 17, 15, 0.76), rgba(13, 13, 14, 0.58))',
+    boxShadow: '0 22px 70px rgba(0,0,0,0.26)',
+    backdropFilter: 'blur(12px)',
   }
 
   const h2 = {
@@ -197,10 +262,9 @@ export default function LandingPage() {
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: 'var(--q-surface-0, #0e0e12)',
+        background: 'linear-gradient(180deg, rgba(10,10,11,0.3), rgba(12,11,10,0.52))',
         color: 'var(--q-text-1, #f1f1f4)',
         position: 'relative',
-        overflowX: 'hidden'
       }}
     >
       {/* ── Cinematic Scroll-Synchronized Quantum Background Video ── */}
@@ -238,7 +302,7 @@ export default function LandingPage() {
         <p style={{ ...bodyText, fontSize: '1.05rem', maxWidth: '44rem', marginBottom: '2rem' }}>
           An interactive, physics-grounded simulation bench for the BB84 quantum cryptography protocol.
           Directly manipulate photon polarization vectors, observe fiber attenuation, trigger beam-splitter
-          eavesdropping disturbance, and extract verified cryptographic keys.
+          eavesdropping disturbance, and inspect modeled post-sampling keys.
         </p>
 
         <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '2.5rem' }}>
@@ -291,11 +355,16 @@ export default function LandingPage() {
           </button>
         </div>
 
+        <LandingStoryRail />
+        <div style={{ marginBottom: '0.55rem', fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.13em', color: 'var(--q-text-4)', textTransform: 'uppercase' }}>
+          Illustrative optical sequence · interaction model below
+        </div>
         {/* ── EXPERIENTIAL OPTICAL BENCH SANDBOX ── */}
         <HeroOpticalSandbox />
+        <SimulatorPreview />
       </motion.section>
 
-      <Divider />
+      <StoryTransition label="State transformation" />
 
       {/* ── QUANTUM GATES (INTERACTIVE 3D BLOCH SPHERE) ────────────────── */}
       <motion.section
@@ -305,7 +374,7 @@ export default function LandingPage() {
         transition={{ duration: 0.6 }}
         style={{ ...sectionAlt }}
       >
-        <div style={section}>
+        <div style={{ ...section, ...localSurface, padding: '3rem 2rem' }}>
           <SectionLabel>Interactive Quantum Hardware</SectionLabel>
           <h2 style={{ ...h2, marginBottom: '0.75rem' }}>
             3D Bloch Sphere &amp; <span style={{ fontFamily: 'var(--font-calligraphy)', fontStyle: 'italic', fontWeight: 600, color: 'var(--q-accent, #f59e0b)' }}>Gate Unitary Inspector</span>
@@ -400,7 +469,7 @@ export default function LandingPage() {
 
 
 
-      <Divider />
+      <StoryTransition label="From state to evidence" />
 
       {/* ── SIMULATOR CAPABILITIES & SCIENTIFIC INSTRUMENTATION ─────────── */}
       <motion.section
@@ -415,7 +484,7 @@ export default function LandingPage() {
           Engineered for <span style={{ fontFamily: 'var(--font-calligraphy)', fontStyle: 'italic', fontWeight: 600, color: 'var(--q-accent, #f59e0b)' }}>Precision Physics &amp; Discovery</span>
         </h2>
         <p style={{ ...bodyText, fontSize: '0.95rem', maxWidth: '46rem', marginBottom: '2.5rem' }}>
-          Explore the full scientific toolchain—from quantum state preparation and unitary fiber transforms to real-time QBER telemetry, decoy-state defense, and cryptographic key extraction.
+          Explore the modeled toolchain—from quantum state preparation and unitary transforms to QBER analysis, decoy-state checks, and post-sampling key inspection.
         </p>
 
         <div
@@ -569,7 +638,7 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
-      <Divider />
+      <StoryTransition label="Choose a protocol path" />
 
       {/* ── GUIDED EXPERIMENTS ───────────────────────────────────────────── */}
       <motion.section
@@ -579,7 +648,7 @@ export default function LandingPage() {
         transition={{ duration: 0.6 }}
         style={{ ...sectionAlt }}
       >
-        <div style={section}>
+        <div style={{ ...section, ...localSurface, padding: '3rem 2rem' }}>
           <SectionLabel>Guided Protocols</SectionLabel>
           <h2 style={{ ...h2, marginBottom: '0.75rem' }}>
             8 Guided <span style={{ fontFamily: 'var(--font-calligraphy)', fontStyle: 'italic', fontWeight: 600, color: 'var(--q-accent, #f59e0b)' }}>Experiment Scenarios</span>
@@ -622,7 +691,7 @@ export default function LandingPage() {
                 </div>
 
                 <button
-                  onClick={() => launchExperiment(exp)}
+                  onClick={() => openGuidedExperiment(exp)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -651,7 +720,7 @@ export default function LandingPage() {
                     e.currentTarget.style.backgroundColor = 'var(--q-surface-2, #1c1c23)'
                   }}
                 >
-                  <FlaskConical size={13} /> Load Scenario &amp; Run Bench
+                  <FlaskConical size={13} /> Load Scenario in Bench
                 </button>
               </div>
             ))}
@@ -659,7 +728,7 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
-      <Divider />
+      <StoryTransition label="Enter the laboratory" />
 
       {/* ── FINAL LAUNCH CONSOLE ─────────────────────────────────────────── */}
       <motion.section
@@ -671,7 +740,7 @@ export default function LandingPage() {
       >
         <h2 style={{ ...h2, marginBottom: '1rem' }}>Ready to launch your quantum experiment?</h2>
         <p style={{ ...bodyText, fontSize: '0.95rem', maxWidth: '36rem', marginBottom: '2rem' }}>
-          Open the full-featured quantum optics console. Place gates, tune fiber distance, simulate eavesdropping attacks, and extract secure keys in real time.
+          Open the quantum optics console. Place gates, tune fiber distance, simulate eavesdropping attacks, and inspect backend-computed key material through deterministic playback.
         </p>
         <button
           onClick={launch}

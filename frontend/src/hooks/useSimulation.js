@@ -12,16 +12,17 @@
 import { useCallback } from 'react'
 import useSimulationStore from '../store/simulationStore'
 import { runSimulation as apiRunSimulation, validateParams } from '../api/simulatorAPI'
+import { createRunSnapshot } from '../lib/simulationRun'
+
+let activeRequestController = null
 
 export function useSimulation() {
 
   const {
-    params,
-    placedGates,
-    setResults,
-    setLoading,
+    beginRun,
+    completeRun,
+    failRun,
     setError,
-    setRunning,
     reset,
     isLoading,
     isRunning,
@@ -31,80 +32,67 @@ export function useSimulation() {
 
   /**
    * Run the simulation with current params from store.
-   * 
+   *
    * Sequence:
    * 1. Validate params — set error and return early if invalid
-   * 2. Set isLoading=true, isRunning=true
-   * 3. Call apiRunSimulation(params)
-   * 4. On success: setResults(data), setRunning(false)
-   * 5. On error: setError(message), setRunning(false)
-   * 6. Always: setLoading(false)
+   * 2. Capture an immutable request/configuration snapshot
+   * 3. Supersede any earlier request and call the API
+   * 4. Commit only if this request is still the active run
    */
-  const runSimulation = useCallback(async () => {
+  const executeRun = useCallback(async (configuration) => {
+    const submittedRun = createRunSnapshot(configuration)
+    const requestParams = submittedRun.params
+
     // 1. Validate params
-    const validationError = validateParams(params)
+    const validationError = validateParams(requestParams)
     if (validationError) {
       setError(`Validation Error: ${validationError}`)
       return
     }
 
-    // 2. Prepare for API call
-    setLoading(true)
-    setRunning(true)
-    setError(null) // Clear any previous errors
+    activeRequestController?.abort()
+    const controller = new AbortController()
+    activeRequestController = controller
+    const runId = beginRun(submittedRun)
 
     try {
-      // 3. Call API — include placed gates in request
-      const experimentState = useSimulationStore.getState()
-      const sourceModel = experimentState.sourceModel
-      
-      const paramsWithGates = {
-        ...params,
-        gates: placedGates.map(g => ({
-          type: g.type,
-          lane: g.lane, 
-          position: g.position
-        })),
-        experiment_mode: params.experiment_mode || 'free',
-        alice_bits: params.alice_bits || undefined,
-        alice_bases: params.alice_bases || undefined,
-        wcp_enabled: sourceModel === 'realistic' 
-          ? (params.wcp_enabled ?? false) 
-          : false,
-        decoy_enabled: sourceModel === 'realistic'
-          ? (params.decoy_enabled ?? false)
-          : false,
-        mean_photon_number: params.mean_photon_number ?? 0.2,
-      }
-      const data = await apiRunSimulation(paramsWithGates)
-      
-      // 4. On success: update results
-      setResults(data)
+      const data = await apiRunSimulation(requestParams, { signal: controller.signal })
+      completeRun(runId, data)
     } catch (err) {
-      // 5. On error: update error state
-      setError(err.message || 'An unexpected error occurred during simulation.')
+      if (err.name !== 'AbortError') {
+        failRun(runId, err.message || 'An unexpected error occurred during simulation.')
+      }
     } finally {
-      // 6. Always reset loading and internal running flag
-      setLoading(false)
-      setRunning(false)
+      if (activeRequestController === controller) activeRequestController = null
     }
-  }, [params, placedGates, setResults, setLoading, setError, setRunning])
+  }, [beginRun, completeRun, failRun, setError])
+
+  const runSimulation = useCallback(() => {
+    const state = useSimulationStore.getState()
+    return executeRun(state)
+  }, [executeRun])
+
+  const runWithConfiguration = useCallback((configuration) => (
+    executeRun(configuration)
+  ), [executeRun])
 
   /**
    * Reset simulation state to initial values.
    * Clears results, error, animation state.
    */
   const resetSimulation = useCallback(() => {
+    activeRequestController?.abort()
+    activeRequestController = null
     reset()
   }, [reset])
 
   return {
     runSimulation,
+    runWithConfiguration,
     resetSimulation,
     isLoading,
     isRunning,
     error,
     results,
-    params
   }
 }
