@@ -25,7 +25,9 @@ function QBERTooltip({ active, payload, label }) {
   return null
 }
 
-export default function QBERChart({ data = [], currentQBER = null, distance = null }) {
+export default function QBERChart({
+  data = [], currentQBER = null, currentQBERPreview = false, distance = null
+}) {
   // data shape: [{distance: float, qber: float}, ...]
   // Convert qber to percentage for display
   const chartData = data.map(d => ({
@@ -42,7 +44,8 @@ export default function QBERChart({ data = [], currentQBER = null, distance = nu
         </span>
         {currentQBER !== null && currentQBER !== undefined && (
           <span className="text-xs font-body font-semibold text-indigo-400">
-            Simulated: <span className="font-mono tabular-nums">{(currentQBER * 100).toFixed(2)}%</span>
+            {currentQBERPreview ? 'Preview' : 'Simulated'}:{' '}
+            <span className="font-mono tabular-nums">{(currentQBER * 100).toFixed(2)}%</span>
           </span>
         )}
       </div>

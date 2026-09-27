@@ -8,7 +8,7 @@
  *              Theme toggle, and Logo.
  */
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Menu, Home, Atom, BookOpen, Sun, Moon,
   Save, FolderOpen, Play, Pause, RotateCcw, Search, X,
@@ -18,6 +18,10 @@ import SaveExperimentModal from '../experiments/SaveExperimentModal'
 import LoadExperimentModal from '../experiments/LoadExperimentModal'
 import useSimulationStore from '../../store/simulationStore'
 import Slider from '../ui/Slider'
+import {
+  getQberConfidenceStatusLabel,
+  getQberPresentation,
+} from '../../lib/qberPresentation'
 
 const BTN = 'flex items-center gap-1.5 px-2.5 py-1 rounded text-xs ' +
   'font-body font-semibold border border-[var(--q-border)] bg-[var(--q-surface-2)] ' +
@@ -28,9 +32,10 @@ export default function SimulatorControls() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [saveModalOpen, setSaveModalOpen] = useState(false)
   const [loadModalOpen, setLoadModalOpen] = useState(false)
-  const { runSimulation, isLoading } = useSimulation()
+  const menuButtonRef = useRef(null)
+  const { runSimulation, resetSimulation, isLoading } = useSimulation()
   const {
-    results, reset, placedGates, clearGates,
+    results, placedGates, clearGates,
     openInspector, inspector, activeView, setActiveView,
     theme, setTheme,
     togglePause,
@@ -52,16 +57,29 @@ export default function SimulatorControls() {
 
   const isBreached = results?.secure_threshold_breached ?? false
   const hasResults = results !== null
+  // QBER is null when the sifted sample was too small to estimate it. A run in
+  // that state is UNDETERMINED, not secure: `secure_threshold_breached` is also
+  // false there, so it must never be read as a security verdict on its own.
+  // (PHYSICS_CONTRACT §6a; verdict hierarchy per UI_OVERHAUL_PLAN §6.1.)
+  const qberEstimated = results?.qber_estimated === true && results?.qber != null
+  const qberView = getQberPresentation(results)
+  const previewStatusLabel = qberView.qber != null
+    ? getQberConfidenceStatusLabel(qberView.confidence)
+    : 'UNDETERMINED'
 
-  // Keyboard shortcut: Spacebar toggles play/pause
+  // Keyboard shortcut: Spacebar toggles play/pause.
+  // Space is also the native activation key for buttons, links and other
+  // controls. Excluding only INPUT/TEXTAREA meant the shortcut called
+  // preventDefault() on every focused button in the app, so keyboard users
+  // could tab to RUN or SAVE and Space would silently pause instead of
+  // pressing it. Skip the shortcut whenever focus is inside any control.
   useEffect(() => {
+    const INTERACTIVE = 'button, a[href], input, textarea, select, [role="button"], [contenteditable="true"]'
     const handleKeyDown = (e) => {
-      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-        if (hasResults) {
-          e.preventDefault()
-          togglePause()
-        }
-      }
+      if (e.code !== 'Space' || !hasResults) return
+      if (e.target instanceof Element && e.target.closest(INTERACTIVE)) return
+      e.preventDefault()
+      togglePause()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
@@ -70,8 +88,22 @@ export default function SimulatorControls() {
   const navMenuItems = [
     { id: 'landing', label: 'Home', icon: Home },
     { id: 'simulator', label: 'Simulator', icon: Atom },
-    { id: 'guide', label: 'About', icon: BookOpen },
+    { id: 'guide', label: 'Guide', icon: BookOpen },
   ]
+
+  // Escape closes the navigation menu and returns focus to its trigger.
+  // Without this the menu could only be dismissed with the mouse.
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setMenuOpen(false)
+        menuButtonRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuOpen])
 
   return (
     <>
@@ -86,9 +118,12 @@ export default function SimulatorControls() {
         <div className="flex items-center gap-3 min-w-0 z-10">
           {/* Hamburger Menu */}
           <button
+            ref={menuButtonRef}
             onClick={() => setMenuOpen(!menuOpen)}
             className="p-1.5 rounded transition-colors text-[var(--q-text-2)] hover:text-[var(--q-text-1)] hover:bg-[var(--q-surface-active)]"
             aria-label="Navigation Menu"
+            aria-expanded={menuOpen}
+            aria-controls="simulator-nav-menu"
             title="Open navigation menu"
           >
             <Menu size={17} />
@@ -124,8 +159,10 @@ export default function SimulatorControls() {
               ? { label: 'SIMULATING', dot: 'var(--q-warn)', text: 'var(--q-warn)', bg: 'rgba(245, 158, 11, 0.08)', border: 'rgba(245, 158, 11, 0.35)', pulse: true }
               : hasResults && isBreached
               ? { label: 'BREACH DETECTED', dot: 'var(--q-danger)', text: 'var(--q-danger)', bg: 'rgba(224, 82, 82, 0.08)', border: 'rgba(224, 82, 82, 0.35)', pulse: true }
+              : hasResults && !qberEstimated
+              ? { label: previewStatusLabel, dot: 'var(--q-warn)', text: 'var(--q-warn)', bg: 'rgba(245, 158, 11, 0.08)', border: 'rgba(245, 158, 11, 0.35)', pulse: false }
               : hasResults
-              ? { label: 'SECURE', dot: 'var(--q-secure)', text: 'var(--q-secure)', bg: 'rgba(16, 185, 129, 0.08)', border: 'rgba(16, 185, 129, 0.35)', pulse: false }
+              ? { label: 'BELOW THRESHOLD', dot: 'var(--q-secure)', text: 'var(--q-secure)', bg: 'rgba(16, 185, 129, 0.08)', border: 'rgba(16, 185, 129, 0.35)', pulse: false }
               : { label: 'READY', dot: 'var(--q-text-4)', text: 'var(--q-text-3)', bg: 'var(--q-surface-2)', border: 'var(--q-border)', pulse: false }
 
             return (
@@ -258,10 +295,9 @@ export default function SimulatorControls() {
 
           {/* Reset */}
           <button
-            onClick={reset}
-            disabled={isLoading || !hasResults}
+            onClick={resetSimulation}
             className={`${BTN}`}
-            title="Reset simulation parameters and canvas"
+            title="Reset experiment, parameters, results, and canvas"
           >
             <RotateCcw size={12} /> RESET
           </button>
@@ -359,6 +395,7 @@ export default function SimulatorControls() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.15 }}
+              id="simulator-nav-menu"
               className="absolute top-12 left-3 z-50 rounded-lg shadow-2xl overflow-hidden"
               style={{
                 backgroundColor: 'var(--panel-bg)',
@@ -379,6 +416,7 @@ export default function SimulatorControls() {
                       setActiveView(item.id)
                       setMenuOpen(false)
                     }}
+                    aria-current={isActive ? 'page' : undefined}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-body font-medium transition-colors ${
                       isActive
                         ? 'bg-white/10 text-white font-semibold'
