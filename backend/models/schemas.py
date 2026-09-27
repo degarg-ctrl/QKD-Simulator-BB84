@@ -9,8 +9,8 @@ class SimulationRequest(BaseModel):
     attack_strategy: Literal['intercept_resend', 'partial', 'burst', 'pns']
     gates: list[dict] = Field(
         default=[],
-        description="List of quantum gates placed on lanes. "
-                    "Each gate: {'type': str, 'lane': int, 'position': float}"
+        description="List of quantum gates on the single lane. "
+                    "Each gate: {'type': str, 'lane': 0, 'position': float}"
     )
 
     experiment_mode: str = Field(
@@ -59,6 +59,13 @@ class SimulationRequest(BaseModel):
                     "seeded with this value, so identical seeds reproduce "
                     "identical simulations. None -> fresh stochastic run. "
                     "Pseudo-random only (not cryptographic / not a QRNG)."
+    )
+
+    include_playback_stream: bool = Field(
+        default=False,
+        description="Include the complete ordered per-pulse event stream for "
+                    "exact frontend playback. The legacy bit_stream and "
+                    "event_stream remain capped for backward compatibility."
     )
 
     @model_validator(mode='after')
@@ -201,6 +208,7 @@ class TransmissionAccounting(BaseModel):
     eve_copies: int = 0
     noise_flipped: int = 0
     sifted: int
+    sifted_errors: int = 0
     event_stream_truncated: bool = False
 
 class SimulationResponse(BaseModel):
@@ -210,6 +218,19 @@ class SimulationResponse(BaseModel):
     qber: float | None = None
     qber_estimated: bool = False
     skr: float
+    # Diagnostic-only values for runs whose official QBER sample is too small.
+    # They do not participate in security decisions or key extraction.
+    qber_preview: float | None = None
+    qber_preview_sample_size: int = 0
+    qber_preview_errors: int = 0
+    qber_preview_confidence: str | None = None
+    skr_preview: float | None = None
+    # Counts that make the sampled QBER auditable in the UI. The official
+    # estimate uses qber_sample_errors / qber_sample_size; the full mismatch
+    # count is a simulator diagnostic across every sifted row.
+    qber_sample_size: int = 0
+    qber_sample_errors: int = 0
+    qber_full_sifted_errors: int = 0
     sifted_key_length: int
     raw_key_length: int
     efficiency: float
@@ -218,6 +239,20 @@ class SimulationResponse(BaseModel):
     skr_vs_distance: list[dict]
     secure_threshold_breached: bool
     cloning_probe_active: bool = False
+
+    # Post-QBER-sampling key material used by the educational OTP demo.
+    # This is the complete backend result, not reconstructed from the capped
+    # bit_stream. It is only demo-eligible when the protocol produced a key,
+    # Alice and Bob's remaining bits agree exactly, and no modeled security
+    # check reports compromise. Error correction and privacy amplification
+    # are not implemented by this simulator.
+    post_sample_key: list[int] = Field(default_factory=list)
+    post_sample_key_length: int = 0
+    post_sample_keys_match: bool = False
+    key_exchange_aborted: bool = False
+    key_exchange_abort_reason: str = ""
+    otp_demo_allowed: bool = False
+    otp_demo_block_reason: str | None = None
 
     # WCP statistics
     wcp_enabled: bool = False
@@ -241,5 +276,9 @@ class SimulationResponse(BaseModel):
     # bit_stream remains the detected-only view for backward
     # compatibility; its length must NOT be interpreted as N.
     event_stream: list[PhotonRecord] = Field(default_factory=list)
+    # Complete, ordered event records. Returned only when explicitly requested
+    # through include_playback_stream; otherwise empty to preserve the legacy
+    # response size. This is additive transport data and does not alter physics.
+    playback_stream: list[PhotonRecord] = Field(default_factory=list)
     # Full-simulation transmission accounting (complete counts).
     transmission: TransmissionAccounting | None = None

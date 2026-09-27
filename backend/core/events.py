@@ -197,6 +197,7 @@ def compute_transmission_accounting(states: list[dict]) -> dict:
     eve_copies = 0
     noise_flipped = 0
     sifted = 0
+    sifted_errors = 0
 
     for s in states:
         is_vacuum = bool(s.get('wcp_vacuum', False))
@@ -236,6 +237,8 @@ def compute_transmission_accounting(states: list[dict]) -> dict:
             noise_flipped += 1
         if measured and bob_basis == s.get('alice_basis'):
             sifted += 1
+            if s.get('alice_bit') != s.get('bob_bit'):
+                sifted_errors += 1
 
     fiber_lost = generated - vacuum - fiber_survived
     total_detections = real_detections + dark_counts
@@ -255,6 +258,7 @@ def compute_transmission_accounting(states: list[dict]) -> dict:
         'eve_copies': eve_copies,
         'noise_flipped': noise_flipped,
         'sifted': sifted,
+        'sifted_errors': sifted_errors,
     }
 
 
@@ -270,6 +274,11 @@ _RARE_EVENT_PREDICATES: list[Callable[[dict], bool]] = [
     lambda s: bool(s.get('pns_blocked', False)),
     lambda s: bool(s.get('dark_count', False)),
     lambda s: bool(s.get('intercepted', False)),
+    lambda s: (
+        bool(s.get('measured', False))
+        and s.get('bob_basis') == s.get('alice_basis')
+        and s.get('bob_bit') != s.get('alice_bit')
+    ),
 ]
 
 
@@ -286,7 +295,8 @@ def select_event_stream_indices(
     1. n <= cap: every pulse is included (no sampling).
     2. n > cap: reserve capacity for rare-category rescue first —
        take the first occurrence of each rare category present in the
-       full stream (PNS split, PNS block, dark count, interception),
+       full stream (PNS split, PNS block, dark count, interception,
+       sifted-key error),
        at most len(_RARE_EVENT_PREDICATES) indices.
     3. The remaining stride budget (cap - reserved) is split across the
        _NUM_LANES visual lanes (index % _NUM_LANES) and each lane is

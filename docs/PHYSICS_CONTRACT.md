@@ -46,7 +46,8 @@ attack_prob = p   â QBER contribution = 0.25 * p.
 Eve QBER and channel noise QBER are cumulative.
 
 ## 6. QBER
-Sample 10% of sifted bits. Sampled bits discarded from final key.
+Sample 10% of sifted bits. Sampled bits are discarded from the post-sampling
+key candidate.
 QBER = erroneous_bits / total_sampled_sifted_bits
 QBER >= 0.11 â SKR = 0, session aborted, threshold_breached = True
 
@@ -79,18 +80,17 @@ dark=DARK_COUNT_PROB).
 
 ## 6a. QBER Small-Sample Semantics (audit fix C1, 2026-09-14)
 
-QBER is reported ONLY when the sacrificed sample is large enough to be
-meaningful. The sample is SAMPLE_FRACTION_FOR_QBER (0.10) of the sifted
-key; the minimum accepted sample is QBER_MIN_SAMPLE_SIZE = 10 sampled
-sifted bits, which corresponds to a minimum sifted key of
-QBER_MIN_SIFTED_COUNT = ceil(10 / 0.10) = 100 bits.
+QBER uses a tiered sampling policy based on the available sifted key N:
 
-  sifted_count < 100   ->  qber = None, qber_estimated = False
-                           (NOT ESTIMATED; must never be reported as 0.0)
+  N < 100              ->  qber = None, qber_estimated = False
+                           low/very-low diagnostic preview only
                            no bits are sacrificed
-  sifted_count >= 100  ->  qber = errors / sample_size,
-                           qber_estimated = True
-                           sample bits discarded per Section 6
+  100 <= N < 500       ->  sample_size = 50 sifted bits
+  N >= 500             ->  sample_size = floor(0.10 * N)
+
+The middle tier avoids a statistically coarse 10- to 49-bit official sample.
+The boundary is continuous: both rules select 50 bits at N = 500. Every
+official sample is discarded from the post-sampling key per Section 6.
 
 Rules:
   - "Not estimated" MUST NOT be coerced to 0.0 anywhere (core, API
@@ -101,14 +101,28 @@ Rules:
   - threshold_breached is False for an unestimated QBER only in the sense
     that no threshold decision was made; consumers MUST consult
     qber_estimated before treating a session as secure.
-  - A QBER of exactly 0.0 is only ever reported for a sufficient sample
-    that genuinely contained zero errors.
+  - The official `qber` field is exactly 0.0 only for a sufficient sample
+    that genuinely contained zero errors. Diagnostic previews are separate.
 
-This supersedes the historical behaviour in which
-sample_size = floor(0.10 * sifted_count) could be 0 for sifted_count < 10,
-silently reporting qber = 0.0. Historical Campaign 1 results predate this
-change and remain historical evidence; they are not retroactively
-restated as if the fix had existed during Campaign 1.
+This supersedes both the historical zero-size-sample behaviour and the later
+uniform-10% policy. Historical campaign results remain historical evidence;
+they are not retroactively restated under the tiered estimator.
+
+### 6b. Diagnostic QBER/SKR previews (2026-09-27)
+
+Runs below the official 100-sifted-bit floor expose separate diagnostic
+preview fields so the educational UI can show the observed numbers without
+changing the security state:
+
+  - `qber_preview` is the mismatch fraction across all available sifted bits.
+  - `skr_preview` applies the Section 7 formula to that diagnostic QBER.
+  - `qber_preview_confidence = "very_low"` for 1–19 sifted bits and `"low"`
+    for 20–99 sifted bits.
+
+Preview values are explicitly non-certified. They do not set
+`qber_estimated`, do not affect `threshold_breached`, do not enable key
+extraction, and do not replace the official `skr` field (which remains zero
+until QBER is estimated). A run with no sifted bits has no preview value.
 
 ## 7. SKR
 H(Q) = -Q*log2(Q) - (1-Q)*log2(1-Q)
@@ -129,21 +143,24 @@ DETECTOR_EFFICIENCY         = 0.85
 DARK_COUNT_PROB             = 1e-5
 QBER_SECURITY_THRESHOLD     = 0.11
 SAMPLE_FRACTION_FOR_QBER    = 0.10
-QBER_MIN_SAMPLE_SIZE        = 10    # min sampled sifted bits for an estimate
-QBER_MIN_SIFTED_COUNT       = 100   # = ceil(10 / 0.10); below -> not estimated
+QBER_MIN_SAMPLE_SIZE        = 50    # smallest official sacrificed sample
+QBER_MIN_SIFTED_COUNT       = 100   # below -> diagnostic discard tier
+QBER_FIXED_SAMPLE_SIZE      = 50    # used for 100 <= N < 500
+QBER_PERCENT_SAMPLE_THRESHOLD = 500 # N >= 500 uses floor(0.10 * N)
+QBER_PREVIEW_LOW_MIN_SIFTED_COUNT = 20  # very-low vs low boundary
 
 ## 10. Quantum Gate Transformations
 Applied to photon polarization states per lane in order.
 Gates are applied AFTER channel transmission, BEFORE Bob measures.
 
-Lane identity (audit M14). "Lane" is a deterministic VISUALIZATION
-partition, not a physical per-lane channel: photon i is drawn on lane
-`i % 3` (frontend `visualEncoding.laneForIndex`, backend
-`apply_gates_to_lane`/`apply_cloning_probe`). All pulses travel the same
-physical fiber. Drag-and-drop gate/probe placement selects a subset of
-pulses by this partition, so a gate on lane L acts exactly on the pulses
-with `index % 3 == L`. This is a UX affordance for demonstrating a gate/
-probe on part of the traffic; it does not imply three independent fibers.
+Lane identity (single-lane architecture, 2026-09-15). The simulator has
+one physical and visual transmission lane (`lane = 0`) from Alice through
+the channel to Bob. Every pulse and every placed gate/probe uses this same
+lane. Gate position controls left-to-right ordering only; it does not select
+a subset of pulses. Historical `index % 3` partitioning was retired when the
+canvas moved to the unified optical corridor. A future multi-scenario design
+must define independent state explicitly and must not revive visual lane
+indices as hidden physics.
 
 H (Hadamard):
   |0> ? |+>  (0° ? 45°)
@@ -190,8 +207,8 @@ to 67/112 for S and 56/124 for T in GATE_TRANSFORMS). The angle rotation
 is the visual indication; no separate photon color tint is applied.
 
 Gate application rule:
-  - Gates apply only to photons on the matching lane (`index % 3`,
-    Section 10 lane identity)
+  - Gates and probes on lane 0 apply to every detected pulse in the single
+    transmission path; lost pulses are unaffected
   - Multiple gates on same lane apply left to right
   - Gate transformations update both 'bit', 'basis', 
     'state_label' and 'polarization_angle' fields
@@ -248,23 +265,33 @@ fix H3).
   The frontend Photon Inspector renders exactly these fields; it does
   not invent journey steps.
 
-## 13. One-Time Pad (OTP) Encryption
-The BB84 sifted key is used as a one-time pad key.
+## 13. One-Time Pad (OTP) Demonstration
+The educational OTP panel uses Bob's complete post-QBER-sampling key from
+the backend. It MUST NOT reconstruct a key from the capped bit_stream or
+event_stream samples.
 XOR encryption: C = M XOR K (ciphertext = message XOR key)
 XOR decryption: M = C XOR K (identical operation)
-Perfect secrecy conditions (Shannon, 1949) — as they apply to this
-SIMULATOR's demonstration:
+The panel is enabled only when:
+  - QBER was estimated and the protocol did not abort;
+  - Alice and Bob's remaining post-sampling keys match exactly;
+  - no modeled PNS compromise or decoy-state detection is reported; and
+  - at least 8 key bits remain.
+
+Perfect secrecy conditions (Shannon, 1949) are explanatory boundaries,
+not claims about this software:
   1. Key must be random — here: pseudorandom (NumPy PRNG), which is
      suitable for statistical simulation but is NOT a cryptographic
      RNG. Real deployments require a quantum RNG.
-  2. Key must be used only once - enforced by resetting
+  2. Key must be used only once. The panel demonstrates one message at a
+     time but is not a deployment-grade key lifecycle manager.
   3. Key must be at least as long as the message
-  4. Key must be secret — within the simulated threat model (QBER
-     below threshold, no PNS compromise). This simulator does not
-     prove real-world unconditional security; it demonstrates the
-     protocol mechanics.
+  4. Key must be secret. This simulator checks only its modeled threat
+     signals and does not prove real-world secrecy.
+The simulator does not implement error correction, privacy amplification,
+authentication, composable finite-key security, or hardware quantum
+randomness. The panel demonstrates XOR and BB84 key-flow mechanics only.
 ASCII encoding: each character = 8 bits
-Maximum message length = floor(sifted_key_bits / 8)
+Maximum message length = floor(post_sample_key_bits / 8)
 ## 14. Weak Coherent Pulse (WCP) Model
 Real photon sources emit Poisson-distributed photon numbers.
 Ideal single-photon sources do not exist in practice.
@@ -449,7 +476,13 @@ Streams:
                   (ABSOLUTE cap 500, deterministic stride with
                   capacity reserved for rare-category rescue, so the
                   cap can never be exceeded — audit fix H5). Used by
-                  the animation and inspector.
+                  legacy animation and inspector fallback.
+  playback_stream — optional complete, ordered stream of ALL pulse
+                  outcomes. It is returned only when the request sets
+                  include_playback_stream=true. Original pulse index is
+                  the identity shared by canvas, live table, inspectors,
+                  and Results. Visual batching may group consecutive
+                  records, but cannot remove or replace their data.
   transmission  — full-simulation accounting (see Section 18).
 
 ## 18. Transmission Accounting
@@ -483,10 +516,10 @@ backend counts; playback counters only indicate animation progress.
    attack outcomes, noise) comes from backend event records. The
    frontend must not randomize physics.
 
-2. The three canvas lanes are PURELY VISUAL — they represent ONE
-   physical channel, split only so particles remain readable. Lane
-   assignment (index % 3) is deterministic and matches the backend
-   gate-lane mapping. No physics depends on the lane.
+2. The canvas contains one optical corridor at y=200. All pulses, gates,
+   probes, and playback modes use lane 0. Wave and beam modes are two
+   playback presentations of the same completed backend event data; they
+   do not select different physical models.
 
 3. The particle representation is SYMBOLIC: a circular body with a
    polarization line indicating the BB84 state angle. It is not a
@@ -506,6 +539,13 @@ backend counts; playback counters only indicate animation progress.
 5. The animation is a PLAYBACK of completed simulation events, not
    a live physics engine: backend completes → frontend schedules →
    visual playback with staggered, overlap-free launches.
+
+   For large runs, Waves may represent consecutive records with one
+   visual particle and Beam may accelerate its release rate. Every
+   requested playback_stream record still reaches one terminal accounting
+   outcome, and every measured record is revealed once in original-index
+   order. Playback completes only after active visual batches and pending
+   arrival rows are flushed.
 
 6. Aggregate numbers shown to the user (HUD, panels) come from the
    backend transmission accounting, never from counting rendered

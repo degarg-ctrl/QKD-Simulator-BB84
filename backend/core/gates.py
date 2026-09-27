@@ -115,18 +115,16 @@ def apply_gates_to_lane(
     gates: list[dict]
 ) -> list[dict]:
     """
-    Apply ordered list of gates to photons on a specific lane.
+    Apply an ordered list of gates to the single transmission lane.
 
     Gates sorted by position (left to right) and applied in order.
-    Only photons where (state['index'] % 3 == lane_index) affected.
-    "Lane" is the deterministic visualization partition (index % 3),
-    not a physical per-lane channel — see PHYSICS_CONTRACT.md Section 10
-    lane identity (audit M14).
+    The active architecture has one lane (lane 0), shared by all pulses.
+    The lane argument remains for API compatibility; states default to 0.
     Only detected photons are affected — lost photons pass through.
 
     Args:
         states: photon state list from eve.intercept()
-        lane_index: which lane (0, 1, or 2)
+        lane_index: active lane (0 in the current architecture)
         gates: list of gate dicts sorted by position
                [{'type':'H', 'lane':0, 'position':0.3}]
     Returns:

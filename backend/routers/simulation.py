@@ -270,6 +270,10 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             build_event_record(measured_states[i])
             for i in selected_indices
         ]
+        playback_stream = (
+            [build_event_record(state) for state in measured_states]
+            if request.include_playback_stream else []
+        )
         transmission_counts = compute_transmission_accounting(
             measured_states
         )
@@ -278,16 +282,78 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             len(event_stream) < len(measured_states)
         )
 
+        # The OTP demonstration consumes the complete post-sampling Bob key,
+        # never the capped bit_stream. Because this simulator does not model
+        # error correction or privacy amplification, only allow the demo when
+        # Alice and Bob's remaining keys already agree exactly and no modeled
+        # security check reports compromise.
+        post_sample_key = [int(bit) for bit in key_result.get('key', [])]
+        remaining_alice = [
+            int(bit) for bit in qber_result.get('remaining_alice_bits', [])
+        ]
+        post_sample_keys_match = (
+            bool(post_sample_key)
+            and remaining_alice == post_sample_key
+        )
+        key_exchange_aborted = bool(key_result.get('session_aborted', False))
+        key_exchange_abort_reason = key_result.get('abort_reason', '')
+        pns_compromised = bool(pns_security.get('pns_compromised', False))
+        pns_detected = bool(decoy_results.get('pns_detected', False))
+
+        otp_demo_block_reason = None
+        if key_exchange_aborted:
+            otp_demo_block_reason = key_exchange_abort_reason
+        elif pns_compromised or pns_detected:
+            otp_demo_block_reason = (
+                'Modeled PNS compromise detected; key use is disabled'
+            )
+        elif not post_sample_keys_match:
+            otp_demo_block_reason = (
+                "Alice and Bob's post-sampling keys differ; error correction "
+                'is not implemented'
+            )
+        elif len(post_sample_key) < 8:
+            otp_demo_block_reason = (
+                'At least 8 matching post-sampling key bits are required'
+            )
+
+        otp_demo_allowed = otp_demo_block_reason is None
+
         # QBER may be None (insufficient sample -> not estimated). Preserve
         # None explicitly — never coerce to 0.0 — and expose the estimation
         # state so the frontend can distinguish it from a measured QBER=0.
         qber_value = qber_result['qber']
         qber_estimated = bool(qber_result.get('qber_estimated', False))
+        qber_preview = qber_result.get('qber_preview')
+        skr_preview = (
+            compute_skr(
+                sifted_key_length=sift_result['sifted_count'],
+                raw_key_length=n_bits_actual,
+                qber=qber_preview,
+            )
+            if qber_preview is not None else None
+        )
 
         return SimulationResponse(
             qber=(round(qber_value, 6) if qber_value is not None else None),
             qber_estimated=qber_estimated,
             skr=round(skr, 6),
+            qber_preview=(round(qber_preview, 6)
+                          if qber_preview is not None else None),
+            qber_preview_sample_size=qber_result.get(
+                'qber_preview_sample_size', 0
+            ),
+            qber_preview_errors=qber_result.get('qber_preview_errors', 0),
+            qber_preview_confidence=qber_result.get(
+                'qber_preview_confidence'
+            ),
+            skr_preview=(round(skr_preview, 6)
+                         if skr_preview is not None else None),
+            qber_sample_size=qber_result.get('sample_size', 0),
+            qber_sample_errors=qber_result.get('errors_found', 0),
+            qber_full_sifted_errors=qber_result.get(
+                'full_sifted_errors', 0
+            ),
             sifted_key_length=sift_result['sifted_count'],
             raw_key_length=n_bits_actual,
             efficiency=round(efficiency, 4),
@@ -299,6 +365,13 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
               g.get('type') in ('clone', 'cnot')
               for g in request.gates
             ),
+            post_sample_key=post_sample_key,
+            post_sample_key_length=len(post_sample_key),
+            post_sample_keys_match=post_sample_keys_match,
+            key_exchange_aborted=key_exchange_aborted,
+            key_exchange_abort_reason=key_exchange_abort_reason,
+            otp_demo_allowed=otp_demo_allowed,
+            otp_demo_block_reason=otp_demo_block_reason,
             wcp_enabled=request.wcp_enabled,
             wcp_stats=wcp_stats,
             pns_stats=pns_stats,
@@ -310,6 +383,7 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
             qber_misleading=pns_security.get('qber_misleading') if pns_security else None,
             decoy_results=decoy_results,
             event_stream=event_stream,
+            playback_stream=playback_stream,
             transmission=transmission,
         )
 

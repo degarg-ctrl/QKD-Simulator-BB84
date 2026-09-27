@@ -142,6 +142,11 @@ def generate_chart_data(
     validated against — with the analytic dark-count fraction for the
     selected detector mode (ideal: eta=1, dark=0; realistic:
     eta=DETECTOR_EFFICIENCY, dark=DARK_COUNT_PROB).
+
+    ``attack_prob`` contributes p/4 disturbance for intercept-resend family
+    strategies. PNS does not measure or re-prepare the forwarded photon, so it
+    contributes no polarization-error term; its compromise is reported by the
+    separate PNS/decoy security fields rather than QBER.
     """
     distances = np.linspace(0, 100, n_points)
     qber_vs_distance = []
@@ -164,7 +169,10 @@ def generate_chart_data(
         else:
             dark_fraction = 0.0
 
-        q = theoretical_qber(noise_level, attack_prob, dark_fraction)
+        qber_attack_prob = 0.0 if attack_strategy == 'pns' else attack_prob
+        q = theoretical_qber(
+            noise_level, qber_attack_prob, dark_fraction
+        )
         
         # SKR = P_detect * Sifting_Efficiency * (1 - 2*H(QBER))
         # Sifting efficiency is 0.5 for BB84
