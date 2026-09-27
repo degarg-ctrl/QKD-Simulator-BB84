@@ -15,6 +15,7 @@
 import { useState } from 'react'
 import { Activity, Radio, Cpu, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react'
 import useSimulationStore from '../../store/simulationStore'
+import { getDetectorTelemetry } from '../../lib/detectorTelemetry'
 
 export default function NodeTelemetryHUD() {
   const [isOpen, setIsOpen] = useState(false)
@@ -61,6 +62,7 @@ function ExpandedTelemetryPanel({ distanceKm }) {
   const alice = activeReadout?.alice
   const bob = activeReadout?.bob
   const hasEve = (params.attack_prob || 0) > 0
+  const detector = getDetectorTelemetry(params.wcp_enabled)
 
   return (
         <div
@@ -142,9 +144,9 @@ function ExpandedTelemetryPanel({ distanceKm }) {
                 <span>RX: BOB</span>
               </div>
               <div className="text-[10px] text-[var(--q-text-dim,#64748b)] flex flex-col gap-0.5">
-                <div>Sensor: <span className="text-[var(--q-text-muted,#94a3b8)]">InGaAs SPAD</span></div>
-                <div>Efficiency: <span className="text-[var(--q-text-bright,#f1f5f9)]">η = 85%</span></div>
-                <div>Dark count: <span className="text-[var(--q-text-muted,#94a3b8)]">10⁻⁵ / gate</span></div>
+                <div>Sensor: <span className="text-[var(--q-text-muted,#94a3b8)]">{detector.sensor}</span></div>
+                <div>Efficiency: <span className="text-[var(--q-text-bright,#f1f5f9)]">{detector.efficiency}</span></div>
+                <div>Dark count: <span className="text-[var(--q-text-muted,#94a3b8)]">{detector.darkCount}</span></div>
               </div>
               {bob?.basis && (
                 <div className="mt-1 pt-1 border-t border-[var(--q-border-subtle,#282830)] text-[10px]">

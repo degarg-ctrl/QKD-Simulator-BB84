@@ -44,7 +44,8 @@ export default function QuantumCanvas({ className = '' }) {
   const wrapperRef = useRef(null)
   const [contextMenu, setContextMenu] = useState(null)
   const [hoveredGateId, setHoveredGateId] = useState(null)
-  const showStateVectors = true
+  const [detailMode, setDetailMode] = useState('essential')
+  const showStateVectors = detailMode === 'details'
 
   const { results, params, addGate, placedGates, removeGate, setSelectedGate, deleteGate, copyGate, viewResetSignal } = useSimulationStore()
 
@@ -52,6 +53,12 @@ export default function QuantumCanvas({ className = '' }) {
   const [scale, setScale] = useState(1)
   const [toolMode, setToolMode] = useState('cursor') // 'cursor' | 'hand'
   const [baseWidth, setBaseWidth] = useState(1200)
+  // Raw wrapper width, before the 800 px legibility floor below is applied.
+  // Needed to tell whether the rendered corridor actually fits: at narrow
+  // widths the floor makes the canvas wider than its container, and the
+  // container previously only scrolled when zoomed, so the overflowing part
+  // (including Bob's station) was clipped with no way to reach it.
+  const [containerWidth, setContainerWidth] = useState(1200)
 
   const isDragging = useRef(false)
   const lastMouse = useRef({ x: 0, y: 0 })
@@ -708,102 +715,50 @@ export default function QuantumCanvas({ className = '' }) {
       childrenFn(x, y - h / 2 + 20, w, h)
     }
 
-    // ── Alice Card (above Alice at X=ALICE_X, Y=ENTITY_Y - 92) ──
-    const cardW = 186
-    const cardH = 68
-    const aliceY = ENTITY_Y - 92
-    const isAliceActive = hasResults && alice?.basis
-
-    drawBadge(
-      ALICE_X, aliceY, cardW, cardH,
-      'ALICE ENCODING',
-      '#10b981',
-      isAliceActive ? '#10b981' : 'rgba(52, 52, 61, 0.8)',
-      (cx, topY) => {
-        if (!hasResults || !alice?.basis) {
-          ctx.font = '11px monospace'
-          ctx.fillStyle = '#64748b'
-          ctx.textAlign = 'center'
-          ctx.textBaseline = 'middle'
-          ctx.fillText('AWAITING PULSE', cx, topY + 16)
-          return
-        }
-
-        const isRect = alice.basis === '+'
-        const basisColor = isRect ? '#10b981' : '#c084fc'
-        const basisSymbol = isRect ? '+' : '×'
-
-        // Row 1: Bit & Basis
-        ctx.font = 'bold 12px monospace'
-        ctx.textAlign = 'left'
-        ctx.fillStyle = '#94a3b8'
-        ctx.fillText(`Bit:`, cx - 82, topY + 6)
-        ctx.fillStyle = '#f1f5f9'
-        ctx.fillText(`${alice.bit}`, cx - 50, topY + 6)
-
-        ctx.fillStyle = '#94a3b8'
-        ctx.fillText(`Basis:`, cx + 2, topY + 6)
-        ctx.fillStyle = basisColor
-        ctx.fillText(`[ ${basisSymbol} ]`, cx + 50, topY + 6)
-
-        // Row 2: State label and rotation angle
+    // Shared compact readout: polarization on the left, bit and basis stacked.
+    const drawState = (cx, topY, state, isBob) => {
+      if (!hasResults || !state?.basis || (isBob && state.status !== 'detected')) {
         ctx.font = '11px monospace'
-        ctx.fillStyle = basisColor
-        ctx.fillText(`${alice.label || ''}`, cx - 82, topY + 25)
-        ctx.fillStyle = '#94a3b8'
-        ctx.fillText(`Rot:`, cx + 2, topY + 25)
-        ctx.fillStyle = '#f1f5f9'
-        ctx.fillText(`${alice.angle}°`, cx + 36, topY + 25)
+        ctx.fillStyle = PALETTE.labelText
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(isBob ? 'AWAITING DETECTION' : 'AWAITING PULSE', cx, topY + 23)
+        return
       }
-    )
-
-    // ── Bob Card (above Bob at X=BOB_X, Y=ENTITY_Y - 92) ──
-    const bobY = ENTITY_Y - 92
-    const isBobActive = hasResults && bob?.basis
-
-    drawBadge(
-      BOB_X, bobY, cardW, cardH,
-      'BOB MEASUREMENT',
-      '#c084fc',
-      isBobActive ? '#c084fc' : 'rgba(52, 52, 61, 0.8)',
-      (cx, topY) => {
-        if (!hasResults || !bob?.basis) {
-          ctx.font = '11px monospace'
-          ctx.fillStyle = '#64748b'
-          ctx.textAlign = 'center'
-          ctx.textBaseline = 'middle'
-          ctx.fillText('AWAITING PHOTON', cx, topY + 16)
-          return
-        }
-
-        const isRect = bob.basis === '+'
-        const basisColor = isRect ? '#10b981' : '#c084fc'
-        const basisSymbol = isRect ? '+' : '×'
-
-        // Row 1: Selected Basis
-        ctx.font = 'bold 12px monospace'
-        ctx.textAlign = 'left'
-        ctx.fillStyle = '#94a3b8'
-        ctx.fillText(`Basis:`, cx - 82, topY + 6)
-        ctx.fillStyle = basisColor
-        ctx.fillText(`[ ${basisSymbol} ]`, cx - 32, topY + 6)
-
-        // Row 2: Match / Status
-        ctx.font = 'bold 11px monospace'
-        if (bob.status === 'detected') {
-          if (bob.match) {
-            ctx.fillStyle = '#10b981'
-            ctx.fillText('MATCH ✓ (SIFTED)', cx - 82, topY + 25)
-          } else {
-            ctx.fillStyle = '#f59e0b'
-            ctx.fillText('MISMATCH ✗', cx - 82, topY + 25)
-          }
-        } else {
-          ctx.fillStyle = '#f59e0b'
-          ctx.fillText('IN FLIGHT...', cx - 82, topY + 25)
-        }
-      }
-    )
+      const isRect = state.basis === '+'
+      const color = isRect ? PALETTE.basisPlus : PALETTE.basisCross
+      const measuredAngle = isRect ? (state.bit === 0 ? 0 : 90) : (state.bit === 0 ? 45 : 135)
+      const angle = (isBob ? measuredAngle : (state.angle ?? measuredAngle)) * Math.PI / 180
+      const gx = cx - 54
+      const gy = topY + 23
+      ctx.beginPath()
+      ctx.arc(gx, gy, 18, 0, Math.PI * 2)
+      ctx.strokeStyle = color
+      ctx.lineWidth = 2
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(gx - Math.cos(angle) * 15, gy - Math.sin(angle) * 15)
+      ctx.lineTo(gx + Math.cos(angle) * 15, gy + Math.sin(angle) * 15)
+      ctx.strokeStyle = COLORS.nodeText
+      ctx.lineWidth = 3
+      ctx.stroke()
+      ctx.font = 'bold 14px monospace'
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle = COLORS.nodeText
+      ctx.fillText(`Bit: ${state.bit}`, cx - 19, topY + 12)
+      ctx.fillStyle = color
+      ctx.fillText(`Basis: ${isRect ? '+' : '×'}`, cx - 19, topY + 35)
+    }
+    const cardW = 186
+    const cardH = 82
+    const cardY = ENTITY_Y - 97
+    drawBadge(ALICE_X, cardY, cardW, cardH, 'ALICE EMITTED',
+      PALETTE.aliceNode, hasResults && alice?.basis ? PALETTE.aliceNode : PALETTE.labelText,
+      (cx, topY) => drawState(cx, topY, alice, false))
+    drawBadge(BOB_X, cardY, cardW, cardH, 'BOB DETECTED',
+      PALETTE.bobNode, hasResults && bob?.status === 'detected' ? PALETTE.bobNode : PALETTE.labelText,
+      (cx, topY) => drawState(cx, topY, bob, true))
 
     ctx.restore()
   }, [])
@@ -881,12 +836,9 @@ export default function QuantumCanvas({ className = '' }) {
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
 
-    // Determine lane from y position: NEAREST lane center, not
-    // canvas thirds. The three lane centers (150/200/250 in the
-    // 400px coordinate system) all sit in the vertical middle of
-    // the canvas, so dividing the canvas into thirds mapped every
-    // drop to lane 1. Nearest-center matching places the gate on
-    // the lane the user actually dropped on.
+    // Resolve against the lane geometry. The current architecture has one
+    // corridor, while this nearest-center calculation keeps the drop logic
+    // compatible with a future explicit multi-scenario layout.
     const scaleY = CANVAS_HEIGHT / rect.height
     const canvasY = y * scaleY
     let lane = 0
@@ -963,6 +915,7 @@ export default function QuantumCanvas({ className = '' }) {
       if (!wrapper) return
       let w = wrapper.clientWidth
       if (w === 0) return
+      setContainerWidth(w)
       // We enforce a minimum base width so the channel doesn't get completely squished
       w = Math.max(w, 800)
       setBaseWidth(w)
@@ -1050,11 +1003,11 @@ export default function QuantumCanvas({ className = '' }) {
         borderColor: 'var(--border-color)'
       }}
     >
-      {/* Scrollable Area (only overflow when zoomed) */}
+      {/* Scrollable when zoomed, or when the corridor is wider than the pane */}
       <div
         ref={scrollContainerRef}
         className={`absolute inset-0 w-full h-full flex ${
-          scale > 1 ? 'overflow-auto' : 'overflow-hidden'
+          scale > 1 || zoomedWidth > containerWidth ? 'overflow-auto' : 'overflow-hidden'
         }`}
       >
         <div
@@ -1152,10 +1105,32 @@ export default function QuantumCanvas({ className = '' }) {
       </div>
 
       {/* Laboratory Optical Bench Hardware Telemetry */}
-      <NodeTelemetryHUD />
+      {detailMode === 'details' && <NodeTelemetryHUD />}
 
       {/* Floating Toolbar Controls */}
       <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
+        <div
+          className="flex rounded overflow-hidden"
+          style={{ backgroundColor: 'var(--q-surface-1)', border: '1px solid var(--q-border)' }}
+          aria-label="Canvas information density"
+        >
+          {['essential', 'details'].map(mode => (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={detailMode === mode}
+              onClick={() => setDetailMode(mode)}
+              className="px-2.5 h-8 text-[10px] font-semibold uppercase tracking-wider transition-colors"
+              style={{
+                color: detailMode === mode ? 'var(--q-accent-brand)' : 'var(--q-text-dim)',
+                backgroundColor: detailMode === mode ? 'color-mix(in srgb, var(--q-accent-brand) 12%, transparent)' : 'transparent',
+              }}
+              title={mode === 'essential' ? 'Show the core optical path and live event readouts' : 'Add hardware telemetry and gate state-vector details'}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
         <div
           className="flex rounded overflow-hidden"
           style={{ backgroundColor: 'var(--q-surface-1, #1a1a1e)', border: '1px solid var(--q-border, #34343d)' }}

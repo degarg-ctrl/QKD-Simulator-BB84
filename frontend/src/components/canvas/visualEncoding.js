@@ -34,44 +34,44 @@ export const LANE_COUNT = 1
 // attack) and never collide with basis colors.
 export const PALETTE = {
     // BB84 bases (particle state encoding)
-    basisPlus: '#22d3ee',    // rectilinear  (+)
-    basisCross: '#c084fc',   // diagonal     (x)
+    basisPlus: '#81b8a4',    // rectilinear  (+)
+    basisCross: '#b4a0d5',   // diagonal     (x)
 
     // Entities
-    aliceNode: '#38bdf8',
-    bobNode: '#34d399',
-    eveNode: '#f87171',
-    eveNodeInactive: '#475569',
+    aliceNode: '#81b8a4',
+    bobNode: '#b4a0d5',
+    eveNode: '#d76862',
+    eveNodeInactive: '#655f56',
 
     // Outcomes
-    detected: '#34d399',     // real detection (basis match)
-    mismatch: '#fbbf24',     // detected, basis mismatch (discarded)
-    fiberLoss: '#64748b',    // absorbed in fiber
-    detectorMiss: '#94a3b8', // reached Bob, efficiency draw failed
-    darkCount: '#e0e7ff',    // spurious detector click
-    vacuum: '#64748b',       // WCP vacuum pulse (no photon)
+    detected: '#78b69a',
+    mismatch: '#d2a45f',
+    fiberLoss: '#746c61',
+    detectorMiss: '#a89f91',
+    darkCount: '#eee3c8',
+    vacuum: '#746c61',
 
     // Interactions
-    eve: '#ef4444',          // intercept-resend disturbance
-    pns: '#fb7185',          // PNS split/block
-    noise: '#f59e0b',        // channel noise flip
+    eve: '#d76862',
+    pns: '#c27f9f',
+    noise: '#d2a45f',
 
     // UI
-    labelText: '#94a3b8',
-    guide: 'rgba(148, 163, 184, 0.35)',
+    labelText: '#a89f91',
+    guide: 'rgba(168, 159, 145, 0.34)',
 }
 
 // Backward-compatible COLORS export (consumed elsewhere in the app)
 export const COLORS = {
-    background: '#1a1a2e',
-    laneLine: '#ffffff',
-    laneGlow: 'rgba(255,255,255,0.3)',
+    background: '#100f0d',
+    laneLine: '#b8ad9c',
+    laneGlow: 'rgba(217,154,98,0.22)',
     aliceNode: PALETTE.aliceNode,
     bobNode: PALETTE.bobNode,
     eveNode: PALETTE.eveNode,
     eveNodeInactive: PALETTE.eveNodeInactive,
-    nodeText: '#ffffff',
-    nodeBorder: 'rgba(255,255,255,0.4)',
+    nodeText: '#f3efe6',
+    nodeBorder: 'rgba(243,239,230,0.36)',
     photonBlue: PALETTE.basisPlus,
     photonPurple: PALETTE.basisCross,
     photonLost: PALETTE.fiberLoss,

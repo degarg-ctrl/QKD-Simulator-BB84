@@ -33,7 +33,7 @@ function Stat({ label, value, color, dim = false }) {
 export default function TransmissionHUD({ countersRef }) {
     const results = useSimulationStore((s) => s.results)
     const [counters, setCounters] = useState(null)
-    const [isCollapsed, setIsCollapsed] = useState(false)
+    const [isCollapsed, setIsCollapsed] = useState(true)
     const hudRef = useRef(null)
 
     // Poll the animation counters ref (mutated by the rAF loop)
@@ -51,9 +51,10 @@ export default function TransmissionHUD({ countersRef }) {
     if (!transmission) return null
 
     const released = counters?.released ?? 0
-    const sampled = results.event_stream?.length ?? 0
-    const isSample = transmission.event_stream_truncated
-    const totalTarget = isSample ? sampled : transmission.generated
+    const hasExactPlayback = results.playback_stream?.length === transmission.generated
+    const totalTarget = hasExactPlayback
+        ? results.playback_stream.length
+        : (results.event_stream?.length || results.bit_stream?.length || 0)
     const isComplete = totalTarget > 0 && released >= totalTarget
 
     // Authoritative live numbers during playback, snapping to final totals on complete
@@ -64,7 +65,7 @@ export default function TransmissionHUD({ countersRef }) {
         ? transmission.fiber_survived
         : Math.max(0, released - liveLost - liveVacuum - livePnsBlocked)
 
-    const liveDetected = isComplete ? transmission.real_detections : (counters?.live_detected ?? 0)
+    const liveDetected = isComplete ? transmission.total_detections : (counters?.live_detected ?? 0)
     const liveDetectorMiss = isComplete ? transmission.detector_loss : (counters?.live_detector_loss ?? 0)
     const liveDarkCounts = isComplete ? transmission.dark_counts : (counters?.dark_count ?? 0)
     const liveIntercepted = isComplete ? transmission.intercepted : (counters?.intercepted ?? 0)
@@ -147,14 +148,34 @@ export default function TransmissionHUD({ countersRef }) {
                         )}
                         <div className="my-1" style={{ borderTop: '1px dashed var(--q-border-subtle, #282830)' }} />
                         <Stat label="Sifted" color="var(--q-accent-cyan, #38bdf8)" value={liveSifted} />
+                        {counters?.measured_fps > 0 && (
+                            <Stat
+                                label="Canvas cadence"
+                                color="var(--q-text-muted)"
+                                value={`${counters.measured_fps.toFixed(1)} fps`}
+                                dim
+                            />
+                        )}
                     </div>
 
-                    {/* Sampling note */}
-                    {isSample && (
+                    {/* Playback representation note */}
+                    {hasExactPlayback && transmission.generated > 120 && (
                         <div className="px-3.5 py-1.5" style={{ borderTop: '1px solid var(--q-border-subtle, #282830)' }}>
-                            <span className="text-[11px] font-body leading-normal text-[var(--q-text-dim,#64748b)]">
-                                representative playback of N=<span className="font-mono tabular-nums">{transmission.generated}</span>
-                            </span>
+                            <div className="text-[11px] font-body leading-normal text-[var(--q-text-dim,#64748b)]">
+                                Each moving packet represents up to{' '}
+                                <span className="font-mono tabular-nums text-[var(--q-text-muted,#94a3b8)]">
+                                    {counters?.visual_batch_size || 1}
+                                </span>{' '}
+                                backend pulses.
+                            </div>
+                            {counters?.visual_batch_start != null && (
+                                <div className="mt-0.5 text-[10px] font-mono tabular-nums text-[var(--q-text-dim,#64748b)]">
+                                    current group #{counters.visual_batch_start}–#{counters.visual_batch_end}
+                                </div>
+                            )}
+                            <div className="mt-0.5 text-[10px] font-body leading-normal text-[var(--q-text-dim,#64748b)]">
+                                All {transmission.generated} outcomes remain backend-accounted.
+                            </div>
                         </div>
                     )}
                 </>
