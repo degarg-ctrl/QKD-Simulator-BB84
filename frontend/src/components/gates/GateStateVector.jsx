@@ -32,6 +32,9 @@ export default function GateStateVector({ gate, position, isHovered }) {
           <div className="font-mono text-cyan-400 whitespace-nowrap font-semibold">
             |ψ⟩ = {formatComplex(stateVector.alpha)}|0⟩ + {formatComplex(stateVector.beta)}|1⟩
           </div>
+          <div className="mt-1 text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-subtle)' }}>
+            Illustrative input |0⟩
+          </div>
           <div className="mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>
             P(0) = {prob0}
           </div>
@@ -67,11 +70,9 @@ function calculateStateVector(gate) {
       break;
     case 'S':
       alpha = { real: 1, imag: 0 };
-      beta = { real: 0, imag: 1 };
       break;
     case 'T':
       alpha = { real: 1, imag: 0 };
-      beta = { real: Math.cos(Math.PI/8), imag: Math.sin(Math.PI/8) };
       break;
   }
 

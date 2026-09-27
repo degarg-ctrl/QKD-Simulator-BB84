@@ -10,6 +10,7 @@ import useSimulationStore from '../../store/simulationStore'
 import { useSimulation } from '../../hooks/useSimulation'
 import PhotonInputTable from './PhotonInputTable'
 import EditableValue from '../ui/EditableValue'
+import { buildExperimentConfiguration, gatesForExperiment } from '../../lib/simulationRun'
 
 // Experiment data — mirrors backend experiments.py
 const EXPERIMENT_DATA = {
@@ -105,11 +106,10 @@ export default function ExperimentModal() {
     experimentModalOpen,
     experimentModalId,
     closeExperimentModal,
-    setParams,
-    setActiveExperiment
+    applySimulationConfiguration
   } = useSimulationStore()
 
-  const { runSimulation } = useSimulation()
+  const { runWithConfiguration } = useSimulation()
 
   const [localDistance, setLocalDistance] = useState(10)
   const [localNoise, setLocalNoise] = useState(0)
@@ -150,37 +150,29 @@ export default function ExperimentModal() {
       return
     }
 
-    // Build params for this experiment
-    const newParams = {
-      n_bits: exp.user_input ? userBits.length : localNBits,
-      distance_km: localDistance,
-      noise_level: localNoise / 100,
-      attack_prob: exp.locked.includes('attack_prob')
-        ? exp.defaults.attack_prob
-        : localAttack / 100,
-      attack_strategy: 'intercept_resend',
-      experiment_mode: experimentModalId,
-      gates: useSimulationStore.getState().placedGates.map(g => ({
-        type: g.type,
-        lane: g.lane,
-        position: g.position
-      }))
+    const currentState = useSimulationStore.getState()
+    const next = buildExperimentConfiguration({
+      experimentId: experimentModalId,
+      defaults: exp.defaults,
+      values: {
+        n_bits: exp.user_input ? userBits.length : localNBits,
+        distance_km: localDistance,
+        noise_level: localNoise / 100,
+        attack_prob: exp.locked.includes('attack_prob')
+          ? exp.defaults.attack_prob
+          : localAttack / 100,
+      },
+      aliceBits: exp.user_input ? userBits : null,
+      aliceBases: exp.user_input ? userBases : null,
+    })
+    const configuration = {
+      ...next,
+      placedGates: gatesForExperiment(experimentModalId, currentState.placedGates),
     }
 
-    if (exp.user_input) {
-      newParams.alice_bits = userBits
-      newParams.alice_bases = userBases
-    }
-
-    setParams(newParams)
-    setActiveExperiment(experimentModalId)
+    applySimulationConfiguration(configuration)
     closeExperimentModal()
-
-    // Run simulation asynchronously so Zustand has time to flush state
-    setTimeout(() => {
-      useSimulationStore.setState({ params: newParams }) // force latest
-      runSimulation()
-    }, 50)
+    runWithConfiguration(configuration)
   }
 
   const isLocked = (param) => exp?.locked?.includes(param)

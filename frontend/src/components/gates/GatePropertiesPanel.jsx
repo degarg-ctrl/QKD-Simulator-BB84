@@ -2,6 +2,27 @@ import { motion, AnimatePresence } from 'framer-motion'
 import useSimulationStore from '../../store/simulationStore'
 import { ArrowLeft, Trash2 } from 'lucide-react'
 
+const EXAMPLES = {
+  H: { before: '|0⟩', after: '|+⟩', note: 'Equal amplitudes, zero relative phase' },
+  X: { before: '|0⟩', after: '|1⟩', note: 'Population swaps between the basis states' },
+  Y: { before: '|0⟩', after: 'i|1⟩', note: 'Population swaps and phase advances by π/2' },
+  Z: { before: '|+⟩', after: '|−⟩', note: 'Relative phase changes by π' },
+  S: { before: '|+⟩', after: '(|0⟩ + i|1⟩)/√2', note: '|1⟩ phase advances by π/2' },
+  T: { before: '|+⟩', after: '(|0⟩ + eⁱᵖ⁄⁴|1⟩)/√2', note: '|1⟩ phase advances by π/4' },
+}
+
+function Matrix({ values }) {
+  return (
+    <math display="block" aria-label={`matrix ${values.flat().join(', ')}`}>
+      <mrow><mo>[</mo><mtable>
+        {values.map((row, rowIndex) => (
+          <mtr key={rowIndex}>{row.map((value, colIndex) => <mtd key={colIndex}><mtext>{value}</mtext></mtd>)}</mtr>
+        ))}
+      </mtable><mo>]</mo></mrow>
+    </math>
+  )
+}
+
 export default function GatePropertiesPanel({ className = '' }) {
   const placedGates = useSimulationStore((state) => state.placedGates)
   const selectedGate = useSimulationStore((state) => state.selectedGate)
@@ -29,8 +50,8 @@ export default function GatePropertiesPanel({ className = '' }) {
     Z: 'Phase flip. Maps |1⟩ → -|1⟩; rectilinear states invariant.',
     S: 'Phase gate. Adds π/2 (90°) phase rotation to |1⟩.',
     T: 'π/8 gate. Adds π/4 (45°) phase rotation to |1⟩.',
-    clone: 'Attempts cloning via entanglement. Provably collapses quantum state.',
-    cnot: 'Controlled-NOT probe. Intercepts partial state while creating detectable noise.',
+    clone: 'Educational no-cloning probe. The modeled reduced state is disturbed because an unknown quantum state cannot be copied perfectly.',
+    cnot: 'Controlled-NOT probe model. The signal becomes correlated with a probe; the reduced signal state can lose coherence.',
   }
 
   const photonEffects = {
@@ -40,8 +61,8 @@ export default function GatePropertiesPanel({ className = '' }) {
     Z: 'Inverts phase in diagonal basis (45° ↔ 135°)',
     S: 'Rotates diagonal polarization state by 22.5°',
     T: 'Rotates diagonal polarization state by 11.25°',
-    clone: 'Destroys coherent quantum state — raises QBER immediately',
-    cnot: 'Entangles photon with probe — causes detectable perturbation',
+    clone: 'Shows the documented reduced-state disturbance; it is not represented by a fabricated 2×2 gate matrix',
+    cnot: 'Shows the documented signal/probe interaction model and its detectable perturbation',
   }
 
   return (
@@ -86,6 +107,8 @@ export default function GatePropertiesPanel({ className = '' }) {
               const matrix = gateMatrices[gate.type] || [['1', '0'], ['0', '1']]
               const effect = photonEffects[gate.type] || 'Applies state transformation'
               const desc = descriptions[gate.type] || 'Single-qubit quantum gate'
+              const example = EXAMPLES[gate.type]
+              const isProbe = gate.type === 'clone' || gate.type === 'cnot'
 
               return (
                 <motion.div
@@ -143,22 +166,27 @@ export default function GatePropertiesPanel({ className = '' }) {
                     </div>
                   </div>
 
-                  {/* Matrix */}
+                  {/* Visual operation sequence */}
+                  {example && (
+                    <div className="mb-2 rounded border border-[var(--q-border-subtle)] bg-[var(--q-surface-0)] p-2">
+                      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-center">
+                        <div><div className="foundation-label">Before</div><div className="font-mono text-sm text-[var(--q-accent-quantum)]">{example.before}</div></div>
+                        <div className="rounded border border-[var(--q-border)] px-2 py-1 font-mono font-bold text-[var(--q-accent-brand)]">{gate.type}</div>
+                        <div><div className="foundation-label">After</div><div className="font-mono text-sm text-[var(--q-accent-diagonal)]">{example.after}</div></div>
+                      </div>
+                      <div className="mt-2 text-center text-[10px] text-[var(--q-text-dim)]">{example.note}</div>
+                    </div>
+                  )}
+
+                  {/* Matrix or documented probe model */}
                   <div className="mb-2">
                     <div className="text-[10px] font-body uppercase tracking-wider text-[var(--text-subtle)] mb-1">
-                      Transformation Matrix
+                      {isProbe ? 'Probe model' : 'Transformation matrix'}
                     </div>
-                    <div className="p-2 rounded font-mono text-xs text-center bg-[var(--panel-bg)] border border-[var(--border-color)]">
-                      <div className="flex justify-center gap-4">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[var(--text-primary)]">{matrix[0][0]}</span>
-                          <span className="text-[var(--text-primary)]">{matrix[1][0]}</span>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[var(--text-primary)]">{matrix[0][1]}</span>
-                          <span className="text-[var(--text-primary)]">{matrix[1][1]}</span>
-                        </div>
-                      </div>
+                    <div className="p-2 rounded font-mono text-xs text-center bg-[var(--panel-bg)] border border-[var(--border-color)] text-[var(--text-primary)]">
+                      {isProbe ? (
+                        <div className="leading-relaxed text-[var(--q-text-2)]">signal + probe → correlated joint state<br/><span className="text-[10px] text-[var(--q-text-dim)]">Inspect the modeled output statistics; no single-qubit unitary is claimed.</span></div>
+                      ) : <Matrix values={matrix} />}
                     </div>
                   </div>
 
