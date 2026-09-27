@@ -52,6 +52,7 @@ const SECTIONS = [
             { key: 'noise_flipped', label: 'Noise flips', color: '#f59e0b' },
             { key: 'total_detections', label: 'Total detections', color: '#22d3ee' },
             { key: 'sifted', label: 'Sifted key entries', color: '#22d3ee' },
+            { key: 'sifted_errors', label: 'Sifted bit errors', color: '#fb7185', denominator: 'sifted' },
         ],
     },
 ]
@@ -67,17 +68,32 @@ export default function TransmissionPanel({ results }) {
     }
 
     const wcp = results.wcp_enabled
+    const detectedRows = Array.isArray(results.bit_stream)
+        ? results.bit_stream : []
+    const detectedRowsAreComplete = detectedRows.length === t.total_detections
+    const derivedSiftedErrors = detectedRowsAreComplete
+        ? detectedRows.filter((row) => (
+            (row.sifted === true || (row.sifted == null && row.match === true))
+            && row.bob_bit != null
+            && row.alice_bit !== row.bob_bit
+        )).length
+        : null
+    const siftedErrors = Number.isInteger(t.sifted_errors)
+        ? t.sifted_errors
+        : Number.isInteger(results.qber_full_sifted_errors)
+            ? results.qber_full_sifted_errors
+            : derivedSiftedErrors ?? 0
+    const rowValue = (row) => row.key === 'sifted_errors'
+        ? siftedErrors : t[row.key] ?? 0
     const pct = (n) =>
         t.generated > 0 ? `${((n / t.generated) * 100).toFixed(1)}%` : '0%'
+    const rowPct = (row, value) => row.denominator === 'sifted'
+        ? t.sifted > 0 ? `${((value / t.sifted) * 100).toFixed(1)}% of sifted` : '0% of sifted'
+        : pct(value)
 
     // Flow bar segments (proportions of generated pulses)
     const bar = [
         { n: t.real_detections, color: '#34d399', label: 'Detected' },
-        {
-            n: t.sifted && t.sifted < t.real_detections
-                ? t.real_detections - t.sifted : 0, color: '#22d3ee',
-            label: 'Detected, unsifted'
-        },
         { n: t.detector_loss, color: '#94a3b8', label: 'Detector miss' },
         { n: t.pns_blocked, color: '#fb7185', label: 'PNS blocked' },
         { n: t.fiber_lost, color: '#475569', label: 'Fiber lost' },
@@ -123,7 +139,9 @@ export default function TransmissionPanel({ results }) {
                         </div>
                         {section.rows
                             .filter((r) => !r.wcpOnly || wcp)
-                            .map((r) => (
+                            .map((r) => {
+                                const value = rowValue(r)
+                                return (
                                 <div key={r.key}
                                     className="flex items-baseline justify-between gap-2 text-xs">
                                     <span className="font-body text-[var(--text-muted)] truncate" title={r.label}>
@@ -131,26 +149,35 @@ export default function TransmissionPanel({ results }) {
                                     </span>
                                     <span className="font-mono font-semibold tabular-nums flex-shrink-0"
                                         style={{ color: r.color }}>
-                                        {t[r.key]}
+                                        {value}
                                         <span className="text-[10px] font-normal ml-1"
                                             style={{ color: 'var(--text-subtle)' }}>
-                                            {pct(t[r.key])}
+                                            {rowPct(r, value)}
                                         </span>
                                     </span>
                                 </div>
-                            ))}
+                                )
+                            })}
                     </div>
                 ))}
             </div>
 
             {/* Sampling note */}
-            {t.event_stream_truncated && (
+            {t.event_stream_truncated && !results.playback_stream?.length && (
                 <div className="text-xs font-body leading-relaxed pt-2 border-t border-[var(--border-color)]/30"
                     style={{ color: 'var(--text-muted)' }}>
                     Counts cover all <span className="font-mono tabular-nums">{t.generated.toLocaleString()}</span> simulated
                     pulses. The canvas animation plays a representative sample
-                    (first 500 events by deterministic stride) — counters in the
+                    (up to 500 events by deterministic stride) — counters in the
                     HUD reflect full-simulation totals.
+                </div>
+            )}
+            {results.playback_stream?.length > 500 && (
+                <div className="text-xs font-body leading-relaxed pt-2 border-t border-[var(--border-color)]/30"
+                    style={{ color: 'var(--text-muted)' }}>
+                    Counts and tables cover every pulse. To keep long runs usable,
+                    the canvas groups consecutive pulses behind representative
+                    visual particles while preserving their original identities.
                 </div>
             )}
         </div>
