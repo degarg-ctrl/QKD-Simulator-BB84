@@ -17,7 +17,7 @@ const BASE_URL = import.meta.env.DEV
  * Run a complete BB84 simulation.
  *
  * @param {Object} params - Simulation parameters
- * @param {number} params.n_bits          - Number of photons (100-10000)
+ * @param {number} params.n_bits          - Number of pulses (1-10000)
  * @param {number} params.distance_km     - Fiber distance in km (0-150)
  * @param {number} params.noise_level     - Background noise (0-1)
  * @param {number} params.attack_prob     - Eve interception probability (0-1)
@@ -26,7 +26,7 @@ const BASE_URL = import.meta.env.DEV
  * @returns {Promise<SimulationResponse>} Full simulation results
  * @throws {Error} If network fails or backend returns non-200
  */
-export async function runSimulation(params) {
+export async function runSimulation(params, { signal } = {}) {
   const validationError = validateParams(params)
   if (validationError) {
     throw new Error(`Validation Error: ${validationError}`)
@@ -42,23 +42,36 @@ export async function runSimulation(params) {
 
     const response = await fetch(`${BASE_URL}/api/simulate`, {
       method: 'POST',
+      signal,
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         ...params,
+        include_playback_stream: true,
         gates: backendGates
       }),
     })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.detail || `Backend returned status ${response.status}`)
+      const detail = errorData.detail
+      const message = typeof detail === 'string'
+        ? detail
+        : Array.isArray(detail)
+          ? detail.map(item => item?.msg).filter(Boolean).join('; ')
+          : ''
+      throw new Error(message || `Simulation backend returned status ${response.status}`)
     }
 
     return await response.json()
   } catch (error) {
-    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+    // fetch() rejects with a TypeError only for network-level failures
+    // (offline, DNS, CORS, connection refused). Matching on the message text
+    // is browser-specific — Chrome says "Failed to fetch", Firefox
+    // "NetworkError when attempting to fetch resource", Safari "Load failed" —
+    // so discriminate on the error type instead.
+    if (error instanceof TypeError) {
       throw new Error('Could not connect to the simulation backend. Is it running at localhost:8000?')
     }
     throw error

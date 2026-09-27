@@ -1,9 +1,9 @@
 /**
  * src/store/simulationStore.js
- * 
+ *
  * Zustand store for BB84 QKD Simulator.
  * Single source of truth for all simulation state.
- * 
+ *
  * Three state domains:
  * 1. params     — user-configured simulation parameters
  * 2. results    — data returned from POST /api/simulate
@@ -11,21 +11,15 @@
  */
 
 import { create } from 'zustand'
+import { DEFAULT_SIMULATION_PARAMS } from '../lib/landingPreset'
+
+const freshDefaultParams = () => ({ ...DEFAULT_SIMULATION_PARAMS })
 
 const useSimulationStore = create((set, get) => ({
 
   // ─── PARAMS ──────────────────────────────────────────────
   // Default values match PHYSICS_CONTRACT.md Section 9
-  params: {
-    n_bits: 1000,
-    distance_km: 50,
-    noise_level: 0.02,
-    attack_prob: 0.0,
-    attack_strategy: 'intercept_resend',
-    wcp_enabled: false,
-    mean_photon_number: 0.2,
-    decoy_enabled: false,
-  },
+  params: freshDefaultParams(),
 
   // ─── RESULTS ─────────────────────────────────────────────
   // Null until first simulation runs
@@ -36,13 +30,28 @@ const useSimulationStore = create((set, get) => ({
     qber: float | null,   // null when not estimated (insufficient sample)
     qber_estimated: bool, // false when qber is null; do NOT read null as 0
     skr: float,
+    qber_preview: float | null, // diagnostic-only small-sample value
+    qber_preview_sample_size: int,
+    qber_preview_errors: int,
+    qber_preview_confidence: 'low' | 'very_low' | null,
+    skr_preview: float | null, // diagnostic-only small-sample value
+    qber_sample_size: int,
+    qber_sample_errors: int,
+    qber_full_sifted_errors: int,
     sifted_key_length: int,
     raw_key_length: int,
     efficiency: float,
     bit_stream: PhotonRecord[],
     qber_vs_distance: [{distance, qber}],
     skr_vs_distance: [{distance, skr}],
-    secure_threshold_breached: bool
+    secure_threshold_breached: bool,
+    post_sample_key: int[],
+    post_sample_key_length: int,
+    post_sample_keys_match: bool,
+    key_exchange_aborted: bool,
+    key_exchange_abort_reason: string,
+    otp_demo_allowed: bool,
+    otp_demo_block_reason: string | null
   }
   */
 
@@ -50,6 +59,9 @@ const useSimulationStore = create((set, get) => ({
   isRunning: false,
   isLoading: false,
   error: null,
+  runRevision: 0,
+  activeRunId: null,
+  submittedRun: null,
 
   // ─── VIEW STATE ──────────────────────────────────────────
   activeView: 'landing',   // 'landing' | 'simulator' | 'guide' | 'results'
@@ -60,7 +72,7 @@ const useSimulationStore = create((set, get) => ({
     currentPhotonIndex: 0,
     mode: 'waves',        // 'waves' (discrete photons with ~1.5s delay) | 'beam' (continuous laser)
     speed: 1.0,           // multiplier for waves (0.2x to 3.0x, baseline 1.0x)
-    beamRate: 20,         // photons / sec in beam mode (calibrated for silky 60fps)
+    beamRate: 20,         // visual photons / second in beam playback mode
     sliderPos: 25,        // normalized 0-100 position (0-50 = waves, 50-100 = beam)
     completedPhotons: [], // photons that have finished traveling
     activePhotons: [],    // photons currently in flight on canvas
@@ -70,7 +82,8 @@ const useSimulationStore = create((set, get) => ({
       bob: { basis: null, match: null, photonIndex: null, status: 'idle' }
     }
   },
-  liveArrivals: [],        // photons that have arrived at Bob in real time
+  liveArrivals: [],        // photons that have arrived at Bob during playback
+  playbackStatus: 'idle',  // 'idle' | 'playing' | 'complete'
 
   // ─── GATES ───────────────────────────────────────────────
   // Gates placed on canvas lanes by user drag-drop
@@ -78,7 +91,7 @@ const useSimulationStore = create((set, get) => ({
 
   // ─── EXPERIMENT STATE ────────────────────────────────────
   activeExperiment: null,
-  // null = free mode, 'exp1'-'exp6' = experiment mode
+  // null = free mode, 'exp1'-'exp8' = experiment mode (see Sidebar.jsx)
 
   experimentModalOpen: false,
   experimentModalId: null,
@@ -110,7 +123,7 @@ const useSimulationStore = create((set, get) => ({
   {
     id: string,          unique id e.g. 'gate-H-1234'
     type: string,        'H'|'X'|'Y'|'Z'|'S'|'T'
-    lane: number,        0|1|2
+    lane: number,        0 (single optical corridor)
     position: number,    0.0-1.0 (fraction of channel width)
     color: string        gate color for canvas rendering
   }
@@ -121,6 +134,44 @@ const useSimulationStore = create((set, get) => ({
   setParams: (newParams) => set((state) => ({
     params: { ...state.params, ...newParams }
   })),
+
+  applySimulationConfiguration: ({
+    params, sourceModel, activeExperiment = null, placedGates,
+  }) => set((state) => ({
+    params: { ...freshDefaultParams(), ...params },
+    sourceModel,
+    activeExperiment,
+    placedGates: placedGates == null ? state.placedGates : placedGates,
+    selectedGate: null,
+  })),
+
+  beginRun: (submittedRun) => {
+    const runId = get().runRevision + 1
+    set({
+      runRevision: runId,
+      activeRunId: runId,
+      submittedRun,
+      results: null,
+      isLoading: true,
+      isRunning: true,
+      error: null,
+      liveArrivals: [],
+      playbackStatus: 'idle',
+    })
+    return runId
+  },
+
+  completeRun: (runId, results) => set((state) => (
+    state.activeRunId === runId
+      ? { results, isLoading: false, isRunning: false, error: null, activeRunId: null }
+      : {}
+  )),
+
+  failRun: (runId, error) => set((state) => (
+    state.activeRunId === runId
+      ? { error, isLoading: false, isRunning: false, activeRunId: null }
+      : {}
+  )),
 
   setResults: (results) => set({
     results,
@@ -258,6 +309,7 @@ const useSimulationStore = create((set, get) => ({
   setActiveView: (view) => set({ activeView: view }),
 
   reset: () => set((state) => ({
+    params: freshDefaultParams(),
     results: null,
     isRunning: false,
     isLoading: false,
@@ -284,17 +336,32 @@ const useSimulationStore = create((set, get) => ({
     bottomPanelCollapsed: false,
     syncMode: false,
     sourceModel: 'ideal',
+    activeExperiment: null,
+    experimentModalOpen: false,
+    experimentModalId: null,
+    selectedGate: null,
+    gateStates: {},
+    submittedRun: null,
+    activeRunId: null,
+    runRevision: state.runRevision + 1,
     liveArrivals: [],
+    playbackStatus: 'idle',
     viewResetSignal: (state.viewResetSignal || 0) + 1,
   })),
 
   appendLiveArrivals: (newArrivals) => set((state) => ({
-    liveArrivals: [...state.liveArrivals, ...newArrivals]
+    liveArrivals: [...state.liveArrivals, ...newArrivals],
+    playbackStatus: 'playing',
   })),
 
-  setLiveArrivals: (arrivals) => set({ liveArrivals: arrivals }),
+  setLiveArrivals: (arrivals) => set({
+    liveArrivals: arrivals,
+    playbackStatus: arrivals.length ? 'playing' : 'idle',
+  }),
 
-  resetLiveArrivals: () => set({ liveArrivals: [] }),
+  resetLiveArrivals: () => set({ liveArrivals: [], playbackStatus: 'playing' }),
+
+  finishPlayback: () => set({ playbackStatus: 'complete' }),
 
   addGate: (gate) => set((state) => ({
     placedGates: [...state.placedGates, {
