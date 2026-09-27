@@ -1,5 +1,5 @@
 # Product Requirements Document — QKD BB84 Simulator
-Version: 0.4.0 | Status: Active | Last Updated: 2026-06-24
+Version: 0.6.0 | Status: Active | Last Updated: 2026-09-27
 
 ## 1. Objective
 An interactive, visually rich BB84 QKD simulator for academic research
@@ -21,11 +21,11 @@ F2 — Photon Animation (Canvas)
 - Photons as glowing particles traveling Alice → Channel → Bob
 - Blue (#6366f1) = rectilinear (+), Purple (#a855f7) = diagonal (×)
 - Polarization line at exact angle: 0°/90°/45°/135°
-- Angle updates in real time during travel
+- Angle updates during canvas playback
 - Eve interception: particle splits, red glow, angle shift on re-emit
 - Channel loss: photon fades to 0 opacity mid-channel
 - Detector miss: photon dims at Bob without flash
-- 60fps via requestAnimationFrame only
+- requestAnimationFrame-driven playback; 60fps is a performance target, not a verified cross-device claim
 
 F3 — Configuration Controls & Experiment Modes
 - Distance: 0–150km
@@ -38,12 +38,16 @@ F3 — Configuration Controls & Experiment Modes
 - Every control has a tooltip with physical explanation
 
 F4 — Metrics, Visualizations, and OTP Demo
-- Live cards: QBER, SKR, Sifted Key Length, Efficiency
+- Result cards: QBER, SKR estimate, Sifted Key Length, Efficiency
 - Interactive charts: QBER vs Distance, SKR vs Distance
 - 3D Bloch Sphere quantum state vector rendering
-- One-Time Pad (OTP) encryption & decryption interactive demonstration
+- One-Time Pad (OTP) XOR demonstration using the backend post-QBER-sampling key; enabled only when the remaining Alice/Bob keys match and modeled security checks permit use
 - Bit stream table: per-photon alice_bit, alice_basis, bob_basis, bob_bit, match
 - Audit log tab
+
+The current release does not execute error correction, privacy amplification,
+authentication, or a deployment-grade key lifecycle. SKR includes an
+asymptotic security-model penalty; it is not evidence that those protocols ran.
 
 F5 — User Guide Page
 - What is QKD
@@ -57,8 +61,8 @@ Every sidebar entity and gate: hover tooltip explaining what it is,
 what it does in BB84, what happens when active in simulation.
 
 ## 3. Non-Functional Requirements
-- Page load under 3 seconds
-- Simulation response under 2 seconds for n_bits <= 5000
+- Page load under 3 seconds (target; measurement pending on defined reference hardware/network)
+- Simulation response under 2 seconds for n_bits <= 5000 (target; benchmark pending on defined reference hardware)
 - No physics violations at any parameter combination
 - Works on Chrome, Firefox, Safari latest
 
@@ -71,5 +75,5 @@ what it does in BB84, what happens when active in simulation.
 - QBER ≈ 25% with Eve attack_prob=1.0, no noise
 - QBER ≈ 0% with no Eve, no noise, 0km
 - SKR = 0 when QBER >= 11%
-- Photon animation stable at 60fps
+- Photon animation targets 60fps; verify on defined reference hardware before treating this as achieved
 - All Section 8 benchmarks in PHYSICS_CONTRACT.md pass

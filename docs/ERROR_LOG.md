@@ -1,6 +1,41 @@
 # Error Log
 Format: [YYYY-MM-DD HH:MM] | Branch | Error | Cause | Resolution | Prevention
 
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | ERROR: The theoretical QBER chart treated PNS like intercept-resend
+Cause: `generate_chart_data()` passed `attack_prob` to the intercept-resend disturbance equation for every strategy. An 80% PNS run therefore displayed a 20% theoretical QBER even though PNS forwards the measured state and is intentionally QBER-undetectable.
+Resolution: The chart now applies the p/4 disturbance term only to intercept-resend-family strategies. PNS contributes no polarization-error term; channel noise and detector dark-count mixture remain visible, while PNS/decoy security fields report the modeled leakage.
+Prevention: Strategy-specific attack semantics must be applied at both the simulation and theoretical-chart boundaries. A chart test must compare each supported attack strategy with its documented physical effect.
+
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | ERROR: Experiment parameters applied one run late and Reset retained experiment configuration
+Cause: ExperimentModal merged parameters into Zustand and used a 50 ms timeout before calling a hook callback whose closure could still contain the previous parameters and source model. Reset cleared results and playback but omitted parameters, source/experiment identity, gates, modal state and selected-gate state. Any response arriving after reset could also repopulate results.
+Resolution: Added a complete experiment configuration builder and one shared run entry that submits an immutable snapshot directly. Runs now carry monotonic IDs, supersede and abort older requests, and commit only while active. Reset aborts the request, invalidates its ID, restores startup parameters/source, and clears experiment, gate, result, inspector and playback state while preserving view/display preferences.
+Prevention: Launch actions must pass one complete configuration to the run boundary; they must not synchronize store writes with timeouts. Async responses must prove ownership before committing, and reset tests must cover every simulation-owned state domain.
+
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | ERROR: Results UI claimed security and displayed an invented distillable key length
+Cause: Several green-state labels treated QBER below the abort threshold as a complete security verdict, while the results panel estimated a “distillable” key as 90% of the sifted key even though no such calculation or distillation stage exists.
+Resolution: Reworded green states as threshold outcomes, stated the missing post-processing boundary, and replaced the fabricated value with the backend-authoritative `post_sample_key_length`.
+Prevention: Every security-facing label must map to an implemented backend field or a documented theoretical condition; presentation code must not derive unsupported security quantities.
+
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | ERROR: Simulation failures and experiment persistence outcomes were invisible or fragile
+Cause: The store error had no rendered consumer, Save closed without confirmation, and corrupt/legacy local storage or invalid imports could throw or fail without actionable feedback.
+Resolution: Added a persistent simulation alert, inline save/import success and error states, guarded storage parsing and writes, import shape validation, and legacy-entry fallbacks.
+Prevention: Every asynchronous or persistent user action must expose success/failure state, and browser-owned data must be validated before use.
+
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | ERROR: Parameters rail toggle and laptop-width canvas content were unreachable
+Cause: The toggle's negative offset was clipped by the rail's animated `overflow-hidden` container, and the fixed 800 px scientific canvas was clipped by a narrower center pane at 1024 px.
+Resolution: Moved the toggle outside the clipping container and enabled local horizontal scrolling only when the pane is narrower than the logical canvas.
+Prevention: Controls positioned outside an animated boundary must live outside its clipping context; fixed-size scientific views need a reachable local overflow path.
+
+[2026-09-26 07:12] | feat/simulator-dual-mode-controller-and-ui-overhaul | ERROR: Landing PNS and decoy shortcuts opened the simulator without enabling the realistic source model
+Cause: Landing shortcuts wrote legacy `source_model` and `mu` keys into `params`, while `useSimulation()` derives WCP enablement from the separate Zustand `sourceModel` field and reads `mean_photon_number`. Partial preset merges also retained unrelated values from the previous scenario.
+Resolution: Added one preset normalizer that maps landing vocabulary to the active store/API contract, selects the source model, supplies complete defaults, and removes legacy keys.
+Prevention: Every UI shortcut must be tested at the store/API boundary and must use one canonical parameter vocabulary.
+
+[2026-09-26 07:12] | feat/simulator-dual-mode-controller-and-ui-overhaul | ERROR: OTP panel reconstructed an apparently secure key from a capped display stream
+Cause: The panel filtered `bit_stream`, which is a detected-only sample capped at 500 records and represents the pre-sacrifice sifted population. It did not consume `BB84Protocol.extract_key()`, check Alice/Bob post-sampling agreement, or block on modeled security outcomes.
+Resolution: The API now serializes the complete backend post-sampling key and explicit OTP eligibility. Eligibility requires a successful QBER estimate, no protocol abort or modeled PNS compromise, exact remaining Alice/Bob key agreement, and at least eight bits. The UI describes the feature as an educational XOR demonstration and states the missing post-processing stages.
+Prevention: Security demonstrations must consume backend-authoritative key material and expose unsupported security stages rather than inferring them from display samples.
+
 [2026-09-14 23:20] | main | ERROR: Default pytest could not collect more than one dated suite that imports helpers from its own conftest (audit defect M12)
 Cause: Every run under tests/runs/ keeps helpers in suite/conftest.py and its test modules use `from conftest import ...`. Since every suite directory is named "suite", pytest imported a single top-level `conftest` module and the first suite shadowed the rest; collecting 2026-05-04 with 2026-09-14_p1 raised `ImportError: cannot import name 'run_pipeline_trials' from 'conftest'`. Rather than fail loudly, the default config limited testpaths to the two 2026-09-14 audit suites, so the 2026-05-02 physics-accuracy, 2026-05-04 comprehensive-validation and 2026-09-09 event-model suites were silently omitted from a bare `pytest`.
 Resolution: Added backend/conftest.py whose pytest_pycollect_makemodule hook drops the cached `conftest` module before each test module is imported, so `from conftest import ...` re-resolves against the sibling conftest.py (prepend import mode keeps the test's own directory first on sys.path). Fixtures are unaffected because pytest keeps its registered conftest plugins. pytest.ini testpaths now lists all five validated suites; a bare `pytest` collects 379 tests (was 101) with zero collection errors, and cross-suite fixtures (pipeline/client) resolve. The one-off June sweep/investigation directories are intentionally excluded and named in a pytest.ini comment so the omission is explicit, not silent.
@@ -110,3 +145,8 @@ Template:
 Cause:      [what caused it]
 Resolution: [how it was fixed]
 Prevention: [rule to prevent recurrence]
+[2026-09-27 07:05] | [main] | ERROR: Switching from Waves to Beam dropped active playback batches
+Cause:      Beam mode cleared in-flight visual particles without terminally accounting for the complete-record batches attached to them.
+Resolution: Drain active batches into counters and the ordered arrival queue before Beam clears the visual particles.
+Prevention: Keep the focused mode-transition regression asserting all batch records complete and measured identities are emitted once.
+

@@ -1,6 +1,324 @@
 # Changelog
 Format: [YYYY-MM-DD HH:MM] | Branch | Action | filepath
 
+[2026-09-27 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | release | v0.6.0: README.md, package.json, backend/main.py, launch.py, docs/PRD.md, documentation/QKDSimFlow_Technical_Context_updated.md
+[2026-09-27 22:45] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/landing/QuantumVideoBackground.jsx
+[2026-09-27 22:30] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/landing/QuantumVideoBackground.jsx
+[2026-09-27 22:15] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/landing/QuantumVideoBackground.jsx
+[2026-09-27 19:15] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-27_ui-overhaul-audit-stages-4-7/
+[2026-09-27 19:15] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/TEST_LOG.md
+
+[2026-09-27 14:25] | feat/simulator-dual-mode-controller-and-ui-overhaul | fixed | frontend/src/pages/LandingPage.jsx, frontend/src/pages/ResultsPage.jsx, frontend/src/lib/landingPreset.js
+[2026-09-27 14:25] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/lib/bitStreamFilters.js, frontend/src/lib/bitStreamFilters.test.js
+[2026-09-27 14:25] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/lib/simulationRun.test.js, docs/UI_OVERHAUL_PLAN.md, docs/TEST_LOG.md, ../tests/regression/2026-09-27_phase-6-landing-composition/, ../tests/regression/2026-09-27_phase-7-visual-guide/, ../tests/regression/2026-09-27_phase-8-integration/
+[2026-09-27 14:25] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_audit-stages-1-3-follow-up/
+
+[2026-09-27 13:53] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/GRAPH_REPORT.md, ../graphify-out/graph.json, ../graphify-out/graph.html
+[2026-09-27 13:53] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/UI_OVERHAUL_PLAN.md, docs/UI_CURRENT_STATE_INVENTORY.md, docs/TEST_LOG.md
+[2026-09-27 13:53] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_phase-8-integration/README.md
+
+[2026-09-27 13:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/GuidePage.jsx, docs/UI_OVERHAUL_PLAN.md, docs/TEST_LOG.md
+[2026-09-27 13:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_phase-7-visual-guide/README.md
+
+[2026-09-27 13:45] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/LandingPage.jsx, frontend/src/components/landing/QuantumVideoBackground.jsx, docs/UI_OVERHAUL_PLAN.md, docs/TEST_LOG.md
+[2026-09-27 13:45] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_phase-6-landing-composition/README.md
+
+[2026-09-27 13:40] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/components/results/RunEvidenceSummary.jsx
+[2026-09-27 13:40] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx, frontend/src/components/experiments/ExperimentModal.jsx, frontend/src/lib/simulationRun.js, frontend/src/lib/simulationRun.test.js
+
+[2026-09-27 07:24] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/canvas/PhotonParticle.js, frontend/src/components/canvas/QuantumCanvas.jsx, frontend/src/hooks/usePhotonAnimation.js, frontend/src/components/gates/GatePropertiesPanel.jsx, frontend/src/components/gates/GateStateVector.jsx
+
+[2026-09-27 07:25] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/lib/quantumStates.js, frontend/src/components/quantum/QuantumStateBadge.jsx, frontend/src/components/math/QuantumEquation.jsx, frontend/src/components/design/FoundationPreview.jsx
+[2026-09-27 07:25] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/index.css, frontend/src/components/canvas/visualEncoding.js, frontend/src/pages/GuidePage.jsx, docs/DECISIONS.md, docs/TEST_LOG.md, docs/UI_OVERHAUL_PLAN.md
+
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/constants.py
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/protocol.py
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/experiments.py
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/lib/qberPresentation.js
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/lib/qberPresentation.test.js
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/SimulatorControls.jsx
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/store/simulationStore.js
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/PHYSICS_CONTRACT.md
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/DECISIONS.md
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../CODEBASE_RULES.md
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../tests/regression/2026-09-14_qber-small-sample/suite/test_qber_small_sample.py
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../tests/regression/2026-09-14_qber-small-sample/README.md
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../tests/regression/2026-09-14_qber-small-sample/specs/design.md
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../tests/regression/2026-09-14_qber-small-sample/TEST_FINDINGS.md
+[2026-09-27 06:38] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../tests/regression/2026-09-27_qber-preview-metrics/README.md
+
+[2026-09-27 06:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/events.py
+[2026-09-27 06:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/results/TransmissionPanel.jsx
+[2026-09-27 06:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-27 06:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../tests/regression/2026-09-09_event-model-transmission/suite/test_transmission_accounting.py
+
+[2026-09-27 01:32] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/events.py
+[2026-09-27 01:32] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/models/schemas.py
+[2026-09-27 01:32] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/results/TransmissionPanel.jsx
+[2026-09-27 01:32] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-27 01:32] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-27 01:32] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../tests/regression/2026-09-09_event-model-transmission/suite/test_transmission_accounting.py
+
+[2026-09-27 01:15] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/lib/qberPresentation.js
+[2026-09-27 01:15] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/lib/qberPresentation.test.js
+[2026-09-27 01:15] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-27 01:15] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/BottomPanel.jsx
+
+[2026-09-27 01:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-27 01:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+
+[2026-09-27 00:45] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/protocol.py
+[2026-09-27 00:45] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/models/schemas.py
+[2026-09-27 00:45] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/routers/simulation.py
+[2026-09-27 00:45] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/store/simulationStore.js
+[2026-09-27 00:45] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-27 00:45] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-27 00:45] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../tests/regression/2026-09-14_qber-small-sample/suite/test_qber_small_sample.py
+
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/constants.py
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/protocol.py
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/models/schemas.py
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/routers/simulation.py
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/store/simulationStore.js
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/metrics/QBERChart.jsx
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/metrics/SKRChart.jsx
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../tests/regression/2026-09-14_qber-small-sample/suite/test_qber_small_sample.py
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/PHYSICS_CONTRACT.md
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/TEST_LOG.md
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_qber-preview-metrics/README.md
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_qber-preview-metrics/TEST_RESULTS.md
+[2026-09-27 00:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_qber-preview-metrics/TEST_FINDINGS.md
+
+[2026-09-27 00:20] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_frontend-backend-result-sync/README.md
+[2026-09-27 00:20] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_frontend-backend-result-sync/TEST_RESULTS.md
+[2026-09-27 00:20] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_frontend-backend-result-sync/TEST_FINDINGS.md
+[2026-09-27 00:20] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_frontend-backend-result-sync/.results_cache.json
+[2026-09-27 00:20] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_frontend-backend-result-sync/suite/README.md
+[2026-09-27 00:20] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_frontend-backend-result-sync/specs/requirements.md
+[2026-09-27 00:20] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_frontend-backend-result-sync/specs/design.md
+[2026-09-27 00:20] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-27_frontend-backend-result-sync/specs/tasks.md
+[2026-09-27 00:20] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/TEST_LOG.md
+[2026-09-27 00:20] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../pytest.ini
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/metrics.py
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_qber-chart-strategy/README.md
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_qber-chart-strategy/TEST_RESULTS.md
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_qber-chart-strategy/TEST_FINDINGS.md
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_qber-chart-strategy/.results_cache.json
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_qber-chart-strategy/suite/test_qber_chart_strategy.py
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_qber-chart-strategy/specs/requirements.md
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_qber-chart-strategy/specs/design.md
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_qber-chart-strategy/specs/tasks.md
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/ERROR_LOG.md
+[2026-09-27 00:08] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/TEST_LOG.md
+
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/api/simulatorAPI.js
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/experiments/ExperimentModal.jsx
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/experiments/LoadExperimentModal.jsx
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/SimulatorControls.jsx
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/hooks/useSimulation.js
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/lib/landingPreset.js
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/lib/simulationRun.js
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/lib/simulationRun.test.js
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/LandingPage.jsx
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/store/simulationStore.js
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/DECISIONS.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/ERROR_LOG.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/TEST_LOG.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/UI_OVERHAUL_PLAN.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_phase-1-run-state/README.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_phase-1-run-state/TEST_RESULTS.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_phase-1-run-state/TEST_FINDINGS.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_phase-1-run-state/.results_cache.json
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_phase-1-run-state/suite/README.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_phase-1-run-state/specs/requirements.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_phase-1-run-state/specs/design.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_phase-1-run-state/specs/tasks.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/.graphify_analysis.json
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/.graphify_labels.json
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/.graphify_labels.json.sig
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/.graphify_root
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/GRAPH_REPORT.md
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/graph.html
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/graph.json
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/manifest.json
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/2026-09-26/.graphify_analysis.json
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/2026-09-26/graph.json
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/2026-09-26/manifest.json
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | regenerated | ../graphify-out/cache/stat-index.json
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../graphify-out/cache/ast/v0.9.61-s2/d21d62d8ec26faa2ac5da5f4112524f2ab0cc15f61e22c0fc8509728be6b81bb.json
+[2026-09-26 23:43] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+
+[2026-09-26 23:29] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/UI_OVERHAUL_PLAN.md
+[2026-09-26 23:29] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+
+[2026-09-26 23:29] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/UI_OVERHAUL_PLAN.md
+[2026-09-26 23:29] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/UI_OVERHAUL_PLAN.md
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225034_0.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225034_1.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225034_2.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225034_3.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225034_4.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225034_5.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225034_6.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225034_7.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225034_contact.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225130_0.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225130_1.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225130_2.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225130_3.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225130_4.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225130_5.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225130_6.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225130_7.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225130_contact.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225221_0.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225221_1.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225221_2.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225221_3.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225221_4.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225221_5.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225221_6.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225221_7.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/225221_contact.jpg
+[2026-09-26 23:16] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_reference-recordings/README.md
+
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/UI_OVERHAUL_PLAN.md
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_landing-scroll-recording/contact.jpg
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_landing-scroll-recording/frame0.jpg
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_landing-scroll-recording/frame1.jpg
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_landing-scroll-recording/frame2.jpg
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_landing-scroll-recording/frame3.jpg
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_landing-scroll-recording/frame4.jpg
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_landing-scroll-recording/frame5.jpg
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_landing-scroll-recording/frame6.jpg
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_landing-scroll-recording/frame7.jpg
+[2026-09-26 23:10] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_landing-scroll-recording/README.md
+
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/UI_OVERHAUL_PLAN.md
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/README.md
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/contact1.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/contact2.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_00.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_01.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_02.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_03.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_04.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_05.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_06.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_07.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_08.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_09.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_10.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video1_11.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_00.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_01.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_02.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_03.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_04.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_05.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_06.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_07.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_08.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_09.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_10.jpg
+[2026-09-26 23:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/investigations/2026-09-26_playback-recordings/video2_11.jpg
+
+[2026-09-26 22:41] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/UI_OVERHAUL_PLAN.md
+[2026-09-26 22:41] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/components/layout/SimulationErrorBanner.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/pages/NotFoundPage.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/api/simulatorAPI.js
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/canvas/QuantumCanvas.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/experiments/LoadExperimentModal.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/experiments/SaveExperimentModal.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/guide/ExperimentsSection.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/guide/InteractiveBB84Stepper.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/landing/QuantumVideoBackground.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/SimulatorControls.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/layout/UniversalTopBar.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/index.css
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/main.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/GuidePage.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/SimulatorPage.jsx
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/store/simulationStore.js
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_unvibe-desktop-audit/README.md
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_unvibe-desktop-audit/TEST_RESULTS.md
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_unvibe-desktop-audit/TEST_FINDINGS.md
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/ERROR_LOG.md
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/TEST_LOG.md
+[2026-09-26 17:50] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+
+[2026-09-26 08:01] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | docs/UI_CURRENT_STATE_INVENTORY.md
+[2026-09-26 08:01] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/UI_OVERHAUL_PLAN.md
+
+[2026-09-26 07:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | docs/UI_OVERHAUL_PLAN.md
+[2026-09-26 07:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/landing/QuantumScrollScrubber.jsx
+[2026-09-26 07:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/guide/InteractiveBB84Stepper.jsx
+[2026-09-26 07:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-26 07:35] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/store/simulationStore.js
+
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/gates.py
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/core/protocol.py
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/models/schemas.py
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | backend/routers/simulation.py
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/DECISIONS.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/ERROR_LOG.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/PHYSICS_CONTRACT.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/PRD.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/TEST_LOG.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/api/simulatorAPI.js
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/canvas/QuantumCanvas.jsx
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/canvas/visualEncoding.test.js
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/experiments/ExperimentTooltip.jsx
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/landing/QuantumScrollScrubber.jsx
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/landing/QuantumVideoBackground.jsx
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/components/results/OneTimePad.jsx
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/GuidePage.jsx
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/LandingPage.jsx
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/store/simulationStore.js
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/index.html
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/lib/landingPreset.js
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/lib/otpDemo.js
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | frontend/src/lib/simulatorContracts.test.js
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../AGENTS.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../CODEBASE_RULES.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../PHYSICS_CONTRACT.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../.agents/rules/qkd_core_physics.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../.agents/rules/graphify.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../documentation/QKDSimFlow_Technical_Context_updated.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../pytest.ini
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_ui-contract-alignment/README.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_ui-contract-alignment/TEST_RESULTS.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_ui-contract-alignment/TEST_FINDINGS.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_ui-contract-alignment/specs/requirements.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_ui-contract-alignment/specs/design.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_ui-contract-alignment/specs/tasks.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | created | ../tests/regression/2026-09-26_ui-contract-alignment/suite/test_otp_api_contract.py
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../graphify-out/graph.json
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../graphify-out/graph.html
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../graphify-out/GRAPH_REPORT.md
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | ../graphify-out/manifest.json
+[2026-09-26 07:19] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/CHANGELOG.md
+
 [2026-09-26 06:05] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | docs/DECISIONS.md
 [2026-09-25 05:52] | feat/simulator-dual-mode-controller-and-ui-overhaul | modified | frontend/src/pages/LandingPage.jsx
 [2026-09-25 05:48] | feat/simulator-dual-mode-controller-and-ui-overhaul | created  | frontend/src/components/landing/QuantumVideoBackground.jsx
@@ -544,3 +862,40 @@ Format was: [YYYY-MM-DD HH:MM] | Branch | Type | Description
 [2026-09-14 23:20] | main | modified | docs/CHANGELOG.md
 
 [2026-09-15 22:21] | main | created  | docs/UI_REDESIGN_PLAN.md
+
+
+[2026-09-27 07:05] | main | modified | backend/models/schemas.py
+[2026-09-27 07:05] | main | modified | backend/routers/simulation.py
+[2026-09-27 07:05] | main | modified | frontend/src/api/simulatorAPI.js
+[2026-09-27 07:05] | main | modified | frontend/src/hooks/usePhotonAnimation.js
+[2026-09-27 07:05] | main | modified | frontend/src/hooks/usePhotonAnimation.test.js
+[2026-09-27 07:05] | main | modified | frontend/src/store/simulationStore.js
+[2026-09-27 07:05] | main | modified | frontend/src/components/canvas/TransmissionHUD.jsx
+[2026-09-27 07:05] | main | modified | frontend/src/components/layout/BottomPanel.jsx
+[2026-09-27 07:05] | main | modified | frontend/src/components/results/TransmissionPanel.jsx
+[2026-09-27 07:05] | main | modified | frontend/src/pages/ResultsPage.jsx
+[2026-09-27 07:05] | main | modified | docs/PHYSICS_CONTRACT.md
+[2026-09-27 07:05] | main | modified | docs/DECISIONS.md
+[2026-09-27 07:05] | main | modified | docs/UI_OVERHAUL_PLAN.md
+[2026-09-27 07:05] | main | modified | docs/ERROR_LOG.md
+[2026-09-27 07:05] | main | modified | docs/TEST_LOG.md
+[2026-09-27 07:05] | main | modified | docs/CHANGELOG.md
+[2026-09-27 07:05] | main | modified | ../pytest.ini
+[2026-09-27 07:05] | main | created | ../tests/regression/2026-09-27_phase-2-exact-playback/suite/test_exact_playback_api.py
+[2026-09-27 07:05] | main | created | ../tests/regression/2026-09-27_phase-2-exact-playback/suite/conftest.py
+[2026-09-27 07:05] | main | created | ../tests/regression/2026-09-27_phase-2-exact-playback/README.md
+[2026-09-27 07:05] | main | created | ../tests/regression/2026-09-27_phase-2-exact-playback/TEST_RESULTS.md
+[2026-09-27 07:05] | main | created | ../tests/regression/2026-09-27_phase-2-exact-playback/TEST_FINDINGS.md
+[2026-09-27 07:05] | main | created | ../tests/regression/2026-09-27_phase-2-exact-playback/.results_cache.json
+[2026-09-27 07:05] | main | created | ../tests/regression/2026-09-27_phase-2-exact-playback/specs/requirements.md
+[2026-09-27 07:05] | main | created | ../tests/regression/2026-09-27_phase-2-exact-playback/specs/design.md
+[2026-09-27 07:05] | main | created | ../tests/regression/2026-09-27_phase-2-exact-playback/specs/tasks.md
+[2026-09-27 21:15] | main | fixed | High-priority audit findings: causally aligned grouped Waves carrier, explicit visual-batch disclosure, canonical landing experiment setup, model-accurate detector telemetry, and truthful landing capability shortcuts
+
+[2026-09-27] | main | UI | QuantumVideoBackground.jsx: removed flowing decorative packets; enlarged six scroll-driven polarization motifs. TransmissionHUD.jsx: collapsed by default. QuantumCanvas.jsx: Alice/Bob cards show stacked bit and basis beside polarization, without pulse IDs or match labels; Bob waits for detection. PhotonParticle.js: larger outlined bodies and crisp lines without glow.
+
+[2026-09-27] | main | UI | QuantumVideoBackground.jsx: five asymmetrically placed polarization motifs, elapsed-time scroll easing, latest-target video seeking, brighter spiral with stronger shading behind the main reading column.
+
+[2026-09-27] | main | UI | QuantumVideoBackground.jsx replaced video seeking with an on-demand Canvas polarization helix; five motifs positioned in outer gutters; elapsed-time easing, reverse scroll, reduced-motion preference and cleanup retained. Original media asset retained but no longer requested by this component.
+
+[2026-09-27] | main | UI | QuantumVideoBackground.jsx: compact depth-sorted circular ribbon bends/tilts with scroll; five motifs moved to stable irregular interior positions. No added dependencies.

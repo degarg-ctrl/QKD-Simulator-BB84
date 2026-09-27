@@ -2,7 +2,9 @@
 
 > **A physics-accurate, interactive web application that simulates the BB84 quantum cryptography protocol — the world's first and most widely deployed method for generating provably secure encryption keys using the laws of quantum mechanics.**
 
-v0.5.0
+**Release:** `v0.6.0` (Production Release)  
+[![Release](https://img.shields.io/badge/release-v0.6.0-emerald.svg)](https://github.com/degarg-ctrl/QKD-Simulator-BB84/releases/tag/v0.6.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
@@ -120,6 +122,9 @@ Every photon in the optical corridor is dynamically mapped in `visualEncoding.js
 
 ### Visualization & Interaction
 - High-performance 60fps HTML5 Canvas single-lane optical corridor
+- **Cinematic Scroll-Synchronized Quantum Background Engine:** 60fps lerped video scrubbing (`QuantumVideoBackground.jsx`) mapping continuous Hamiltonian phase-space dispersion with Hermite smoothstep easing, direction-aware zero-latency turnaround, optical parallax zoom, and overlaid geometric ring-motion and polarization motifs
+- **Experiential Hero Optical Sandbox & 3D Bloch Sphere:** Real-time interactive optical bench with live Alice/Bob polarizer controls, paired with a user-rotatable 3D Bloch sphere gate inspector with mouse orbit controls
+- **Laboratory Capabilities Suite:** 6 modular capability cards enabling direct one-click scenario launches into the simulator bench
 - **Dual-Mode Animation Engine:**
   - **Discrete Wave Mode:** Step-by-step photon wave packets with configurable flight speed and pulse inspector
   - **Continuous Beam Mode:** High-throughput streaming representation with live photon density gradients for large photon batches
@@ -407,6 +412,7 @@ All physics values below are enforced by [PHYSICS_CONTRACT.md](docs/PHYSICS_CONT
 ```bash
 git clone https://github.com/degarg-ctrl/QKD-Simulator-BB84.git
 cd QKD-Simulator-BB84
+git checkout v0.6.0
 ```
 
 ### Backend Setup
@@ -516,18 +522,19 @@ qkd-simulator/
 │       │   ├── useSimulation.js   ← API + state orchestration hook
 │       │   └── usePhotonAnimation.js ← 60fps canvas animation driver
 │       ├── pages/
-│       │   ├── LandingPage.jsx    ← Modern hero with particle visualization
+│       │   ├── LandingPage.jsx    ← Cinematic landing page with scroll-synchronized background, 3D Bloch sphere & capabilities
 │       │   ├── SimulatorPage.jsx  ← Main application workspace
 │       │   ├── GuidePage.jsx      ← Interactive BB84 guide with theory + glossary
 │       │   └── ResultsPage.jsx    ← Post-simulation analysis with charts + OTP demo
 │       └── components/
+│           ├── landing/           ← QuantumVideoBackground, HeroOpticalSandbox
 │           ├── canvas/            ← QuantumCanvas, TransmissionHUD, visualEncoding.js
 │           ├── layout/            ← Sidebar, BottomPanel, SimulatorControls
 │           ├── controls/          ← ConfigPanel, DualModeSpeedControl
 │           ├── metrics/           ← MetricCard, QBERChart, SKRChart
 │           ├── gates/             ← GatePropertiesPanel, GateStateVector
 │           ├── inspector/         ← PhotonInspector (per-photon state viewer)
-│           ├── results/           ← TransmissionPanel, BitstreamTable
+│           ├── results/           ← TransmissionPanel, BitstreamTable, RunEvidenceSummary
 │           ├── visualizations/    ← BlochSphere (3D quantum state visualization)
 │           └── ui/                ← Button, Panel, Field, Slider, SegmentedControl, Tabs, Dialog, Accordion, Tooltip
 │
@@ -559,6 +566,7 @@ qkd-simulator/
 
 | Version | Date | Highlights |
 |:--------|:-----|:-----------|
+| [v0.6.0](https://github.com/degarg-ctrl/QKD-Simulator-BB84/releases/tag/v0.6.0) | 2026-09-27 | Official release: Scroll-synchronized quantum video background, Hermite smoothstep easing, adaptive direction turnaround, optical parallax zoom, experiential sandbox, 3D Bloch sphere & UI overhaul stabilization |
 | v0.5.0 | 2026-09-20 | Dual-mode controller, UI overhaul, decoupled docs/tests architecture, high-performance canvas engine |
 | v0.4.0 | 2026-03-30 | 3D Bloch sphere tooltips, smart tooltip positioning, navigation redesign, enhanced guide page |
 | v0.3.1 | 2026-03-29 | Guided exercises, save/load experiments, gate state vector visualization |
